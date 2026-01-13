@@ -1,0 +1,871 @@
+{
+  "updatedAt": "2025-10-21T05:19:30.104Z",
+  "createdAt": "2025-06-11T05:09:23.496Z",
+  "id": "tNKcEceEu3TGkECi",
+  "name": "科技新聞爬蟲",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1392,
+        -432
+      ],
+      "id": "dc3952db-4f87-4faf-9d3e-e2b12a1b6eaf",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://cdn.technews.tw/category/ai/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1168,
+        -432
+      ],
+      "id": "c3da2017-6b76-4dc2-999c-95aced057ea6",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# n8n LINE格式TechNews爬蟲 - 避免JSON格式問題\ninput_item = _input.first()\nhtml = input_item.json.data\n\n# 初始化訊息內容（使用\\\\n而不是\\n）\nmessage_lines = []\nmessage_lines.append(\"📰 TechNews 科技新報 - 最新消息\")\nmessage_lines.append(\"=\" * 50)\nmessage_lines.append(\"\")\n\nnews_count = 0\nnews_data = []\n\n# 尋找所有包含entry-title的部分\nlines = html.split('\\n')\ncurrent_article = \"\"\ncollecting = False\n\nfor line in lines:\n    if '<article' in line:\n        collecting = True\n        current_article = line\n    elif collecting:\n        current_article += line\n        if '</article>' in line:\n            collecting = False\n            \n            # 處理這個article\n            if 'entry-title' in current_article and news_count < 10:\n                # 找URL\n                url = \"\"\n                href_pos = current_article.find('href=\"')\n                if href_pos > -1:\n                    url_start = href_pos + 6\n                    url_end = current_article.find('\"', url_start)\n                    url = current_article[url_start:url_end]\n                \n                # 找標題\n                title = \"\"\n                entry_title_start = current_article.find('entry-title')\n                if entry_title_start > -1:\n                    temp_part = current_article[entry_title_start:]\n                    link_start = temp_part.find('>') + 1\n                    link_end = temp_part.find('</a>')\n                    \n                    if link_start > 0 and link_end > -1:\n                        title_part = temp_part[link_start:link_end]\n                        \n                        # 清理HTML標籤\n                        title = title_part\n                        while '<' in title and '>' in title:\n                            start = title.find('<')\n                            end = title.find('>', start)\n                            if end > -1:\n                                title = title[:start] + title[end+1:]\n                            else:\n                                break\n                        \n                        title = title.strip()\n                \n                if url and title and len(title) > 10:\n                    news_count += 1\n                    \n                    # 加入格式化的新聞到訊息中\n                    message_lines.append(f\"{news_count}. {title}\")\n                    message_lines.append(f\"🔗 {url}\")\n                    message_lines.append(\"\")\n                    \n                    # 同時保存結構化數據\n                    news_data.append({\n                        \"id\": news_count,\n                        \"title\": title,\n                        \"url\": url\n                    })\n            \n            current_article = \"\"\n\n# 加入統計資訊\nmessage_lines.append(\"-\" * 50)\nmessage_lines.append(f\"📊 共找到 {news_count} 則新聞\")\n\n# 使用\\\\n合併，避免JSON格式問題\ncomplete_message = \"\\\\n\".join(message_lines)\n\n# 返回適合LINE的格式\nreturn [{\n    \"type\": \"text\",\n    \"text\": complete_message\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        -336
+      ],
+      "id": "51cc1eb8-4471-44f9-ba14-b7581488c90f",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"{{ $json.text }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -496,
+        -960
+      ],
+      "id": "823899c5-eb35-49fc-8388-35ce3b4176df",
+      "name": "發送回應給 LINE",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=const newPrompt = `\n重新整理 {{ $json.text }}  (每天都一定會有10個新聞)\n重點摘要，並以這種格式輸出：\n\n📰 {{$today}} TechNews AI 每日新聞摘要\n==============================================\n\n1. 新聞標題\n   摘要內容\n   完整文章：連結URL\n\n2. 新聞標題  \n   摘要內容\n   完整文章：連結URL\n\n透過 perplexity 預計接下來一周的AI發展：\n分析內容...\n\n不用回我其他語助詞，只要回我重整後的內容\n\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        -336
+      ],
+      "id": "c03bc806-c4c1-47cf-8ab9-a60a2ebb32a6",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -544,
+        -112
+      ],
+      "id": "20c64305-b27b-4ab8-94df-fcfef59cd6bf",
+      "name": "OpenAI Chat Model1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1403049282705166438/dal_cIJQlfCuX-laQL1_9PF3JchDiQslC8xQ5D5G_-_ieLaLlInPGFQnk9ASMsqW5aHz",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=每日的科技新聞如連結：\nhttps://script.google.com/macros/s/AKfycbyetrAVEIKdPYUkf91Nx8yKaNyaiNzIACblIuKlbdrySTQ0u4n_JCGuEoxI81t0Wvs0/exec"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -496,
+        -1152
+      ],
+      "id": "d1a88e80-9ffa-4a9c-8e24-dedae8ce66e5",
+      "name": "發送回應給 Discord"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 加入AI週預測的完整解決方案\n// 作者：Nick Chang｜nickleo051216@gmail.com｜0932-684-051\n// 個人網站：ZN Studio｜https://portaly.cc/zn.studio\n// Threads： ZN Studio ( @nickai216 )｜https://www.threads.com/@nickai216\n\n// ========== 步驟1：修改 n8n 的 Code1 節點 ==========\n// 將現有的 Code1 節點程式碼替換為：\n\nconst aiOutput = $input.first().json.output || '';\nconsole.log(\"AI輸出:\", aiOutput.substring(0, 200));\n\n// 解析新聞標題和URL\nconst urls = aiOutput.match(/https:\\/\\/[^\\s\\n]+/g) || [];\nconst lines = aiOutput.split('\\n');\n\n// 分離新聞內容和AI趨勢分析\nconst aiTrendsKeyword = \"預計接下來一周的AI發展：\";\nconst aiTrendsIndex = aiOutput.indexOf(aiTrendsKeyword);\n\nlet newsContent = aiOutput;\nlet aiTrends = '';\n\nif (aiTrendsIndex !== -1) {\n  // 分離新聞內容和AI趨勢分析\n  newsContent = aiOutput.substring(0, aiTrendsIndex).trim();\n  aiTrends = aiOutput.substring(aiTrendsIndex + aiTrendsKeyword.length).trim();\n}\n\nconsole.log(\"AI趨勢分析內容:\", aiTrends);\n\n// 整理新聞資料\nconst newsItems = [];\nlet currentNews = null;\n\nnewsContent.split('\\n').forEach(line => {\n  line = line.trim();\n  \n  if (line.match(/^\\d+\\./)) {\n    // 這是新聞標題\n    currentNews = {\n      title: line,\n      summary: '',\n      url: ''\n    };\n  } else if (line.includes('https://')) {\n    // 這是連結\n    const urlMatch = line.match(/https:\\/\\/[^\\s]+/);\n    if (urlMatch && currentNews) {\n      currentNews.url = urlMatch[0];\n      newsItems.push(currentNews);\n      currentNews = null;\n    }\n  } else if (line.length > 10 && currentNews) {\n    // 這是摘要\n    currentNews.summary += line + ' ';\n  }\n});\n\n// 為GAS準備完整資料\nconst gasData = {\n  date: new Date().toLocaleDateString('zh-TW'),\n  title: `TechNews AI 每日新聞摘要`,\n  author: \"Nick Chang | ZN Studio\",\n  newsItems: newsItems,\n  aiTrends: aiTrends, // ⭐ 新增：AI趨勢分析\n  totalCount: newsItems.length,\n  originalContent: aiOutput\n};\n\nconsole.log(\"準備發送給GAS的資料:\", JSON.stringify(gasData, null, 2));\n\nreturn [gasData];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -240
+      ],
+      "id": "bf586e1d-a9ee-491a-9fab-367835a137ab",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://script.google.com/macros/s/AKfycbyetrAVEIKdPYUkf91Nx8yKaNyaiNzIACblIuKlbdrySTQ0u4n_JCGuEoxI81t0Wvs0/exec",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -32,
+        -336
+      ],
+      "id": "52acf8f4-bf74-4f5b-90da-721ecc39402a",
+      "name": "推播到GAS",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xkEI5DdQ4D7BUzcq",
+          "mode": "list",
+          "cachedResultName": "news",
+          "cachedResultUrl": "/projects/4W71QCd0cKKsiKSS/datatables/xkEI5DdQ4D7BUzcq"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "date",
+              "condition": "neq",
+              "keyValue": "={{ new Date().toLocaleDateString('zh-TW') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        -528
+      ],
+      "id": "d5b42992-ea58-4fc4-a948-39463b1a31bb",
+      "name": "Delete row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得上游（Delete row(s)）傳入的單一 Item 的 JSON 內容\nconst inputItem = $input.first().json;\n\n// 修正：直接從這個 Item 裡面的 newsItems 陣列取值\nconst newsItems = inputItem.newsItems || [];\n\n// 修正：直接從這個 Item 裡面的 date 欄位取值\nconst date = inputItem.date;\n\nconsole.log('處理新聞數量:', newsItems.length);\n\n// 返回每則新聞，並加上日期\nreturn newsItems.map((item, index) => ({\n    json: {\n        date: date,\n        news_index: index,\n        news_title: item.title,\n        news_summary: item.summary,\n        news_url: item.url,\n        click_count: 0,\n        last_updated: new Date().toLocaleString('zh-TW')\n    }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -144
+      ],
+      "id": "47673b21-0d93-46be-af0a-238f57a10ce7",
+      "name": "把 newsItems 陣列拆開"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "xkEI5DdQ4D7BUzcq",
+          "mode": "list",
+          "cachedResultName": "news",
+          "cachedResultUrl": "/projects/4W71QCd0cKKsiKSS/datatables/xkEI5DdQ4D7BUzcq"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "news_index": "={{ $json.news_index }}",
+            "date": "={{ $json.date }}",
+            "news_title": "={{ $json.news_title }}",
+            "click_count": "={{ $json.click_count }}",
+            "last_updated": "={{ $json.last_updated }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "news_index",
+              "displayName": "news_index",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "news_title",
+              "displayName": "news_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "click_count",
+              "displayName": "click_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_updated",
+              "displayName": "last_updated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -112
+      ],
+      "id": "5fcaa57f-a4d0-4a5a-ac21-2adaa3cf2b9f",
+      "name": "Insert row1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        192,
+        -144
+      ],
+      "id": "23e89cc2-2d8c-44ef-955d-23c6fd8b0e32",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me1",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -112
+      ],
+      "id": "ae365a87-8f2f-4949-b9a5-71c63e98891b"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 解析請求資料\nconst newsIndex = $input.item.json.body.newsIndex;\nconst today = new Date().toLocaleDateString('zh-TW');\n\nconsole.log('收到點擊追蹤:', {\n  newsIndex: newsIndex,\n  date: today\n});\n\nreturn {\n  json: {\n    date: today,\n    newsIndex: newsIndex\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1056,
+        96
+      ],
+      "name": "解析資料",
+      "id": "3bd8e007-6eb2-4d33-9af7-b333d6ed8957"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xkEI5DdQ4D7BUzcq",
+          "mode": "list",
+          "cachedResultName": "news",
+          "cachedResultUrl": "/projects/4W71QCd0cKKsiKSS/datatables/xkEI5DdQ4D7BUzcq"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "news_index",
+              "keyValue": "={{ $json.newsIndex }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        96
+      ],
+      "name": "查詢目前點擊數",
+      "id": "bb55d343-b408-42b1-839f-7781c37fedf1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 計算新的點擊數\nconst currentCount = $input.first().json.click_count || 0;\nconst newCount = currentCount + 1;\n\nreturn {\n  json: {\n    date: $input.first().json.date,\n    newsIndex: $input.first().json.news_index,\n    newClickCount: newCount\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        96
+      ],
+      "name": "計算新點擊數",
+      "id": "152445fd-942e-4c9c-9d27-47f907072ea4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xkEI5DdQ4D7BUzcq",
+          "mode": "list",
+          "cachedResultName": "news",
+          "cachedResultUrl": "/projects/4W71QCd0cKKsiKSS/datatables/xkEI5DdQ4D7BUzcq"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "date",
+              "keyValue": "={{ $json.date }}"
+            },
+            {
+              "keyName": "news_index",
+              "keyValue": "={{ $json.newsIndex }}"
+            },
+            {
+              "keyValue": "={{ $('查詢目前點擊數').item.json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "click_count": "={{ $json.newClickCount }}",
+            "last_updated": "={{ new Date().toLocaleString('zh-TW') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "news_index",
+              "displayName": "news_index",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "news_title",
+              "displayName": "news_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "click_count",
+              "displayName": "click_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_updated",
+              "displayName": "last_updated",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        96
+      ],
+      "name": "更新點擊數",
+      "id": "bf2e3227-8f0f-49f1-ad48-acdd1a18bbba",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  success: true,\n  clickCount: $json.click_count,\n  newsTitle: $json.news_title,\n  newsIndex: $json.newsIndex,\n  message: '點擊已記錄',\n  timestamp: $json.last_updated\n} }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        96
+      ],
+      "name": "回傳結果",
+      "id": "dcc3571e-7294-4a4b-bb2f-99151335c237"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "track-click",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        96
+      ],
+      "webhookId": "[REMOVED]",
+      "name": "接收點擊 Webhook",
+      "id": "072a038d-118b-48ac-be40-898d2e3cef8b"
+    },
+    {
+      "parameters": {
+        "path": "get-stats",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        320
+      ],
+      "webhookId": "[REMOVED]",
+      "name": "接收統計請求 Webhook",
+      "id": "f4982fd3-4841-47c8-a7bb-cd03e8cc70e4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得今天的日期\nconst today = new Date().toLocaleDateString('zh-TW');\n\nconsole.log('查詢日期:', today);\n\nreturn {\n  json: {\n    date: today\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1056,
+        320
+      ],
+      "name": "準備查詢",
+      "id": "6f038b3a-4f8b-4aee-b77a-450fd4b2278f"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xkEI5DdQ4D7BUzcq",
+          "mode": "list",
+          "cachedResultName": "news",
+          "cachedResultUrl": "/projects/4W71QCd0cKKsiKSS/datatables/xkEI5DdQ4D7BUzcq"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        320
+      ],
+      "name": "查詢今天所有新聞",
+      "id": "a8f5c1f3-80b4-4cc9-8b08-eddf9c5143d8"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 格式化統計資料\nconst stats = $input.all().map(item => ({\n  newsIndex: item.json.news_index,\n  newsTitle: item.json.news_title,\n  clickCount: item.json.click_count || 0,\n  lastUpdated: item.json.last_updated\n}));\n\nconsole.log('統計資料:', stats);\n\nreturn [{\n  json: {\n    success: true,\n    date: $input.first().json.date,\n    totalNews: stats.length,\n    stats: stats\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        320
+      ],
+      "name": "格式化統計資料",
+      "id": "8a933b63-6aa6-4687-8abf-42d59e3933e1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -384,
+        320
+      ],
+      "name": "回傳統計",
+      "id": "b05963f7-f0d1-4dfd-b919-acc2610135d3"
+    },
+    {
+      "parameters": {
+        "content": "## 這是我的社群：\n## [ZN AI 樂園](https://line.me/ti/g2/m9R6Fd9CF2SiMIA2wheULFoBZUtsoFV7ckW8MA?utm_source=invitation&utm_medium=link_copy&utm_campaign=default/)\n歡迎點擊 ZN AI 樂園\n\n一起加入分享討論 n8n AI \n\nNick Chang｜nickleo051216@gmail.com｜\n\n0932-684-051\n\n個人網站：[ZN Studio](https://portaly.cc/zn.studio)\n\nThreads： ZN Studio\n[@nickai216](https://www.threads.com/@nickai216)\n\nLine ： [客服](https://lin.ee/Faz0doj)",
+        "height": 768,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2048,
+        -480
+      ],
+      "typeVersion": 1,
+      "id": "8088719b-d85a-4784-a677-8f096d28af2b",
+      "name": "Sticky Note2"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "發送回應給 Discord",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "發送回應給 LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "推播到GAS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "把 newsItems 陣列拆開",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete row(s)": {
+      "main": [
+        []
+      ]
+    },
+    "把 newsItems 陣列拆開": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row1": {
+      "main": [
+        [
+          {
+            "node": "Replace Me1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Insert row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析資料": {
+      "main": [
+        [
+          {
+            "node": "查詢目前點擊數",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢目前點擊數": {
+      "main": [
+        [
+          {
+            "node": "計算新點擊數",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "計算新點擊數": {
+      "main": [
+        [
+          {
+            "node": "更新點擊數",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新點擊數": {
+      "main": [
+        [
+          {
+            "node": "回傳結果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "接收點擊 Webhook": {
+      "main": [
+        [
+          {
+            "node": "解析資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "接收統計請求 Webhook": {
+      "main": [
+        [
+          {
+            "node": "準備查詢",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備查詢": {
+      "main": [
+        [
+          {
+            "node": "查詢今天所有新聞",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢今天所有新聞": {
+      "main": [
+        [
+          {
+            "node": "格式化統計資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "格式化統計資料": {
+      "main": [
+        [
+          {
+            "node": "回傳統計",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "6001f95d-ef69-4b2b-931d-9c0d6426fd05",
+  "triggerCount": 3,
+  "shared": [
+    {
+      "updatedAt": "2025-06-11T05:09:23.496Z",
+      "createdAt": "2025-06-11T05:09:23.496Z",
+      "role": "workflow:owner",
+      "workflowId": "tNKcEceEu3TGkECi",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

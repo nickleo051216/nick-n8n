@@ -1,0 +1,5165 @@
+{
+  "updatedAt": "2025-10-21T05:11:08.428Z",
+  "createdAt": "2025-09-09T01:14:41.859Z",
+  "id": "IH7xo6ss3mDL1hBF",
+  "name": "自動回復 影片展示",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.threads.net/v1.0/23977660861892336/threads",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "media_type",
+              "value": "TEXT"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $('取得更新權杖').item.json.token }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('AI Agent').item.json.output }}"
+            },
+            {
+              "name": "reply_to_id",
+              "value": "={{ $('抓取ready').item.json.reply_id }}"
+            },
+            {
+              "name": "creation_id",
+              "value": "="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        1088
+      ],
+      "id": "420a606f-e2f9-42e2-b041-30260c7c1547",
+      "name": "CreatePostContainer1",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "executeOnce": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU",
+          "mode": "list",
+          "cachedResultName": "threads 爬蟲",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('讀取目標文章設定active').item.json.sheet_name }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('抓取ready').item.json.row_number }}",
+            "reply": "={{ $('AI Agent').item.json.output }}",
+            "ContainerId": "={{ $json.id }}",
+            "creation_id": "={{ $('CreatePostContainer1').item.json.id }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1968,
+        992
+      ],
+      "id": "c47568d9-80ce-4d66-a87d-51eeb3e9019d",
+      "name": "InsertContainerId1",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.threads.net/v1.0/23977660861892336/threads_publish",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $('取得更新權杖').item.json.token }}"
+            },
+            {
+              "name": "creation_id",
+              "value": "={{ $('CreatePostContainer1').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2416,
+        992
+      ],
+      "id": "9b70fced-57e7-4061-ac11-c5bdd0b5c338",
+      "name": "PublishPost1",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU",
+          "mode": "list",
+          "cachedResultName": "threads 爬蟲",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('讀取目標文章設定active').item.json.sheet_name }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UpdateReplyStatus": "TRUE",
+            "ContainerId": "={{ $('InsertContainerId1').item.json.ContainerId }}"
+          },
+          "matchingColumns": [
+            "ContainerId"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2848,
+        992
+      ],
+      "id": "91f45931-8e17-4956-b5f8-293790a1673e",
+      "name": "UpdatePostStatus",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 784,
+        "width": 4832
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1568,
+        752
+      ],
+      "typeVersion": 1,
+      "id": "efd4c3b8-aa09-4d43-bff1-0d46872c7d4b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.threads.net/v1.0/me/threads?fields=id,shortcode,permalink&limit=100&access_token={{ $json.token }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1040,
+        1216
+      ],
+      "id": "e2721d25-b60e-4ab1-964c-ab3e3600ff27",
+      "name": "取得我所有貼文"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 方法1：從「讀取目標文章設定1」取得設定資料\nlet targetShortcode = null;\ntry {\n    const settings = $input.first().json; // 來自「讀取目標文章設定1」\n    if (settings && settings.status === 'active') {\n        targetShortcode = settings.target_shortcode;\n        console.log('從設定表讀取目標文章:', targetShortcode);\n    }\n} catch (error) {\n    console.log('讀取失敗，使用預設');\n    targetShortcode = 'DNj-6hHRzTP';\n}\n\n// 方法2：從「取得我所有貼文」取得文章清單\nlet posts = [];\ntry {\n    const postsData = $('取得我所有貼文').item.json; // 明確指定節點名稱\n    posts = postsData.data || [];\n    console.log('取得文章數量:', posts.length);\n} catch (error) {\n    console.error('無法取得文章清單:', error);\n    throw new Error('無法取得文章清單');\n}\n\nif (!Array.isArray(posts)) {\n    throw new Error('文章數據格式錯誤');\n}\n\n// 在文章清單中尋找目標文章\nlet postId = null;\nfor (const post of posts) {\n    if (post.shortcode === targetShortcode) {\n        postId = post.id;\n        console.log('找到目標文章:', targetShortcode, 'PostID:', postId);\n        break;\n    }\n}\n\n// 找不到就用最新文章\nif (!postId && posts.length > 0) {\n    postId = posts[0].id;\n    targetShortcode = posts[0].shortcode;\n    console.log('改用最新文章:', targetShortcode, 'PostID:', postId);\n}\n\nreturn { \n    json: { \n        postId: postId,\n        shortcode: targetShortcode,\n        totalPosts: posts.length\n    } \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        1216
+      ],
+      "id": "e2ff4e41-c401-4e44-bd12-b6d04daa9d2a",
+      "name": "取得我該文章的PostId"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1778932180,
+          "mode": "list",
+          "cachedResultName": "自動更新權杖",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1778932180"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "platform",
+              "lookupValue": "threads"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1264,
+        1216
+      ],
+      "id": "3f3b553c-9e71-471b-b38b-b347dec6886c",
+      "name": "取得更新權杖",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"此次 {{ $('讀取目標文章設定active').item.json.URL }} 30筆留言已完成，此次Workflow結束，{{ $now }} \"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        800
+      ],
+      "id": "546a7156-8e3c-423a-9167-76903103f5f1",
+      "name": "通知已發送給自動回覆",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3072,
+        1216
+      ],
+      "id": "660712ea-7c89-411e-8fe1-7939ce510a67",
+      "name": "Wait1",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU",
+          "mode": "list",
+          "cachedResultName": "threads 爬蟲",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('讀取目標文章設定active').item.json.sheet_name }}",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "UpdateReplyStatus",
+              "lookupValue": "ready"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -368,
+        1216
+      ],
+      "id": "4bf115d4-6f3a-476b-b493-c6b34c38d6c8",
+      "name": "抓取ready",
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        496,
+        1216
+      ],
+      "id": "c891fdd4-9ceb-4a2d-8133-6ba203b9db9e",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        1088
+      ],
+      "id": "521bab8c-516c-4249-9ca9-09de90b52a3c",
+      "name": "Wait2",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"{{ $('讀取目標文章設定active').item.json.URL }} {{ $json.username }} 發生錯誤\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1968,
+        1184
+      ],
+      "id": "ccb2b02c-be12-4e9d-9abc-9e7a71123d28",
+      "name": "發生錯誤給自動回覆",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "de1dfa70-ec46-48a0-ada3-90b5cae37991"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1744,
+        992
+      ],
+      "id": "231a0c8a-3a09-4c6b-88bf-51b5039cc94f",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU",
+          "mode": "list",
+          "cachedResultName": "threads 爬蟲",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('讀取目標文章設定active').item.json.sheet_name }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UpdateReplyStatus": "error",
+            "username": "={{ $('抓取ready').item.json.username }}"
+          },
+          "matchingColumns": [
+            "username"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1744,
+        1184
+      ],
+      "id": "2ce73921-1010-4ced-a9f3-37a28112f015",
+      "name": "Update row in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2192,
+        992
+      ],
+      "id": "5328e967-d98e-4757-b0ef-463b3ea14718",
+      "name": "Wait5",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=不要回我別的  \n只要根據這段 {{ $json.text }} \n\n回復 {{ $json.reply }} 並重新修飾"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        1088
+      ],
+      "id": "e2743ff6-a37e-4197-9aee-77cfca043319",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        816,
+        1504
+      ],
+      "id": "7eaf12da-39f0-42a6-9857-f04d72b8e0c2",
+      "name": "Google Gemini Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1296,
+        1088
+      ],
+      "id": "a3ce13c4-c6d3-4ffe-bb55-67f0273e8aa4",
+      "name": "Wait6",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        720,
+        800
+      ],
+      "id": "8a3dfdc0-c6c4-404f-bea1-b5bf8c7ef382",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            },
+            {
+              "triggerAtHour": 12
+            },
+            {
+              "triggerAtHour": 17
+            },
+            {
+              "triggerAtHour": 21
+            },
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1456,
+        1216
+      ],
+      "id": "247d068a-83e4-459d-a2b8-9a788b089e58",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.threads.net/v1.0/me/threads?fields=id,shortcode,permalink&limit=100&=&access_token={{ $json.token }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "pagination": {}
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        80
+      ],
+      "id": "d72eb089-36cc-4be3-895f-c6d2cc12d94b",
+      "name": "取得所有文章"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得從前面節點傳來的目標 shortcode\nconst nodeData = $node[\"解析文章網址1\"].json;\nconst targetShortcode = nodeData.targetShortcode;\nconst creator = nodeData.creator;\n\n// 取得 API 回傳的文章清單\nconst posts = $json.data;\nlet postId = null;\nlet foundPost = null;\n\nconsole.log('正在搜尋 shortcode:', targetShortcode);\nconsole.log('總共有', posts.length, '篇文章');\n\n// 搜尋符合的文章\nfor (const post of posts) {\n  if (post.shortcode === targetShortcode) {\n    postId = post.id;\n    foundPost = post;\n    break;\n  }\n}\n\nif (postId) {\n  console.log('找到文章！Post ID:', postId);\n  return { \n    json: { \n      success: true,\n      postId: postId, \n      shortcode: targetShortcode,\n      permalink: foundPost.permalink,\n      originalUrl: nodeData.originalUrl,\n      creator: creator,\n      message: `成功找到文章 ${targetShortcode}`\n    } \n  };\n} else {\n  console.log('找不到對應的文章');\n  return { \n    json: { \n      success: false,\n      shortcode: targetShortcode,\n      originalUrl: nodeData.originalUrl,\n      creator: creator,\n      error: `找不到 shortcode 為 ${targetShortcode} 的文章`,\n      totalPosts: posts.length\n    } \n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        80
+      ],
+      "id": "491c4263-016c-4867-a0f5-187e359f3b93",
+      "name": "查找該篇文章"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.threads.net/v1.0/{{ $('查找該篇文章').item.json.postId }}/replies",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,text,username,timestamp"
+            },
+            {
+              "name": "since",
+              "value": "={{ $json.lastFetchTime }}"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "after",
+                    "value": "={{ $response.body.paging.cursors.after }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.paging.cursors.after }}",
+              "requestInterval": null
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2448,
+        80
+      ],
+      "id": "66f92432-8069-47ef-8c4a-b848ddcd2d38",
+      "name": "取得該篇文章的留言",
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2912,
+        32
+      ],
+      "id": "39a34ccf-c389-46a5-b43d-5570b3f99311",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4688,
+        -208
+      ],
+      "id": "bc345a98-5879-43ae-97e9-980d9eb8beaf",
+      "name": "Wait",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1778932180,
+          "mode": "list",
+          "cachedResultName": "自動更新權杖",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1778932180"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "platform",
+              "lookupValue": "threads"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1776,
+        80
+      ],
+      "id": "0b57cf6b-5335-4c47-b77c-f17eb0c7045e",
+      "name": "更新權杖",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('新增新工作表').item.json.spreadsheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('新增新工作表').item.json.title }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UpdateReplyStatus": "FALSE",
+            "date": "={{ $today.format('yyyy.LL.dd') }}",
+            "media_id": "={{ $('查找該篇文章').item.json.postId }}",
+            "reply_id": "={{ $('Split Out').item.json.id }}",
+            "username": "={{ $('Split Out').item.json.username }}",
+            "text": "==\"{{ $('Split Out').item.json.text }}\"",
+            "timestamp": "={{ $('Split Out').item.json.timestamp }}"
+          },
+          "matchingColumns": [
+            "UpdateReplyStatus"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3792,
+        -384
+      ],
+      "id": "d3e51d3f-b038-4bfd-aca3-49c822fde22d",
+      "name": "新增上去(FALSE)",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "={{ $('接收文章網址').item.json.body.events[0].message.text }}   此次 {{ $now }} 工作流程已結束\n已更新完畢 \n請於   查看細節",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3344,
+        -480
+      ],
+      "id": "65364ea0-b070-4cad-8fb6-c11bc8b0df78",
+      "name": "Send a text message",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('新增新工作表').item.json.spreadsheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('新增新工作表').item.json.title }}",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "username",
+              "lookupValue": "={{ $json.username }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3328,
+        48
+      ],
+      "id": "f1e3b944-4c0b-4988-b1aa-f8a6d1cb77f8",
+      "name": "讀取是否有新留言1",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "=https://www.threads.com/@nickai216/post/DNj-6hHRzTP   有新留言 \n{{ $('(改回應)更新成ready (新增reply)').item.json.username }}\n已更新上去",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4464,
+        -384
+      ],
+      "id": "6edaf0bf-1941-4420-bd23-bd0ddd225e43",
+      "name": "Send a text message1",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "content": "自動爬留言\n",
+        "height": 880,
+        "width": 4128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "ad63aef5-c3b6-40ac-90b7-72f9640984ea",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4016,
+        -384
+      ],
+      "id": "f24e033f-6672-491b-a129-994cdb715ff6",
+      "name": "Wait3",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.username }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    },
+                    "id": "af5b6149-7812-4edb-b959-6cc6c9a79763"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "170196f3-6dfb-4f7d-acb7-582410f30b80",
+                    "leftValue": "={{ $json.username }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3552,
+        32
+      ],
+      "id": "948a1d6e-589c-4caa-a247-f92163a3a9af",
+      "name": "Switch1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3136,
+        48
+      ],
+      "id": "6d2d7d1e-cff0-4b7f-b7c8-2a7352ed36ad",
+      "name": "Wait4",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "=https://www.threads.com/@nickai216/post/DNj-6hHRzTP   有新留言 \n{{ $('(改回應)更新成ready (新增reply)').item.json.username }}\n匹配不到",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4016,
+        -192
+      ],
+      "id": "3beb49d1-1b9c-473d-9278-31610241569f",
+      "name": "解析匹配不到",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('新增新工作表').item.json.spreadsheetId }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('新增新工作表').item.json.title }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UpdateReplyStatus": "undefined",
+            "username": "={{ $json.username }}",
+            "reply": "當您收到這則回應時，請先私訊我的 IG 留言 \"您的 email 及 我要索取大禮包\"，會幫您記錄下來並觸發自動回覆傳送給您相關資訊，請幫我按一下讚！ 感謝您～  （此則回應由 n8n 自動回覆！）"
+          },
+          "matchingColumns": [
+            "username"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3792,
+        -192
+      ],
+      "id": "711018c5-22c9-4b9b-a4c6-3f7dfc3bd8f5",
+      "name": "更新成undefined",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 從 webhook 接收的資料中取得文章網址\nconst inputUrl = $('接收文章網址').first().json.body.events[0].message.text|| $json.thread_url || $json.threads_url;\n\nif (!inputUrl) {\n  throw new Error('請提供 Threads 文章網址');\n}\n\n// 解析 Threads 網址，擷取 shortcode\n// 網址格式：https://www.threads.net/@username/post/shortcode\nlet shortcode = null;\n\n// 使用正規表達式擷取 shortcode\nconst regex = /threads\\.net\\/@[^/]+\\/post\\/([^/?]+)/;\nconst match = inputUrl.match(regex);\n\nif (match && match[1]) {\n  shortcode = match[1];\n} else {\n  // 嘗試其他可能的網址格式\n  const simpleRegex = /\\/([A-Za-z0-9_-]+)\\/?(?:\\?|$)/;\n  const simpleMatch = inputUrl.match(simpleRegex);\n  if (simpleMatch && simpleMatch[1]) {\n    shortcode = simpleMatch[1];\n  }\n}\n\nif (!shortcode) {\n  throw new Error('無法從網址中擷取 shortcode，請檢查網址格式');\n}\n\nconsole.log('擷取到的 shortcode:', shortcode);\n\n\n\nreturn { \n  json: { \n    targetShortcode: shortcode, \n    originalUrl: inputUrl,\n    timestamp: new Date().toISOString()\n  } \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        -112
+      ],
+      "id": "2467167a-ac84-42a6-b2be-e8d75a111b7e",
+      "name": "解析文章網址",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3120,
+        -480
+      ],
+      "id": "0fe7738e-a158-487e-9057-b132bdcde314",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"此次爬蟲 {{ $('接收文章網址').item.json.body.events[0].message.text }} 已啟動，{{ $now }} \"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2896,
+        -224
+      ],
+      "id": "ac63ecf1-c9cf-47d0-a2be-0ad60cbeb73e",
+      "name": "HTTP Request",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        -224
+      ],
+      "id": "0397d337-0415-46a8-8230-b58e0e1b7c07",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "loadingSeconds",
+              "value": "40"
+            },
+            {
+              "name": "chatId",
+              "value": "={{ $('接收文章網址').item.json.body.events[0].source.userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -848,
+        -224
+      ],
+      "id": "3b24abc3-7a6d-448c-a7b2-33d9efc0d209",
+      "name": "loading/start",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2672,
+        128
+      ],
+      "id": "d9c15736-99c2-4de3-bc03-cd72bb4e6efc",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.slice(0, 30);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        1216
+      ],
+      "id": "2cb65e63-a926-4f2c-949e-0f1651e5c590",
+      "name": "處理30筆"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 從前面節點取得文章資訊\nconst targetInfo = $('查找該篇文章').item.json;\n\nreturn {\n  json: {\n    target_shortcode: targetInfo.shortcode,\n    target_postId: targetInfo.postId,  \n    updated_time: new Date().toISOString(),\n    status: 'active'\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2896,
+        304
+      ],
+      "id": "6122bf7f-6519-490c-b93c-bce2a4146926",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const shortcode = $json.targetShortcode;\nconst originalUrl = $json.originalUrl;\nconst today = new Date().toISOString().slice(0, 10);\nconst newSheetName = `留言_${shortcode}_${today}`;\n\n// 準備完整的訊息格式\nconst messageData = {\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": `📄 偵測到文章：${shortcode}\\n\\n請選擇要將留言儲存到哪個資料表：`\n    },\n    {\n      \"type\": \"flex\",\n      \"altText\": \"資料表選擇選單\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"size\": \"kilo\",\n        \"header\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"📊 資料表選擇\",\n              \"weight\": \"bold\",\n              \"color\": \"#ffffff\",\n              \"size\": \"lg\",\n              \"align\": \"center\"\n            }\n          ],\n          \"backgroundColor\": \"#0066CC\",\n          \"paddingAll\": \"15px\"\n        },\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": `文章代碼：${shortcode}`,\n              \"size\": \"sm\",\n              \"color\": \"#333333\",\n              \"margin\": \"sm\",\n              \"align\": \"center\",\n              \"weight\": \"bold\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"md\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"margin\": \"lg\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"選項 1：使用現有資料表\",\n                  \"size\": \"sm\",\n                  \"weight\": \"bold\",\n                  \"color\": \"#17C950\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"『影片展演』\",\n                  \"size\": \"xs\",\n                  \"color\": \"#666666\",\n                  \"margin\": \"xs\"\n                }\n              ]\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"margin\": \"md\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"選項 2：建立新資料表\",\n                  \"size\": \"sm\",\n                  \"weight\": \"bold\",\n                  \"color\": \"#0066CC\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": newSheetName,\n                  \"size\": \"xs\",\n                  \"color\": \"#666666\",\n                  \"margin\": \"xs\"\n                }\n              ]\n            }\n          ],\n          \"paddingAll\": \"15px\"\n        },\n        \"footer\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"spacing\": \"sm\",\n          \"contents\": [\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"postback\",\n                \"label\": \"✅ 使用現有資料表\",\n                \"data\": `action=existing&shortcode=${shortcode}&url=${encodeURIComponent(originalUrl)}`,\n                \"displayText\": \"使用現有資料表\"\n              },\n              \"color\": \"#17C950\"\n            },\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"postback\",\n                \"label\": \"🆕 建立新資料表\",\n                \"data\": `action=new&shortcode=${shortcode}&sheet=${newSheetName}&url=${encodeURIComponent(originalUrl)}`,\n                \"displayText\": \"建立新資料表\"\n              },\n              \"color\": \"#0066CC\"\n            },\n            {\n              \"type\": \"button\",\n              \"style\": \"secondary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"postback\",\n                \"label\": \"📝 自訂名稱\",\n                \"data\": `action=custom&shortcode=${shortcode}&url=${encodeURIComponent(originalUrl)}`,\n                \"displayText\": \"自訂資料表名稱\"\n              },\n              \"color\": \"#f59e0b\"\n            }\n          ],\n          \"paddingAll\": \"15px\"\n        }\n      }\n    }\n  ]\n};\n\nreturn {\n  json: {\n    messageData: messageData,\n    shortcode: shortcode,\n    originalUrl: originalUrl,\n    newSheetName: newSheetName\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        -288
+      ],
+      "id": "2b64b939-81c5-49c7-9c76-cf23683e0906",
+      "name": "轉換格式並改成選單"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('接收文章網址').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"已接收文章：{{ $('解析文章網址').item.json.targetShortcode }}\\n\\n請選擇要將留言資料存放到哪個資料表：\"\n    },\n    {\n      \"type\": \"flex\",\n      \"altText\": \"資料表選擇選單\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"size\": \"kilo\",\n        \"header\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"📊 資料表選擇\",\n              \"weight\": \"bold\",\n              \"color\": \"#ffffff\",\n              \"size\": \"lg\",\n              \"align\": \"center\"\n            }\n          ],\n          \"backgroundColor\": \"#0066CC\",\n          \"paddingAll\": \"15px\"\n        },\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"文章代碼：{{ $('解析文章網址').item.json.targetShortcode }}\",\n              \"size\": \"sm\",\n              \"color\": \"#333333\",\n              \"margin\": \"sm\",\n              \"align\": \"center\",\n              \"weight\": \"bold\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"md\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"選項1：使用現有資料表「影片展演」\",\n              \"size\": \"xs\",\n              \"color\": \"#666666\",\n              \"margin\": \"md\",\n              \"wrap\": true\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"選項2：建立新資料表「留言({{ $('解析文章網址').item.json.targetShortcode }}){{ $today.format('yyyy-MM-dd') }}」\",\n              \"size\": \"xs\",\n              \"color\": \"#666666\",\n              \"margin\": \"sm\",\n              \"wrap\": true\n            }\n          ],\n          \"paddingAll\": \"15px\"\n        },\n        \"footer\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"spacing\": \"sm\",\n          \"contents\": [\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"postback\",\n                \"label\": \"✅ 使用現有資料表\",\n                \"data\": \"action=EXISTING|shortcode={{ $('解析文章網址').item.json.targetShortcode }}|url={{ $('接收文章網址').item.json.body.events[0].message.text }}\",\n                \"displayText\": \"使用現有資料表\"\n              },\n              \"color\": \"#17C950\"\n            },\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"postback\",\n                \"label\": \"🆕 建立新資料表\",\n                \"data\": \"action=NEW|shortcode={{ $('解析文章網址').item.json.targetShortcode }}|sheet=留言({{ $('解析文章網址').item.json.targetShortcode }}){{ $today.format('yyyy-MM-dd') }}|url={{ $('接收文章網址').item.json.body.events[0].message.text }}\",\n                \"displayText\": \"建立新資料表\"\n              },\n              \"color\": \"#0066CC\"\n            },\n            {\n              \"type\": \"button\",\n              \"style\": \"secondary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"postback\",\n                \"label\": \"📝 自訂名稱\",\n                \"data\": \"action=CUSTOM|shortcode={{ $('解析文章網址').item.json.targetShortcode }}|url={{ $('接收文章網址').item.json.body.events[0].message.text }}\",\n                \"displayText\": \"自訂名稱\"\n              },\n              \"color\": \"#f59e0b\"\n            }\n          ],\n          \"paddingAll\": \"15px\"\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -144,
+        -288
+      ],
+      "id": "35259f75-0321-47ef-9f78-fd89a37bd772",
+      "name": "發送選單給Line",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.requestType }}",
+                    "rightValue": "=new_url",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "cfd043d9-cb58-46c2-9ce7-c5b77cd209d4"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "new_url"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b101dfcf-f0e6-406a-8f41-63cf4db3cd13",
+                    "leftValue": "={{ $json.requestType }}",
+                    "rightValue": "=sheet_selected",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sheet_selected"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "566064be-1f9f-495c-98cc-82d3566352c7",
+                    "leftValue": "={{ $json.requestType }}",
+                    "rightValue": "need_custom_name",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "need_custom_name"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "14cafe97-91a6-4221-98c7-495324287141",
+                    "leftValue": "={{ $json.requestType }}",
+                    "rightValue": "custom_name_provided",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "custom_name_provided"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9166bf7f-fa4a-4d4a-9b71-5849b08e17c9",
+                    "leftValue": "={{ $json.requestType }}",
+                    "rightValue": "reply_content_provided",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reply_content_provided"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -848,
+        32
+      ],
+      "id": "64faa0d2-1293-42cd-82f6-16780bd296f5",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const event = $json.body.events[0];\n\nif (event.type === 'message') {\n  const messageText = event.message.text;\n  \n  // 檢查是否是自訂名稱輸入\n  if (messageText.startsWith('自訂名稱:')) {\n    const customName = messageText.replace('自訂名稱:', '').trim();\n    \n    if (!customName) {\n      throw new Error('請提供自訂名稱');\n    }\n    \n    return {\n      json: {\n        requestType: 'custom_name_provided',\n        customSheetName: `留言_${customName}`,\n        userId: event.source.userId,\n        replyToken: event.replyToken\n      }\n    };\n  } \n  // ✨ 新增：檢查是否是回復內容輸入\n  else if (messageText.startsWith('回復內容:')) {\n    const replyContent = messageText.replace('回復內容:', '').trim();\n    \n    if (!replyContent) {\n      throw new Error('請提供回復內容');\n    }\n    \n    return {\n      json: {\n        requestType: 'reply_content_provided',\n        replyContent: replyContent,\n        userId: event.source.userId,\n        replyToken: event.replyToken\n      }\n    };\n  } \n  else {\n    // 一般網址\n    return { \n      json: { \n        requestType: 'new_url',\n        messageText: messageText,\n        userId: event.source.userId,\n        replyToken: event.replyToken\n      } \n    };\n  }\n  \n} else if (event.type === 'postback') {\n  const postbackData = event.postback.data;\n  const parts = postbackData.split('|');\n  \n  const params = {};\n  parts.forEach(part => {\n    const [key, value] = part.split('=');\n    if (key && value) {\n      params[key] = decodeURIComponent(value);\n    }\n  });\n  \n  if (params.action === 'EXISTING') {\n    return { \n      json: { \n        requestType: 'sheet_selected',\n        selectedSheet: '影片展演',\n        shortcode: params.shortcode,\n        originalUrl: params.url,\n        userId: event.source.userId,\n        replyToken: event.replyToken\n      } \n    };\n    \n  } else if (params.action === 'NEW') {\n    return { \n      json: { \n        requestType: 'sheet_selected',\n        selectedSheet: params.sheet,\n        shortcode: params.shortcode,\n        originalUrl: params.url,\n        userId: event.source.userId,\n        replyToken: event.replyToken\n      } \n    };\n    \n  } else if (params.action === 'CUSTOM') {\n    // 要求用戶輸入自訂名稱\n    return { \n      json: { \n        requestType: 'need_custom_name',\n        shortcode: params.shortcode,\n        originalUrl: params.url,\n        userId: event.source.userId,\n        replyToken: event.replyToken\n      } \n    };\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        0
+      ],
+      "id": "b98c7e40-3072-42eb-a05e-fafc1bdb851e",
+      "name": "判斷請求類型"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sw",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1488,
+        0
+      ],
+      "id": "197570fd-a913-49d4-adbc-26eee34d0ccf",
+      "name": "接收文章網址",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('接收文章網址').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"請輸入您需要存取的 sheet 名稱(自訂名稱:...)\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -512,
+        96
+      ],
+      "id": "cf260bd8-3ce8-46db-a87b-029601dde65c",
+      "name": "請輸入 自訂名稱",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 從 webhook 接收的資料中取得文章網址\nconst inputUrl = $('統一處理').first().json.originalUrl|| $json.thread_url || $json.threads_url;\n\nif (!inputUrl) {\n  throw new Error('請提供 Threads 文章網址');\n}\n\n// 解析 Threads 網址，擷取 shortcode\n// 網址格式：https://www.threads.net/@username/post/shortcode\nlet shortcode = null;\n\n// 使用正規表達式擷取 shortcode\nconst regex = /threads\\.net\\/@[^/]+\\/post\\/([^/?]+)/;\nconst match = inputUrl.match(regex);\n\nif (match && match[1]) {\n  shortcode = match[1];\n} else {\n  // 嘗試其他可能的網址格式\n  const simpleRegex = /\\/([A-Za-z0-9_-]+)\\/?(?:\\?|$)/;\n  const simpleMatch = inputUrl.match(simpleRegex);\n  if (simpleMatch && simpleMatch[1]) {\n    shortcode = simpleMatch[1];\n  }\n}\n\nif (!shortcode) {\n  throw new Error('無法從網址中擷取 shortcode，請檢查網址格式');\n}\n\nconsole.log('擷取到的 shortcode:', shortcode);\n\n\n\nreturn { \n  json: { \n    targetShortcode: shortcode, \n    originalUrl: inputUrl,\n    timestamp: new Date().toISOString()\n  } \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        80
+      ],
+      "id": "774faab4-d140-4ee4-b317-05aa8f5113a3",
+      "name": "解析文章網址1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU",
+          "mode": "list",
+          "cachedResultName": "threads 爬蟲",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('新增新工作表').item.json.title }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1296,
+        240
+      ],
+      "id": "0ef50d1b-34dc-44f7-b4e9-81e23d2114fc",
+      "name": "新增標題",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      date: \" \",\n      media_id: \" \",\n      reply_id: \" \",\n      username: \" \",\n      text: \" \",\n      timestamp: \"2025-09-14T19:00:00\",\n      reply: \"\",\n      UpdateReplyStatus: false,\n      Number: 1,\n      ContainerId: \" \",\n      creation_id: \" \"\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        240
+      ],
+      "id": "248fa43b-8956-4ab1-832d-7063152a7473",
+      "name": "擷取出標題"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "documentId": {
+          "__rl": true,
+          "value": "16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU",
+          "mode": "list",
+          "cachedResultName": "threads 爬蟲",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16hupmN9vhhdeXdk8xsg_HrgYsBJpJjRp2mt9WMcppsU/edit?usp=drivesdk"
+        },
+        "title": "={{ $('統一處理').item.json.selectedSheet }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        240
+      ],
+      "id": "50583f53-3eb3-4b6d-a821-61d1027cae5b",
+      "name": "新增新工作表",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562989853,
+          "mode": "list",
+          "cachedResultName": "紀錄爬取目標文章",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1562989853"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL": "={{ $('接收文章網址').item.json.body.events[0].message.text }}",
+            "status": "FALSE"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "target_shortcode",
+              "displayName": "target_shortcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "target_postId",
+              "displayName": "target_postId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_time",
+              "displayName": "updated_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sheet_name",
+              "displayName": "sheet_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        48,
+        -288
+      ],
+      "id": "12234ca3-3c1d-4afc-9576-fca5355703a8",
+      "name": "Append row in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  json: {\n    selectedSheet: $('判斷請求類型').item.json.customSheetName,\n    shortcode: $('判斷請求類型').item.json.shortcode || 'custom',\n    originalUrl: $('判斷請求類型').item.json.originalUrl || 'dummy_url',\n    // 模擬原本格式\n    body: {\n      events: [{\n        message: { text: $('判斷請求類型').item.json.originalUrl || 'dummy_url' }\n      }]\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        256
+      ],
+      "id": "69676f45-32c8-490d-87fd-b00db80e7095",
+      "name": "處理自訂名稱"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562989853,
+          "mode": "list",
+          "cachedResultName": "紀錄爬取目標文章",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1562989853"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "false"
+            }
+          ]
+        },
+        "combineFilters": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -416,
+        256
+      ],
+      "id": "6fd77dec-8358-44fd-9cac-238b3b54bd5e",
+      "name": "讀取網站URL",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562989853,
+          "mode": "list",
+          "cachedResultName": "紀錄爬取目標文章",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1562989853"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "activing"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3136,
+        304
+      ],
+      "id": "60de2a79-405e-4862-b51b-62b1ad66c4b1",
+      "name": "更新目標文章設定(FALSE active)",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 統一數據處理節點 - 修正版本\n\n// 獲取輸入數據\nconst inputData = $input.all();\nconst firstInput = $input.first().json;\n\n// 判斷數據來源：檢查是否有 URL 欄位（來自 Google Sheets）\nconst isFromCustomName = firstInput.URL !== undefined;\n\nlet finalData;\n\nif (isFromCustomName) {\n  // 來自自訂名稱流程（從Google Sheets讀取的URL數據）\n  const urlData = firstInput;\n  const customData = $('處理自訂名稱').item.json;\n  \n  console.log('自訂名稱流程 - URL數據:', urlData);\n  \n  // 解析 URL 來取得 shortcode\n  let shortcode = 'custom';\n  if (urlData && urlData.URL) {\n    const regex = /threads\\.net\\/@[^/]+\\/post\\/([^/?]+)/;\n    const match = urlData.URL.match(regex);\n    if (match && match[1]) {\n      shortcode = match[1];\n    } else {\n      // 嘗試其他可能的網址格式\n      const simpleRegex = /\\/([A-Za-z0-9_-]+)\\/?(?:\\?|$)/;\n      const simpleMatch = urlData.URL.match(simpleRegex);\n      if (simpleMatch && simpleMatch[1]) {\n        shortcode = simpleMatch[1];\n      }\n    }\n  }\n  \n  finalData = {\n    selectedSheet: customData.selectedSheet,\n    shortcode: shortcode,\n    originalUrl: urlData.URL,\n    body: {\n      events: [{\n        message: { text: urlData.URL }\n      }]\n    }\n  };\n  \n} else {\n  // 來自直接選擇流程（用戶選擇現有/新建資料表）\n  const requestData = $('判斷請求類型').item.json;\n  \n  console.log('直接選擇流程 - 請求數據:', requestData);\n  \n  finalData = {\n    selectedSheet: requestData.selectedSheet,\n    shortcode: requestData.shortcode,\n    originalUrl: requestData.originalUrl,\n    body: {\n      events: [{\n        message: { text: requestData.originalUrl }\n      }]\n    }\n  };\n}\n\nconsole.log('最終輸出數據:', finalData);\n\nreturn {\n  json: finalData\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        48
+      ],
+      "id": "c32f6bc0-7658-4835-8563-d17c23e10031",
+      "name": "統一處理"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5122a775-b957-4234-91e8-1754f77bdf81",
+              "leftValue": "={{ $json.selectedSheet }}",
+              "rightValue": "影片展演",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        80
+      ],
+      "id": "f830abb5-072d-41d0-8e6d-28edb23c1205",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.threads.net/v1.0/me/threads?fields=id,shortcode,permalink&limit=100&=&access_token={{ $json.token }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "pagination": {}
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1936,
+        -960
+      ],
+      "id": "2bfc2f99-cb8a-4f3b-952a-ede58ac38c3e",
+      "name": "取得所有文章1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得從前面節點傳來的目標 shortcode\nconst nodeData = $node[\"解析文章網址2\"].json;\nconst targetShortcode = nodeData.targetShortcode;\nconst creator = nodeData.creator;\n\n// 取得 API 回傳的文章清單\nconst posts = $json.data;\nlet postId = null;\nlet foundPost = null;\n\nconsole.log('正在搜尋 shortcode:', targetShortcode);\nconsole.log('總共有', posts.length, '篇文章');\n\n// 搜尋符合的文章\nfor (const post of posts) {\n  if (post.shortcode === targetShortcode) {\n    postId = post.id;\n    foundPost = post;\n    break;\n  }\n}\n\nif (postId) {\n  console.log('找到文章！Post ID:', postId);\n  return { \n    json: { \n      success: true,\n      postId: postId, \n      shortcode: targetShortcode,\n      permalink: foundPost.permalink,\n      originalUrl: nodeData.originalUrl,\n      creator: creator,\n      message: `成功找到文章 ${targetShortcode}`\n    } \n  };\n} else {\n  console.log('找不到對應的文章');\n  return { \n    json: { \n      success: false,\n      shortcode: targetShortcode,\n      originalUrl: nodeData.originalUrl,\n      creator: creator,\n      error: `找不到 shortcode 為 ${targetShortcode} 的文章`,\n      totalPosts: posts.length\n    } \n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        -960
+      ],
+      "id": "002d38b5-5c96-4a4d-b48d-b0311bc4a234",
+      "name": "查找該篇文章1"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.threads.net/v1.0/{{ $('查找該篇文章1').item.json.postId }}/replies",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBearerAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "id,text,username,timestamp"
+            },
+            {
+              "name": "since",
+              "value": "="
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "after",
+                    "value": "={{ $response.body.paging.cursors.after }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.paging.cursors.after }}",
+              "requestInterval": {}
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        -1248
+      ],
+      "id": "b0d08056-ac81-4d3e-9afc-ded89eb397b3",
+      "name": "取得該篇文章的留言1",
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2912,
+        -1216
+      ],
+      "id": "a194199d-29dc-4165-a0f4-3ac24fa7f5fa",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4688,
+        -1072
+      ],
+      "id": "dd2b5873-0be6-4865-b139-fac13c0b0e60",
+      "name": "Wait7",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1778932180,
+          "mode": "list",
+          "cachedResultName": "自動更新權杖",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1778932180"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "platform",
+              "lookupValue": "threads"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1712,
+        -960
+      ],
+      "id": "b6a80d6d-9b62-4587-9cb9-69a7ae029983",
+      "name": "更新權杖1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "={{ $('接收文章網址').item.json.body.events[0].message.text }}   此次 {{ $now }} 工作流程已結束\n已更新完畢 \n請於   查看細節",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3184,
+        -1392
+      ],
+      "id": "f6aa4590-b7b7-4304-9536-909d38f55d9f",
+      "name": "Send a text message2",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2008796211,
+          "mode": "list",
+          "cachedResultName": "影片展演",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2008796211"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "username",
+              "lookupValue": "={{ $json.username }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3344,
+        -1264
+      ],
+      "id": "6139bc4c-e3ea-4403-8cf7-1b7760413de4",
+      "name": "讀取是否有新留言",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.username }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    },
+                    "id": "af5b6149-7812-4edb-b959-6cc6c9a79763"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "170196f3-6dfb-4f7d-acb7-582410f30b80",
+                    "leftValue": "={{ $json.username }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3584,
+        -1280
+      ],
+      "id": "2ecbc996-fadf-4331-9b09-7b20fbc23fef",
+      "name": "Switch3",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3136,
+        -1216
+      ],
+      "id": "d91afe50-ddee-4780-b2f3-e1e8904dc288",
+      "name": "Wait9",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3040,
+        -1392
+      ],
+      "id": "f804ba06-c799-4150-8dc0-b7644689c8d8",
+      "name": "Aggregate3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"此次爬蟲 {{ $('接收文章網址').item.json.body.events[0].message.text }} 已啟動，{{ $now }} \"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2752,
+        -1424
+      ],
+      "id": "7f688c04-0350-4bef-baed-bcd304342be1",
+      "name": "HTTP Request1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        -1424
+      ],
+      "id": "0594edec-5ca2-49d0-8aac-b76f8d8ea633",
+      "name": "Aggregate4"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2608,
+        -912
+      ],
+      "id": "ac043333-e805-44fb-a4ec-1f153dbf6f48",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 從前面節點取得文章資訊\nconst targetInfo = $('查找該篇文章1').item.json;\n\nreturn {\n  json: {\n    target_shortcode: targetInfo.shortcode,\n    target_postId: targetInfo.postId,  \n    updated_time: new Date().toISOString(),\n    status: 'active'\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2832,
+        -736
+      ],
+      "id": "d9250dbe-0bca-46bf-8627-daa4501ec3cc",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562989853,
+          "mode": "list",
+          "cachedResultName": "紀錄爬取目標文章",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1562989853"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "active",
+            "target_shortcode": "={{ $json.target_shortcode }}",
+            "sheet_name": "影片展演"
+          },
+          "matchingColumns": [
+            "target_shortcode"
+          ],
+          "schema": [
+            {
+              "id": "target_shortcode",
+              "displayName": "target_shortcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "target_postId",
+              "displayName": "target_postId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_time",
+              "displayName": "updated_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sheet_name",
+              "displayName": "sheet_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3280,
+        -736
+      ],
+      "id": "7975aadc-91f5-4836-9039-f9ee142e1906",
+      "name": "讀取目標文章設定2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 從 webhook 接收的資料中取得文章網址\nconst inputUrl = $('統一處理').first().json.originalUrl|| $json.thread_url || $json.threads_url;\n\nif (!inputUrl) {\n  throw new Error('請提供 Threads 文章網址');\n}\n\n// 解析 Threads 網址，擷取 shortcode\n// 網址格式：https://www.threads.net/@username/post/shortcode\nlet shortcode = null;\n\n// 使用正規表達式擷取 shortcode\nconst regex = /threads\\.net\\/@[^/]+\\/post\\/([^/?]+)/;\nconst match = inputUrl.match(regex);\n\nif (match && match[1]) {\n  shortcode = match[1];\n} else {\n  // 嘗試其他可能的網址格式\n  const simpleRegex = /\\/([A-Za-z0-9_-]+)\\/?(?:\\?|$)/;\n  const simpleMatch = inputUrl.match(simpleRegex);\n  if (simpleMatch && simpleMatch[1]) {\n    shortcode = simpleMatch[1];\n  }\n}\n\nif (!shortcode) {\n  throw new Error('無法從網址中擷取 shortcode，請檢查網址格式');\n}\n\nconsole.log('擷取到的 shortcode:', shortcode);\n\n\n\nreturn { \n  json: { \n    targetShortcode: shortcode, \n    originalUrl: inputUrl,\n    timestamp: new Date().toISOString()\n  } \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        -960
+      ],
+      "id": "07c91fd7-2ec3-4cf1-9185-3d11cf094039",
+      "name": "解析文章網址2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562989853,
+          "mode": "list",
+          "cachedResultName": "紀錄爬取目標文章",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1562989853"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "FALSE",
+            "target_shortcode": "={{ $json.target_shortcode }}",
+            "target_postId": "={{ $json.target_postId }}",
+            "updated_time": "={{ $json.updated_time }}"
+          },
+          "matchingColumns": [
+            "status"
+          ],
+          "schema": [
+            {
+              "id": "target_shortcode",
+              "displayName": "target_shortcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "target_postId",
+              "displayName": "target_postId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_time",
+              "displayName": "updated_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sheet_name",
+              "displayName": "sheet_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3072,
+        -736
+      ],
+      "id": "42601afd-5bc8-4fd6-a416-5a125d728d69",
+      "name": "更新目標文章設定(FALSE active)1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2008796211,
+          "mode": "list",
+          "cachedResultName": "影片展演",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2008796211"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $today.format('yyyy.LL.dd') }}",
+            "UpdateReplyStatus": "FALSE",
+            "media_id": "={{ $('查找該篇文章1').item.json.postId }}",
+            "reply_id": "={{ $('Split Out1').item.json.id }}",
+            "username": "={{ $('Split Out1').item.json.username }}",
+            "text": "==\"{{ $('Split Out1').item.json.text }}\"",
+            "timestamp": "={{ $('Split Out1').item.json.timestamp }}"
+          },
+          "matchingColumns": [
+            "UpdateReplyStatus"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3872,
+        -1312
+      ],
+      "id": "9bd425d0-b356-4024-a466-2f09999d7d67",
+      "name": "新增上去(FALSE)2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2008796211,
+          "mode": "list",
+          "cachedResultName": "影片展演",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2008796211"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "username": "={{ $json.username }}",
+            "reply": "當您收到這則回應時，請先私訊我的 IG 留言 \"您的 email 及 我要索取大禮包\"，會幫您記錄下來並觸發自動回覆傳送給您相關資訊，請幫我按一下讚！ 感謝您～  （此則回應由 n8n 自動回覆！）",
+            "UpdateReplyStatus": "ready"
+          },
+          "matchingColumns": [
+            "username"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4256,
+        -1296
+      ],
+      "id": "abfc3f9c-f5cb-4ad3-bda3-232d72cb40b1",
+      "name": "更新成ready (新增reply)2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "=https://www.threads.com/@nickai216/post/DNj-6hHRzTP   有新留言 \n{{ $('更新成ready (新增reply)2').item.json.username }}\n已更新上去",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4464,
+        -1296
+      ],
+      "id": "cf96df5d-6ade-454e-a928-0e5cc38fa50b",
+      "name": "Send a text message4",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4080,
+        -1296
+      ],
+      "id": "d7ce73ce-de55-4774-9940-f3b241e99589",
+      "name": "Wait10",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "=https://www.threads.com/@nickai216/post/DNj-6hHRzTP   有新留言 \n{{ $('更新成ready (新增reply)2').item.json.username }}\n匹配不到",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4080,
+        -1152
+      ],
+      "id": "29da3cc5-42c0-4445-82da-edf2654a0257",
+      "name": "解析匹配不到2",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2008796211,
+          "mode": "list",
+          "cachedResultName": "影片展演",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2008796211"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UpdateReplyStatus": "undefined",
+            "username": "={{ $json.username }}",
+            "reply": "當您收到這則回應時，請先私訊我的 IG 留言 \"您的 email 及 我要索取大禮包\"，會幫您記錄下來並觸發自動回覆傳送給您相關資訊，請幫我按一下讚！ 感謝您～  （此則回應由 n8n 自動回覆！）"
+          },
+          "matchingColumns": [
+            "username"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3872,
+        -1168
+      ],
+      "id": "e0639340-2449-42d0-ac45-6f0ccb69d9e5",
+      "name": "更新成undefined2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562989853,
+          "mode": "list",
+          "cachedResultName": "紀錄爬取目標文章",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1562989853"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "done",
+            "sheet_name": "={{ $('讀取目標文章設定active').item.json.sheet_name }}"
+          },
+          "matchingColumns": [
+            "sheet_name"
+          ],
+          "schema": [
+            {
+              "id": "target_shortcode",
+              "displayName": "target_shortcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "target_postId",
+              "displayName": "target_postId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_time",
+              "displayName": "updated_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sheet_name",
+              "displayName": "sheet_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        16,
+        1360
+      ],
+      "id": "e91c768a-bfba-4c0c-919b-0a8d3e603c9a",
+      "name": "status 改成 done",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('接收文章網址').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"請輸入 自訂名稱:您的資料庫名稱\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        -96
+      ],
+      "id": "cc7ee4b1-7faa-480a-995a-e4900f03140a",
+      "name": "請輸入 自訂名稱1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c347c880-5f25-4c28-bf54-8100092747b4",
+              "leftValue": "={{ $json.username }}",
+              "rightValue": " ",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        1216
+      ],
+      "id": "023f1e59-e5e7-408b-bc24-1a0c4418f8d7",
+      "name": "If1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "={{ $('讀取目標文章設定active').item.json.URL }} 此次 {{ $now }} 工作流程已結束\n已全數更新完畢 \n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        1360
+      ],
+      "id": "5c18953b-948b-4a18-9967-4110b06ff5f0",
+      "name": "全部都通知完畢",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('新增新工作表').item.json.spreadsheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('新增新工作表').item.json.title }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "username": "={{ $json.username }}",
+            "UpdateReplyStatus": "ready",
+            "reply": "所有課程 都有存放在我的大禮包囉 有興趣的 歡迎私訊我的 IG ！"
+          },
+          "matchingColumns": [
+            "username"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "media_id",
+              "displayName": "media_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply_id",
+              "displayName": "reply_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reply",
+              "displayName": "reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "UpdateReplyStatus",
+              "displayName": "UpdateReplyStatus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "creation_id",
+              "displayName": "creation_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4240,
+        -384
+      ],
+      "id": "edeaaaaf-4f94-4ed9-8c46-aca78114208e",
+      "name": "(改回應)更新成ready (新增reply)",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        816,
+        1296
+      ],
+      "id": "3705f646-e2d6-45bc-98de-e4ec95dd2f76",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562989853,
+          "mode": "list",
+          "cachedResultName": "紀錄爬取目標文章",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1562989853"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "={{ $('Code in JavaScript').item.json.status }}",
+            "sheet_name": "={{ $('新增新工作表').first().json.title }}",
+            "URL": "={{ $json.URL }}",
+            "target_postId": "={{ $('Code in JavaScript').item.json.target_postId }}",
+            "updated_time": "={{ $('Code in JavaScript').item.json.updated_time }}",
+            "target_shortcode": "={{ $('Code in JavaScript').item.json.target_shortcode }}"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "target_shortcode",
+              "displayName": "target_shortcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "target_postId",
+              "displayName": "target_postId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_time",
+              "displayName": "updated_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sheet_name",
+              "displayName": "sheet_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3392,
+        304
+      ],
+      "id": "d28ecc23-3afe-4ec0-a17b-2f929ce1a43d",
+      "name": "status 改成 active",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562989853,
+          "mode": "list",
+          "cachedResultName": "紀錄爬取目標文章",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1562989853"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "active"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -816,
+        1216
+      ],
+      "id": "d6f764f2-9a1a-42c5-9314-59159fd6bc8c",
+      "name": "讀取目標文章設定active",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('接收文章網址').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"✅ 已選擇資料表：{{ $json.selectedSheet }}\\n\\n📝 請輸入您要回復的內容：\\n\\n格式：回復內容:您的回覆文字\"\n    },\n    {\n      \"type\": \"flex\",\n      \"altText\": \"回復內容範例\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"size\": \"kilo\",\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"💡 範例格式\",\n              \"weight\": \"bold\",\n              \"size\": \"md\",\n              \"color\": \"#0066CC\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"md\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"回復內容:感謝分享！這個內容很實用 👍\",\n              \"size\": \"xs\",\n              \"color\": \"#666666\",\n              \"margin\": \"md\",\n              \"wrap\": true\n            }\n          ],\n          \"backgroundColor\": \"#F5F5F5\",\n          \"paddingAll\": \"15px\"\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        80
+      ],
+      "id": "5eaab091-9e46-468a-880b-5cb1d25d9ae6",
+      "name": "詢問回覆內容",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1562989853,
+          "mode": "list",
+          "cachedResultName": "紀錄爬取目標文章",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1562989853"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "activing",
+            "sheet_name": "={{ $('新增新工作表').first().json.title }}",
+            "URL": "={{ $('查找該篇文章').item.json.originalUrl }}"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "target_shortcode",
+              "displayName": "target_shortcode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "target_postId",
+              "displayName": "target_postId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_time",
+              "displayName": "updated_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sheet_name",
+              "displayName": "sheet_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3200,
+        -224
+      ],
+      "id": "37b3e20d-c80f-42f1-af7c-6de1f6fe2a78",
+      "name": "status 改成 activeing",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2624,
+        1088
+      ],
+      "id": "c81a3507-d094-418b-828e-b6e38bdf7c3d",
+      "name": "Wait 30s",
+      "webhookId": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "CreatePostContainer1": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "InsertContainerId1": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PublishPost1": {
+      "main": [
+        [
+          {
+            "node": "UpdatePostStatus",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 30s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpdatePostStatus": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得我所有貼文": {
+      "main": [
+        [
+          {
+            "node": "讀取目標文章設定active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得我該文章的PostId": {
+      "main": [
+        [
+          {
+            "node": "抓取ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得更新權杖": {
+      "main": [
+        [
+          {
+            "node": "取得我所有貼文",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "抓取ready": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "發生錯誤給自動回覆": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "InsertContainerId1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "發生錯誤給自動回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "PublishPost1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Wait6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Wait6": {
+      "main": [
+        [
+          {
+            "node": "CreatePostContainer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "通知已發送給自動回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "取得更新權杖",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得所有文章": {
+      "main": [
+        [
+          {
+            "node": "查找該篇文章",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查找該篇文章": {
+      "main": [
+        [
+          {
+            "node": "取得該篇文章的留言",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得該篇文章的留言": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新權杖": {
+      "main": [
+        [
+          {
+            "node": "取得所有文章",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增上去(FALSE)": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取是否有新留言1": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "(改回應)更新成ready (新增reply)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "新增上去(FALSE)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "更新成undefined",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "讀取是否有新留言1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析匹配不到": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新成undefined": {
+      "main": [
+        [
+          {
+            "node": "解析匹配不到",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析文章網址": {
+      "main": [
+        [
+          {
+            "node": "轉換格式並改成選單",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "請輸入 自訂名稱1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理30筆": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "更新目標文章設定(FALSE active)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉換格式並改成選單": {
+      "main": [
+        [
+          {
+            "node": "發送選單給Line",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "判斷請求類型": {
+      "main": [
+        [
+          {
+            "node": "loading/start",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "解析文章網址",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "統一處理",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "請輸入 自訂名稱",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "處理自訂名稱",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "接收文章網址": {
+      "main": [
+        [
+          {
+            "node": "判斷請求類型",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析文章網址1": {
+      "main": [
+        [
+          {
+            "node": "更新權杖",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "擷取出標題": {
+      "main": [
+        [
+          {
+            "node": "新增標題",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增新工作表": {
+      "main": [
+        [
+          {
+            "node": "擷取出標題",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增標題": {
+      "main": [
+        [
+          {
+            "node": "解析文章網址1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "發送選單給Line": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理自訂名稱": {
+      "main": [
+        [
+          {
+            "node": "讀取網站URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取網站URL": {
+      "main": [
+        [
+          {
+            "node": "統一處理",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新目標文章設定(FALSE active)": {
+      "main": [
+        [
+          {
+            "node": "status 改成 active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "統一處理": {
+      "main": [
+        [
+          {
+            "node": "詢問回覆內容",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "解析文章網址2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "新增新工作表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得所有文章1": {
+      "main": [
+        [
+          {
+            "node": "查找該篇文章1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查找該篇文章1": {
+      "main": [
+        [
+          {
+            "node": "取得該篇文章的留言1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得該篇文章的留言1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait7": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新權杖1": {
+      "main": [
+        [
+          {
+            "node": "取得所有文章1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取是否有新留言": {
+      "main": [
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "新增上去(FALSE)2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "更新成undefined2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait9": {
+      "main": [
+        [
+          {
+            "node": "讀取是否有新留言",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "更新目標文章設定(FALSE active)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析文章網址2": {
+      "main": [
+        [
+          {
+            "node": "更新權杖1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新目標文章設定(FALSE active)1": {
+      "main": [
+        [
+          {
+            "node": "讀取目標文章設定2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增上去(FALSE)2": {
+      "main": [
+        [
+          {
+            "node": "Wait10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新成ready (新增reply)2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait10": {
+      "main": [
+        [
+          {
+            "node": "更新成ready (新增reply)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新成undefined2": {
+      "main": [
+        [
+          {
+            "node": "解析匹配不到2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message4": {
+      "main": [
+        [
+          {
+            "node": "Wait7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析匹配不到2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "通知已發送給自動回覆": {
+      "main": [
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "處理30筆",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "status 改成 done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "status 改成 done": {
+      "main": [
+        [
+          {
+            "node": "全部都通知完畢",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(改回應)更新成ready (新增reply)": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取目標文章設定active": {
+      "main": [
+        [
+          {
+            "node": "取得我該文章的PostId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "詢問回覆內容": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "status 改成 activeing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30s": {
+      "main": [
+        [
+          {
+            "node": "PublishPost1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "接收文章網址": [
+      {
+        "json": {
+          "headers": {
+            "host": "nickleo9.zeabur.app",
+            "user-agent": "LineBotWebhook/2.0",
+            "content-length": "476",
+            "content-type": "application/json; charset=utf-8",
+            "x-forwarded-for": "147.92.149.168, 147.92.149.168",
+            "x-forwarded-host": "nickleo9.zeabur.app",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-line-signature": "TsMLza2cmNIP8A4VQJ9OWI7a9I7CnL/nWljmOfqKUsA=",
+            "x-real-ip": "147.92.149.168",
+            "x-zeabur-container-port": "5678",
+            "x-zeabur-ip-country": "JP",
+            "x-zeabur-request-id": "hnd1::42275dc1-fa1f-4cdc-bbb9-09654a46769f",
+            "accept-encoding": "gzip"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "destination": "U1d17a3345e0d60b9232ac12443112ffd",
+            "events": [
+              {
+                "type": "postback",
+                "postback": {
+                  "data": "action=NEW|shortcode=DP20yrhkZxp|sheet=留言(DP20yrhkZxp)2025-10-21|url=https://www.threads.com/@nickai216/post/DP20yrhkZxp"
+                },
+                "webhookEventId": "01K82FKW065XAN8G2WZY6T90MT",
+                "deliveryContext": {
+                  "isRedelivery": false
+                },
+                "timestamp": 1761020079716,
+                "source": {
+                  "type": "user",
+                  "userId": "Uece77c6da008899b1cba39f93f9401dc"
+                },
+                "replyToken": "ef431f7225a64f7993c0b8ba780226da",
+                "mode": "active"
+              }
+            ]
+          },
+          "webhookUrl": "https://nickleo9.zeabur.app/webhook/sw",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "9420b588-6336-42a9-aff1-0bdc74ace63e",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-09-09T01:14:41.859Z",
+      "createdAt": "2025-09-09T01:14:41.859Z",
+      "role": "workflow:owner",
+      "workflowId": "IH7xo6ss3mDL1hBF",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

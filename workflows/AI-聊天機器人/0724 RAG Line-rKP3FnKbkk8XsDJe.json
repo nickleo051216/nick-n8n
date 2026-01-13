@@ -1,0 +1,1648 @@
+{
+  "updatedAt": "2025-07-28T16:58:43.953Z",
+  "createdAt": "2025-07-25T03:19:24.219Z",
+  "id": "rKP3FnKbkk8XsDJe",
+  "name": "0724 RAG Line",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Lazzyoffice_ragdemo",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        336
+      ],
+      "id": "dd642a18-1811-435b-83f2-4a555f896f8c",
+      "name": "Webhook",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b951b0b9-8c01-4b78-a4de-7a2b1e56c534",
+              "name": "text",
+              "value": "={{ $json.output.replace(/\\n/g, '\\\\n');}}",
+              "type": "string"
+            },
+            {
+              "id": "06a6a561-2339-46fa-b0cd-8d8c11783873",
+              "name": "replyToken",
+              "value": "={{ $('Switch').item.json.body.events[0].replyToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2112,
+        640
+      ],
+      "id": "fe6a12e7-f449-4f5c-82f1-e5742374025c",
+      "name": "Edit Fields2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a6320f60-3f44-4d6e-b116-be38085964d7",
+              "name": "chatInput",
+              "value": "={{ $json.body.events[0].message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "d4630b70-ef3e-41a6-a74c-c28af4e57bda",
+              "name": "sessionId",
+              "value": "={{ $('Switch').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "a2f6ec0a-ff01-420b-bf66-db20025e9588",
+              "name": "replyToken",
+              "value": "={{ $json.body.events[0].replyToken }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1216,
+        736
+      ],
+      "id": "23e9f572-71b4-422a-87ce-8e3a079aee0a",
+      "name": "LINE-API-Filter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').item.json.body.events[0].replyToken }}\",\n  \"messages\":  [\n    {\n    \"type\": \"text\",\n    \"text\": \"{{ $json.text }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "6e035e96-217b-49cb-8556-c26dcba8e6ca",
+      "name": "Reply to LINE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        640
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=你是一位「謹慎穩重但又體貼」的知識庫管理小助理，擁有共情與超強組織能力。你講話幽默中帶著專業，行事積極又熱情，總能讓我感到安心又倍感輕鬆。\n目前可使用工具:Supabase Vector Store1\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1472,
+        640
+      ],
+      "id": "2d2801c5-c5a3-405f-87bd-5f52f5953ba6",
+      "name": "Intent Agent"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "15a25a54-a6d7-4390-9c16-6f3dd64044d0",
+                    "leftValue": "={{ $json.body.events[0].message.type }}",
+                    "rightValue": "file",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "pdf"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "090d9144-10a4-4c2a-a140-2d644d4b0cef",
+                    "leftValue": "={{ $json.body.events[0].message.type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6e4f0f55-3bdf-4516-b0cd-2b3fd5589a38",
+                    "leftValue": "={{ $json.body.events[0].message.type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a43b2ce6-4acc-4db6-b2fe-5422f3ef4928"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -240,
+        320
+      ],
+      "id": "be649dbd-f605-4b5b-8e39-07b2813c0ae2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{$json.body.events[0].message.id}}/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "8ed5dc7e-e444-4e94-aca4-f9d4dbb803b1",
+      "name": "Get the audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        704,
+        544
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        992,
+        544
+      ],
+      "id": "c67678cc-40e1-4028-95ab-9967e0445f20",
+      "name": "OpenAI",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a6320f60-3f44-4d6e-b116-be38085964d7",
+              "name": "chatInput",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "d4630b70-ef3e-41a6-a74c-c28af4e57bda",
+              "name": "sessionId",
+              "value": "={{ $('Get the audio').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "a2f6ec0a-ff01-420b-bf66-db20025e9588",
+              "name": "replyToken",
+              "value": "={{ $('Get the audio').item.json.body.events[0].replyToken }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1216,
+        544
+      ],
+      "id": "eda7e29d-ad5e-4410-8f33-33efd72c2a47",
+      "name": "LINE-API-Filter1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{$json.body.events[0].message.id}}/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "739b1370-ccaa-4074-a22a-b76100ee0f84",
+      "name": "Get the image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        704,
+        240
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  item.binary.data.mimeType = 'image/jpeg'\n}\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        240
+      ],
+      "id": "1817fa49-5e78-46f9-b2de-7f1a657d6353",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 確保 items 存在\nif (!items || items.length === 0) {\n    throw new Error(\"沒有輸入數據\");\n}\n\n// 取得輸入數據\nconst inputData = items[0].json.content;\n\n// 初始化清理後的 JSON 物件\nlet cleanJson = null;\n\ntry {\n    // 嘗試解析 JSON，如果格式正確則直接解析\n    cleanJson = JSON.parse(inputData);\n} catch (error) {\n    try {\n        // 如果 JSON 解析失敗，嘗試去除可能的額外字元\n        const jsonStart = inputData.indexOf('{');\n        const jsonEnd = inputData.lastIndexOf('}') + 1;\n\n        if (jsonStart !== -1 && jsonEnd !== -1) {\n            const jsonString = inputData.slice(jsonStart, jsonEnd);\n            cleanJson = JSON.parse(jsonString);\n        } else {\n            throw new Error(\"無法提取 JSON 部分\");\n        }\n    } catch (innerError) {\n        throw new Error(\"解析 JSON 失敗：\" + innerError.message);\n    }\n}\n\n// 返回結果\nreturn [{ json: cleanJson }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1632,
+        240
+      ],
+      "id": "bc3bd7a8-4a77-483a-b226-457e7710ac13",
+      "name": "Clear JSON1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "/update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "1f38f10f-960e-443b-beb0-58bf9ec8597d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "04885477-12aa-4d47-882b-7fdbe6597eb8",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "/creat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "creat"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1216,
+        1168
+      ],
+      "id": "fde133dd-5733-4395-832b-7dcc04d1576c",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "jsCode": "items[0].json.sessionId= $input.first().json.body.events[0].source.groupId\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        336
+      ],
+      "id": "0bf6459b-5027-4cbb-9860-86b79dc2d8a4",
+      "name": "Group ID"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{$json.body.events[0].message.id}}/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "861fb35d-0dce-4b90-bba7-52d85fc9d41f",
+      "name": "Get the pdf",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16,
+        -112
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"文件名稱:{{ $('Search files and folders').item.json.name.replace(/\\n/g, '\\\\n');}}，相關資訊已經整理上傳至Google Drive，上傳狀態:{{ $json.State }}。\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "702fa8bf-1d49-42a8-856e-8ec296806ac2",
+      "name": "Reply to LINE6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        -112
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  // 1. 讀取 title（路徑依你的 Merge 輸出結構而定）\n  const rawTitle = item.json.output?.title || 'untitled';\n  \n  // 2. 把不合法字元拿掉、空白改底線，變成檔名安全的字串\n  const safeTitle = rawTitle\n    .replace(/[\\/\\\\?%*:|\"<>]/g, '')    // 移除特殊字元\n    .trim()                            // 去頭尾空白\n    .replace(/\\s+/g, '_');             // 空白改成底線\n\n  // 3. 如果有 binary 檔案，就更新 fileName\n  if (item.binary && item.binary.data) {\n    item.binary.data.fileName = `${safeTitle}.pdf`;\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        -112
+      ],
+      "id": "c253e648-0ba7-4e91-a576-dff9cc0d74d9",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        944,
+        -112
+      ],
+      "id": "1e7c6c55-3be1-488f-8d88-93af4cfcb246",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1-nano",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -16
+      ],
+      "id": "acbc503c-650b-4407-afcf-ee9101a9e7d1",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.Input }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "你是一個協助確認解析內容的小幫手，從使用者所提出的文章，寫出約300-500字，針對這偏文章的重點，並針對該文章給予一個適當的名稱，最後以JSON方式呈現\n\n{\n\"title\":\"文章名稱\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        560,
+        -240
+      ],
+      "id": "d06ebe62-abc9-4033-aae8-09bb5be33784",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\"title\":\"文章名稱\",\n\"abstract\":\"文章摘要\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        0
+      ],
+      "id": "3bda6ff0-6ddd-4a51-a9d9-a216725b4724",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2e460a22-732a-4c67-9787-372f714a4625",
+              "name": "Input",
+              "value": "={{$json.text}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        -240
+      ],
+      "id": "34462a43-761c-446c-ad08-44a3dbf795d6",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -240
+      ],
+      "id": "4a80a305-226e-4b49-b7d5-58d28ae0bcfe",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "6I6lYNQ4FvX9B5t1",
+          "mode": "list",
+          "cachedResultName": "0724 Google Drive Upload"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "State": "Processing"
+          },
+          "matchingColumns": [
+            "State"
+          ],
+          "schema": [
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1968,
+        -112
+      ],
+      "id": "092b013f-ddda-4eea-a958-2d93bad0b332",
+      "name": "Execute Workflow"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "=你收到的照片通常是劃線或是畫框的讀書心得\n\n收到的圖片有可能是單張A4紙、書本翻拍、螢幕截圖，請協助辨識劃線或是框起來的內容，變成文字論述，不要過於精簡，以下述標準JSON格式回答:\n\nJSON格式如下:\n{\n  \"Type\":\"讀書心得\"\n  \"Content\":\"內容說明\"\n}\n\n",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1296,
+        240
+      ],
+      "id": "8e026c99-9156-43a8-bf57-fb2b8493ce72",
+      "name": "Analyze image",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        2032,
+        144
+      ],
+      "id": "dabf3753-f87d-4c5a-a223-11eadc17e091",
+      "name": "Supabase Vector Store",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.Content }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Type",
+                "value": "={{ $json.Type }}"
+              },
+              {
+                "name": "UpdateTime",
+                "value": "={{ $now.setZone('Asia/Taipei').format('yyyy/MM/dd') }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        2176,
+        368
+      ],
+      "id": "555c67d3-bf13-4fcd-b122-1ea690964388",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1824,
+        432
+      ],
+      "id": "30c5ecc1-3cad-456c-9242-0b476580adaa",
+      "name": "Embeddings OpenAI",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"相關圖片解析後，已放入向量資料庫。\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "334f118c-8b7d-4086-a53a-947434562382",
+      "name": "Reply to LINE7",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        240
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1552,
+        864
+      ],
+      "id": "5d79c537-5490-4fd1-af5c-cced2c4d898d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        928
+      ],
+      "id": "2345e76b-95c1-48ec-adf3-ffe6afa414a0",
+      "name": "OpenRouter Chat Model1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "17174b3a-e368-42ff-8399-be2f19073fa0",
+              "leftValue": "={{ $json.body.events[0].message.text }}",
+              "rightValue": "/update",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "b6ea33f9-7f47-45cb-8695-85b811576048",
+              "leftValue": "={{ $json.body.events[0].message.text }}",
+              "rightValue": "/create",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        1072
+      ],
+      "id": "be608422-4688-4e0b-874f-76c3207d790d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "6I6lYNQ4FvX9B5t1",
+          "mode": "list",
+          "cachedResultName": "0724 Google Drive Upload"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "State": "Processing"
+          },
+          "matchingColumns": [
+            "State"
+          ],
+          "schema": [
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2112,
+        1024
+      ],
+      "id": "9d2ea096-2dce-44dc-b69f-124705ca7e29",
+      "name": "Execute Workflow1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "用於搜尋知識庫內容",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 3,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1744,
+        864
+      ],
+      "id": "d1b57112-8b6e-4394-af05-1aa6e0c08fd2",
+      "name": "Supabase Vector Store1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1616,
+        1056
+      ],
+      "id": "925252fe-8098-46b6-9f26-70f0e55eb8bd",
+      "name": "Embeddings OpenAI1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"Google Drive的資料已新增完畢，上傳狀態:{{ $json.State }}。\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "ca294b85-d259-41d2-8a87-337878ad7452",
+      "name": "Reply to LINE8",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        1024
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        1312
+      ],
+      "id": "ec006ee8-ff6c-442d-945e-7563b5d645d1",
+      "name": "Supabase Vector Store2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.cleanedText }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "Type",
+                "value": "=LINE文字記錄"
+              },
+              {
+                "name": "UpdateTime",
+                "value": "={{ $now.setZone('Asia/Taipei').format('yyyy/MM/dd') }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        2112,
+        1552
+      ],
+      "id": "92e884ed-47ea-44e3-abad-d4b4b75e8a7e",
+      "name": "Default Data Loader1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1888,
+        1520
+      ],
+      "id": "44ff8d57-693f-43ae-bcc7-e8172e53868d",
+      "name": "Embeddings OpenAI2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst text = item.json.body.events[0].message.text || '';\n\nlet result = text;\nif (text.startsWith('/create ')) {\n  result = text.slice(8);\n} else if (text.startsWith('/create')) {\n  result = text.slice(7);\n}\n\nreturn [{ json: { cleanedText: result } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1632,
+        1312
+      ],
+      "id": "2abfd402-18d9-4cba-997f-d1ad2cb7afe0",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"已經該文字訊息放入向量資料庫。\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "f0b3a351-d318-49e6-afdf-74419e7aa4d0",
+      "name": "Reply to LINE9",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        1312
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2624,
+        640
+      ],
+      "id": "69e09f3f-8266-4e9a-80af-7477129e048e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1552,
+        -112
+      ],
+      "id": "e68c006a-d603-4f32-ac6d-5883cc4043c2",
+      "name": "Search files and folders",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Group ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Reply to LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LINE-API-Filter": {
+      "main": [
+        [
+          {
+            "node": "Intent Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to LINE": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intent Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get the pdf",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get the image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get the audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the audio": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "LINE-API-Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LINE-API-Filter1": {
+      "main": [
+        [
+          {
+            "node": "Intent Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the image": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear JSON1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Group ID": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get the pdf": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow": {
+      "main": [
+        [
+          {
+            "node": "Reply to LINE6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Clear JSON1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Reply to LINE7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Intent Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Intent Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LINE-API-Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Intent Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow1": {
+      "main": [
+        [
+          {
+            "node": "Reply to LINE8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store2": {
+      "main": [
+        [
+          {
+            "node": "Reply to LINE9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to LINE8": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to LINE9": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to LINE7": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to LINE6": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "7c4cb4a1-2a23-4be8-9e94-a795127c92c0",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-07-25T03:19:24.219Z",
+      "createdAt": "2025-07-25T03:19:24.219Z",
+      "role": "workflow:owner",
+      "workflowId": "rKP3FnKbkk8XsDJe",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

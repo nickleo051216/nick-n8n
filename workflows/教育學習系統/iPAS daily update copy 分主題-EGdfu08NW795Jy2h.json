@@ -1,0 +1,3872 @@
+{
+  "updatedAt": "2025-12-27T08:16:51.489Z",
+  "createdAt": "2025-08-15T01:14:34.488Z",
+  "id": "EGdfu08NW795Jy2h",
+  "name": "iPAS daily update copy 分主題",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// ===================================================\n// 中央資料處理中心 (輔助鍵版本)\n// 負責：\n// 1. 解析 OpenAI 回應\n// 1. 取得並清理從 OpenAI 來的資料\nconst rawContent = $input.first().json.output;\nconst jsonMatch = rawContent.match(/\\[.*\\]/s);\nif (!jsonMatch) { \n  throw new Error('在 OpenAI 的回覆中找不到有效的 JSON 陣列。'); \n}\n\nconst cleanContent = jsonMatch[0];\nlet questions = [];\n\ntry {\n  questions = JSON.parse(cleanContent);\n} catch (error) {\n  throw new Error('從 OpenAI 收到的資料不是有效的 JSON 格式！');\n}\n\n// 4. 準備基本資料\nconst today = new Date().toISOString().split('T')[0];\n\n// 5. 【核心】建立包含所有欄位的資料，並產生 unique_id\nconst dataForSheet = questions.map((q, index) => {\n  const questionNumber = index + 1;\n  // 建立格式為 \"YYYY-MM-DD-N\" 的唯一 ID，例如 \"2023-10-27-1\"\n  const uniqueId = `${today}-${questionNumber}`;\n\n  return {\n    // 【新增】我們的輔助鍵\n    unique_id: uniqueId,\n\n    // 原有的欄位（給「N8N iPAS AI題庫」工作表用）\n    date: today,\n    number: questionNumber,\n    question: q.question,\n    options: JSON.stringify(q.options),\n    correct_answer_letter: q.correct_answer_letter,\n    explanation: q.explanation,\n    topic: q.topic,\n    subtopic: q.subtopic,\n    concept: q.concept,\n\n    // 給「社群iPAS 題庫」工作表用的欄位\n    'No.': questionNumber, // 直接對應欄位名稱\n    'Question': q.question,\n    'Option A': q.options[0],\n    'Option B': q.options[1],\n    'Option C': q.options[2],\n    'Option D': q.options[3],\n    'Topic': q.topic,\n\n    // 給 LINE 用的訊息（只在第一筆資料中產生即可）\n    textForLine: \"\" // 先留空，稍後處理\n  };\n});\n\n// 6. 準備要發送到 LINE 的純文字訊息\nlet textForLine = \"💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n\";\nquestions.forEach((q, index) => {\n  textForLine += `第 ${index + 1} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i);\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += \"\\n\";\n});\ntextForLine += \"請依照格式回覆答案，例如：1A2B3C...\";\n\n// 7. 將 LINE 訊息附加到所有項目中，確保 LINE 節點能收到\nconst finalData = dataForSheet.map(item => ({\n  ...item,\n  textForLine: textForLine,\n}));\n\n\n// 8. 回傳合併後的資料\nreturn finalData.map(item => ({\n  json: item\n}));"
+      },
+      "id": "926240d2-add7-4887-b147-e10b5993bf37",
+      "name": "處理題目與格式化",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        736
+      ],
+      "notesInFlow": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "217e7756-9487-4e28-bd36-ee1490dabf2e",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "d51f6559-41d6-4a32-adc3-36147ac8f6bc",
+      "name": "LINE回覆webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -2848,
+        1056
+      ],
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 解析使用者的LINE回答 - 生成 JSON 安全的回覆訊息\nconsole.log('開始處理用戶答案...');\n\n// 使用正確的路徑獲取 LINE 用戶輸入\nlet userMessage = '';\nlet replyToken = '';\n\ntry {\n  // 獲取 LINE Webhook 資料\n  const lineWebhookData = $('LINE回覆webhook').first().json;\n  console.log('LINE Webhook 資料結構:', Object.keys(lineWebhookData));\n  \n  if (lineWebhookData.body && lineWebhookData.body.events && lineWebhookData.body.events.length > 0) {\n    const lineEvent = lineWebhookData.body.events[0];\n    \n    if (lineEvent.message && lineEvent.message.text) {\n      userMessage = lineEvent.message.text.trim();\n      replyToken = lineEvent.replyToken;\n      console.log('成功獲取用戶訊息:', userMessage);\n      console.log('ReplyToken:', replyToken);\n    }\n  }\n} catch (error) {\n  console.error('獲取 LINE 資料時發生錯誤:', error);\n  return [{\n    json: {\n      error: '無法獲取 LINE Webhook 資料',\n      errorDetails: error.message,\n      hasError: true\n    }\n  }];\n}\n\n// 檢查是否成功獲取用戶訊息\nif (!userMessage) {\n  return [{\n    json: {\n      replyToken: replyToken,\n      error: '找不到用戶輸入的訊息',\n      hasError: true\n    }\n  }];\n}\n\n// 解析答案格式 (例如: 1A2B3C4D5A6B7C8D9A10B)\nconst answerPattern = /\\d+[A-D]/g;\nconst userAnswers = userMessage.match(answerPattern) || [];\n\nconsole.log('解析的用戶答案:', userAnswers);\n\n// 獲取今日題庫資料（從其他輸入節點）\nconst allInputs = $input.all();\nconst todayQuestions = allInputs.filter(input => \n  input.json && input.json.question && input.json.correct_answer_letter\n);\n\nconsole.log('找到題目數量:', todayQuestions.length);\n\nif (todayQuestions.length === 0) {\n  return [{\n    json: {\n      replyToken: replyToken,\n      replyMessage: '❌ 找不到今日題目，請先等待系統自動出題或手動觸發出題功能。',\n      hasError: true\n    }\n  }];\n}\n\nif (userAnswers.length === 0) {\n  const errorMsg = `❌ 答案格式錯誤！\\\\n\\\\n您輸入的是：${userMessage}\\\\n正確格式：1A2B3C4D5A6B7C8D9A10B\\\\n\\\\n請重新輸入答案。`;\n  return [{\n    json: {\n      replyToken: replyToken,\n      replyMessage: errorMsg,\n      hasError: true\n    }\n  }];\n}\n\n// 計算答題結果\nconst results = [];\nlet correctCount = 0;\nconst wrongQuestions = [];\n\nuserAnswers.forEach(answer => {\n  const questionNum = parseInt(answer.match(/\\d+/)[0]) - 1;\n  const userAnswer = answer.match(/[A-D]/)[0];\n  \n  console.log(`處理第 ${questionNum + 1} 題，用戶答案：${userAnswer}`);\n  \n  if (questionNum >= 0 && questionNum < todayQuestions.length) {\n    const questionData = todayQuestions[questionNum].json;\n    const isCorrect = userAnswer === questionData.correct_answer_letter;\n    \n    console.log(`第 ${questionNum + 1} 題 - 用戶答案：${userAnswer}，正確答案：${questionData.correct_answer_letter}，是否正確：${isCorrect}`);\n    \n    results.push({\n      questionNum: questionNum + 1,\n      userAnswer,\n      correctAnswer: questionData.correct_answer_letter,\n      isCorrect,\n      topic: questionData.topic || '一般題目'\n    });\n    \n    if (isCorrect) {\n      correctCount++;\n    } else {\n      wrongQuestions.push({\n        questionNum: questionNum + 1,\n        userAnswer: userAnswer,\n        question: questionData.question,\n        options: JSON.parse(questionData.options || '[]'),\n        correct_answer_index: ['A', 'B', 'C', 'D'].indexOf(questionData.correct_answer_letter),\n        correct_answer_letter: questionData.correct_answer_letter,\n        topic: questionData.topic || '一般題目',\n        subtopic: questionData.subtopic || '基礎概念',\n        concept: questionData.concept || '核心知識',\n        explanation: questionData.explanation || '請參考相關資料進行複習',\n        source: 'wrong_answer_review',\n        review_priority: 'high',\n        error_date: new Date().toISOString().split('T')[0],\n        original_question_date: questionData.date\n      });\n    }\n  }\n});\n\nconst totalAnswered = results.length;\nconst accuracy = totalAnswered > 0 ? (correctCount / totalAnswered * 100).toFixed(1) : 0;\nconst isAllCorrect = correctCount === totalAnswered && totalAnswered === 10;\n\nconsole.log(`答題統計 - 總題數：${totalAnswered}，答對：${correctCount}，正確率：${accuracy}%`);\n\n// 生成 JSON 安全的回覆訊息（使用 \\\\n 而不是實際換行）\nlet replyText = `📊 iPAS練習結果報告\\\\n\\\\n`;\nreplyText += `✅ 答對：${correctCount}題\\\\n`;\nreplyText += `❌ 答錯：${totalAnswered - correctCount}題\\\\n`;\nreplyText += `📈 正確率：${accuracy}%\\\\n\\\\n`;\n\n// 分析錯題\nif (wrongQuestions.length > 0) {\n  replyText += `❌ 錯題分析：\\\\n`;\n  wrongQuestions.forEach((q, idx) => {\n    replyText += `第${q.questionNum}題【${q.topic}】\\\\n`;\n    replyText += `您答：${q.userAnswer} | 正解：${q.correct_answer_letter}\\\\n`;\n    // 清理說明文字中的特殊字符\n    const cleanExplanation = (q.explanation || '請參考相關資料進行複習')\n      .replace(/\\n/g, ' ')\n      .replace(/\"/g, '\\\\\"')\n      .replace(/\\\\/g, '\\\\\\\\');\n    replyText += `說明：${cleanExplanation}\\\\n\\\\n`;\n  });\n  replyText += `📚 ${wrongQuestions.length}題錯題已加入複習題庫！\\\\n`;\n} else {\n  replyText += `🎉 全部答對！太棒了！\\\\n`;\n  if (isAllCorrect) {\n    replyText += `🚀 系統將為您加入5題進階挑戰題！\\\\n`;\n  }\n}\n\n// 學習建議\nif (accuracy >= 90) {\n  replyText += `\\\\n💪 建議：表現優異！可挑戰更高難度題目`;\n} else if (accuracy >= 70) {\n  replyText += `\\\\n📖 建議：持續保持，多關注錯題主題`;\n} else {\n  replyText += `\\\\n🔄 建議：加強基礎概念，建議多複習相關主題`;\n}\n\nconsole.log('生成的回覆訊息長度:', replyText.length);\n\nreturn [{\n  json: {\n    replyToken: replyToken,\n    replyMessage: replyText,\n    wrongQuestions,\n    isAllCorrect,\n    accuracy: parseFloat(accuracy),\n    totalAnswered,\n    correctCount,\n    hasError: false,\n    needsAdvancedQuestions: isAllCorrect,\n    debug: {\n      userInput: userMessage,\n      parsedAnswers: userAnswers,\n      questionsCount: todayQuestions.length\n    }\n  }\n}];"
+      },
+      "id": "792ada08-b754-4f63-bab6-3a68596dff44",
+      "name": "處理用戶答案",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        1248
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+          "mode": "list",
+          "cachedResultName": "N8N iPAS  AI題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ai 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "question": "={{ $json.question }}",
+            "number": "={{ $json.number }}",
+            "options": "={{ $json.options }}",
+            "correct_answer_letter": "={{ $json.correct_answer_letter }}",
+            "explanation": "={{ $json.explanation }}",
+            "date": "={{ $json.date }}",
+            "unique_id": "={{ $json.unique_id }}"
+          },
+          "matchingColumns": [
+            "question"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correct_answer_letter",
+              "displayName": "correct_answer_letter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -928,
+        736
+      ],
+      "id": "e273bbc5-662f-40ed-9ba4-67b31d5932e6",
+      "name": "寫入題庫",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得並清理從 OpenAI 來的資料\nconst rawContent = $input.first().json.output;\nconst jsonMatch = rawContent.match(/\\[.*\\]/s);\nif (!jsonMatch) { \n  throw new Error('在 OpenAI 的回覆中找不到有效的 JSON 陣列。'); \n}\n\nconst cleanContent = jsonMatch[0];\nlet questions = [];\n\ntry {\n  questions = JSON.parse(cleanContent);\n} catch (error) {\n  throw new Error('從 OpenAI 收到的資料不是有效的 JSON 格式！');\n}\n\n// 2. 準備要發送到 LINE 的純文字訊息\nlet textForLine = \"💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n\";\n\nquestions.forEach((q, index) => {\n  textForLine += `第 ${index + 1} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i); // A, B, C, D\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += \"\\n\";\n});\n\ntextForLine += \"請依照格式回覆答案，例如：1A2B3C...\";\n\n// 3. 回傳正確的格式給下一個節點\n// 在 return 之前加上這行\ntextForLine = textForLine\n  .replace(/\\\\/g, '\\\\\\\\')   // 反斜線要先處理\n  .replace(/\"/g, '\\\\\"')     // 雙引號轉義（這是你遇到的問題！）\n  .replace(/\\n/g, '\\\\n')    // 換行\n  .replace(/\\r/g, '\\\\r')    // 回車\n  .replace(/\\t/g, '\\\\t');   // Tab\n\n// 然後正常 return\nreturn [{\n  json: {\n    textForLine: textForLine\n  }\n}];\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        -416
+      ],
+      "id": "1e3b702d-ada2-4b9f-83d8-1862fc21c500",
+      "name": "轉換格式傳給line"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer dvLt5Lz33IRwQUyVjTZYEMAv8yuHqC6WrnQHxR2ERN01MGp9pLfqFGgj2pVwRRxJ1c38o30WjXYNvjZTRGog3kQSMYDucTujscmNS7Qqn03wkN8u5X+A+Vts70TdYXAyB6NA4cfW6FpAUOtZKcH1xQdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "loadingSeconds",
+              "value": "40"
+            },
+            {
+              "name": "chatId",
+              "value": "={{ $json.body.events[0].source.userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2624,
+        960
+      ],
+      "id": "a7ffb28a-492b-4be9-88d4-50937ab49924",
+      "name": "loading/start"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+          "mode": "list",
+          "cachedResultName": "N8N iPAS  AI題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1100918911,
+          "mode": "list",
+          "cachedResultName": "Ai 概論 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit#gid=1100918911"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $today.toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -2176,
+        960
+      ],
+      "id": "2def7e63-12c0-4dc9-a2ba-fac122c15834",
+      "name": "讀取題庫",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{ $json.replyMessage }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1728,
+        1248
+      ],
+      "id": "c2effe80-130e-4490-a38f-6658ac63479f",
+      "name": "發送回應給 LINE2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g",
+          "mode": "list",
+          "cachedResultName": "社群iPAS 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "daily_answers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "No.": "={{ $json.number }}",
+            "Option B": "={{ $json.option_b }}",
+            "Option C": "={{ $json.option_c }}",
+            "Option D": "={{ $json.option_d }}",
+            "Question": "={{ $json.question }}",
+            "Topic": "={{ $json.topic }}",
+            "Option A": "={{ $json.option_a }}",
+            "Correct Answer": "={{ $json.correct_answer_letter }}",
+            "explanation": "={{ $json.explanation }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "No.",
+              "displayName": "No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option A",
+              "displayName": "Option A",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Option B",
+              "displayName": "Option B",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option C",
+              "displayName": "Option C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option D",
+              "displayName": "Option D",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Correct Answer",
+              "displayName": "Correct Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -1152,
+        544
+      ],
+      "id": "df0daf1a-068a-4303-95c1-8f456eccd02e",
+      "name": "社群每日題目",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===================================================\n// 簡化版：無需篩選條件，直接在原有格式中加入答題欄位\n// 這樣一個 Google Sheets 節點就能搞定，不用設定篩選條件\n// 1. 取得並清理從 OpenAI 來的資料\nconst rawContent = $input.first().json.output;\nconst jsonMatch = rawContent.match(/\\[.*\\]/s);\nif (!jsonMatch) { \n  throw new Error('在 OpenAI 的回覆中找不到有效的 JSON 陣列。'); \n}\n\nconst cleanContent = jsonMatch[0];\nlet questions = [];\n\ntry {\n  questions = JSON.parse(cleanContent);\n} catch (error) {\n  throw new Error('從 OpenAI 收到的資料不是有效的 JSON 格式！');\n}\n\n// 4. 準備基本資料\nconst today = new Date().toISOString().split('T')[0];\n\n// 5. 準備要發送到 LINE 的純文字訊息\nlet textForLine = \"💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n\";\nquestions.forEach((q, index) => {\n  textForLine += `第 ${index + 1} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i);\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += \"\\n\";\n});\ntextForLine += \"請依照格式回覆答案，例如：1A2B3C...\";\n\n// 6. 【合併版】建立包含所有欄位的資料\nconst dataForSheet = questions.map((q, index) => ({\n  // 原有的欄位（給你現有的「Ai 題庫」工作表用）\n  date: today,\n  number: index + 1,\n  question: q.question,\n  options: JSON.stringify(q.options),\n  correct_answer_letter: q.correct_answer_letter,\n  explanation: q.explanation,\n  topic: q.topic,\n  subtopic: q.subtopic,\n  concept: q.concept,\n  textForLine: textForLine,\n  \n  // 【新增】答題工作表需要的欄位\n  q_num: index + 1,\n  option_a: q.options[0],\n  option_b: q.options[1], \n  option_c: q.options[2],\n  option_d: q.options[3],\n  correct: \"\", // 早上留空，晚上才顯示答案\n  user_answer: \"\", // 讓成員填寫 A、B、C、D\n  user_name: \"\", // 讓成員填寫姓名\n  result: \"\" // 用公式自動計算\n}));\n\n// 7. 回傳合併後的資料（一次搞定！）\nreturn dataForSheet.map(item => ({\n  json: item\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        544
+      ],
+      "id": "f6a02722-868f-47c6-aa04-8f4587e23a82",
+      "name": "每日新題目給社群"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g",
+          "mode": "list",
+          "cachedResultName": "社群iPAS 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "daily_answers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "unique_id": "={{ $json.unique_id }}",
+            "Question": "={{ $json.question }}"
+          },
+          "matchingColumns": [
+            "Question"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "No.",
+              "displayName": "No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Option A",
+              "displayName": "Option A",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Option B",
+              "displayName": "Option B",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Option C",
+              "displayName": "Option C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Option D",
+              "displayName": "Option D",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Correct Answer",
+              "displayName": "Correct Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -704,
+        736
+      ],
+      "id": "8ad70c6b-08bc-41fb-a6e0-99a8a460efaf",
+      "name": "寫入unique_id",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor item in _input.all():\n  item.json.myNewField = 1\nreturn _input.all()"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        736
+      ],
+      "id": "969ddb32-9561-47ea-b497-dcd1a2b8045a",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "id": "f7142d94-5e60-48e9-82d5-d680a7b26f01",
+      "name": "每日上午10點觸發",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2848,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// [1] 取得 AI Node 上游的 output\nlet rawContent = $input.first().json.output;\n\n// [2] 嘗試解析文字內容：如果已經是陣列就直接用，如果是文字則正規萃取陣列\nlet questionsArr;\n\nif (typeof rawContent === 'string') {\n  const jsonMatch = rawContent.match(/\\[\\s*{.*}\\s*\\]/s);\n  if (!jsonMatch) {\n    throw new Error('在 AI 回覆中找不到有效的 JSON 陣列。收到內容: ' + rawContent);\n  }\n  try {\n    questionsArr = JSON.parse(jsonMatch[0]);\n  } catch (err) {\n    throw new Error('AI 回覆不是正確的 JSON 格式：' + err.message);\n  }\n} else if (Array.isArray(rawContent)) {\n  questionsArr = rawContent;\n} else {\n  throw new Error('AI Node output 必須是字串(含陣列)或直接為陣列');\n}\n\n// [3] 取得舊題庫（建議你的 workflow 有個前置節點處理現有題庫）\nconst existingData = $('解析現有題庫並獲取最大題號2').first().json || {};\nconst existingQuestions = existingData.existingQuestions || [];\nconst maxNumber = existingData.maxNumber || 0;\n\n// [4] 生成日期\nconst today = new Date().toISOString().split('T')[0];\n\n// [5] 處理新題目：補編號、日期\nconst processedNewQuestions = questionsArr.map((q, idx) => ({\n  ...q,\n  number: maxNumber + idx + 1,\n  date: today\n}));\n\n// [6] 準備寫入 Google Sheets\nconst dataForSheet = processedNewQuestions.map((q) => ({\n  date: q.date,\n  number: q.number,\n  question: q.question,\n  options: JSON.stringify(q.options), // 字串化\n  correct_answer_letter: q.correct_answer_letter,\n  explanation: q.explanation,\n  topic: q.topic,\n  subtopic: q.subtopic,\n  concept: q.concept\n}));\n\n// [7] 合併舊題庫與新題目（GitHub 用）\nconst allQuestions = [...existingQuestions, ...processedNewQuestions];\n\n// [8] 準備 LINE 推送文字\nlet textForLine = `💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n`;\nprocessedNewQuestions.forEach((q) => {\n  textForLine += `第 ${q.number} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i);\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += '\\n';\n});\ntextForLine += '請依照格式回覆答案，例如：1A2B3C...';\n\n// [9] 輸出每個 item（for Google Sheets），每 item 都帶完整題庫（GitHub 用）\nreturn dataForSheet.map(item => ({\n  json: {\n    ...item,\n    textForLine,\n    allQuestions,                 // for github json\n    newQuestions: processedNewQuestions // 方便後續節點取用\n  }\n}));\n"
+      },
+      "id": "f27b48c2-3ab3-4a6f-ae62-0141ab893401",
+      "name": "處理新題目並準備合併",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1376,
+        352
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "nickleo9",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "GenAI",
+          "mode": "list"
+        },
+        "filePath": "應用模擬考題.json",
+        "fileContent": "={{ $json.fileContent }}",
+        "commitMessage": "={{ $json.updateMessage }}"
+      },
+      "id": "c25e1342-7f66-4a74-bd28-dce4665a839c",
+      "name": "更新GitHub題庫1",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        -928,
+        352
+      ],
+      "typeVersion": 1,
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('=== 準備GitHub更新 ===');\n\ntry {\n  const firstItem = $input.first();\n  const allQuestions = firstItem.json.allQuestions;\n  const newQuestions = firstItem.json.newQuestions;\n\n  if (!allQuestions || !Array.isArray(allQuestions)) {\n    throw new Error('無法取得完整題庫資料');\n  }\n\n  const updatedContent = JSON.stringify(allQuestions, null, 4);\n\n  console.log(`✅ 準備更新GitHub，新增 ${newQuestions.length} 題，總題數: ${allQuestions.length}`);\n\n  return [{\n    json: {\n      fileContent: updatedContent,\n      totalQuestions: allQuestions.length,\n      updateMessage: `新增 ${newQuestions.length} 題，總計 ${allQuestions.length} 題 - ${new Date().toISOString().split('T')[0]}`\n    }\n  }];\n\n} catch (error) {\n  console.log('❌ 準備GitHub更新時發生錯誤:', error.message);\n  return [{\n    json: { status: 'error', message: '準備GitHub更新時發生錯誤: ' + error.message }\n  }];\n}\n"
+      },
+      "id": "a52b6326-a4fc-4734-9d89-04147606807e",
+      "name": "準備GitHub更新資料1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1152,
+        352
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1IeuCTLAJp-Te0wiNwHnoR4blMqt_yhmfNXyAyEj9Qaw",
+          "mode": "list",
+          "cachedResultName": "iPAS 每日題目",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IeuCTLAJp-Te0wiNwHnoR4blMqt_yhmfNXyAyEj9Qaw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "daily_answers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.Date }}",
+            "No.": "={{ $json['No.'] }}",
+            "Option B": "={{ $json['Option B'] }}",
+            "Option C": "={{ $json['Option C'] }}",
+            "Option D": "={{ $json['Option D'] }}",
+            "Question": "={{ $json.Question }}",
+            "Topic": "={{ $json.Topic }}",
+            "Option A": "={{ $json['Option A'] }}",
+            "Correct Answer": "={{ $json['Correct Answer'] }}",
+            "explanation": "={{ $json.explanation }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "No.",
+              "displayName": "No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option A",
+              "displayName": "Option A",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Option B",
+              "displayName": "Option B",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option C",
+              "displayName": "Option C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option D",
+              "displayName": "Option D",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Correct Answer",
+              "displayName": "Correct Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -928,
+        544
+      ],
+      "id": "c7cf89d2-39bf-46e5-a658-e5073a3d49f7",
+      "name": "portaly",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code').item.json.category }}",
+                    "rightValue": "=ai_basics",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0478002d-2b40-445d-b03a-be9c91576eb9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5cc24f36-1d11-4103-8e4d-63b33eafd1b2",
+                    "leftValue": "={{ $('Code').item.json.category }}",
+                    "rightValue": "=genai_planning",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "49a5deb8-b12b-44f8-ba27-ea74f188fcae",
+                    "leftValue": "={{ $('Code').item.json.category }}",
+                    "rightValue": "default",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2400,
+        -432
+      ],
+      "id": "040df74c-546a-4bfa-a46d-ff23dd58bd04",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dateInTaipei = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));\nconst day = dateInTaipei.getDay();\n\nlet category = '';\nif ([1,3,5].includes(day)) {\n  category = 'ai_basics'; // 人工智慧基礎概論\n} else if ([2,4,6].includes(day)) {\n  category = 'genai_planning'; // 生成式 AI應用與規劃\n} else if (day === 0) {\n  category = 'default'; // 原本的邏輯\n}\n\nreturn [{ day, category }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2624,
+        -416
+      ],
+      "id": "9d4f58c9-385d-4d17-bf35-162927d2d34e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "nickleo9",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "GenAI",
+          "mode": "list"
+        },
+        "filePath": "daily_answers_basis.json",
+        "binaryPropertyName": "fileBuffer",
+        "additionalParameters": {}
+      },
+      "id": "f51cdc96-ae96-46e7-8ac7-903e2b271743",
+      "name": "讀取GitHub現有題庫2",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        -2176,
+        -896
+      ],
+      "typeVersion": 1,
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=上網搜尋 從 AI開始發展 到 {{ $today }} 得到的AI最新新聞消息，(AI  工具、生成式AI規劃、AI各領域應用)\n適合給使用者準備拿來當 iPAS AI應用規劃師考試用的題目\n\n最少10個來源\n考古題、考試心得、備考心得等等\n並提供 10個搜尋來源\n我要從你的輸入 轉換成 ai agent 的輸入 來出題目\n\n\n{{ $('Code').item.json.day }} =1 3 5 \n搜尋內容：\n人工智慧（Artificial Intelligence, AI）是一種旨在模擬人類智慧的技術，使機\n器能夠執行原本需要人類智慧才能完成的任務，如學習、推理、解決問題、感知\n環境等。近十年來，隨著軟硬體技術進步、計算能力提升、開放資料普及，以及\n數據的多樣性、品質與規模增長，加上演算法與機器學習的不斷精進，人工智慧\n的發展突飛猛進。\n依照功能的不同，AI 可以分為以下幾類：\n 分析型 AI：主要用於洞悉數據模式，分析和處理大量數據，以提供有價值的見\n解。\n 預測型 AI：基於歷史資料和數據，預測未來的趨勢和行為，常應用於市場預測、\n風險評估等領域。\n 生成型 AI：近年快速發展的 AI 類型，可根據使用者輸入的提示詞（prompt），\n生成各類素材，包括文字、語音、圖像和影片。\n在企業運營中，人工智慧的應用通常集中於幾個主要目標，包括提高效率、\n增強決策能力、提供個人化服務以及促進創新。生成式 AI 自 2022 年快速發展以\n來，透過使用者輸入的提示詞（prompt），能高效生成多種素材形式，此技術大幅\n改變了許多行業的工作型態，為企業在數位化轉型與創新發展上提供了新的契機。\n1.\n人工智慧技術的多樣化應用正在迅速改變各行各業的運作模式，其影響深遠\n且範圍廣泛，以下為主要應用領域及其具體實例：\n 第三章 人工智慧基礎概論\n3-2\n（1）醫療保健：\n 疾病診斷：利用 AI 分析醫學影像（如 X 光片、MRI 等）以輔助醫師進行精準\n診斷，並提早發現病變。\n 藥物研發：透過 AI 進行藥物分子結構模擬，大幅縮短藥物研發的時間與成本。\n 個人化醫療：基於病患的基因、生活習慣與醫療記錄，提供量身訂制的治療方\n案。\n（2）金融：\n 風險評估：透過 AI 模型分析用戶信用記錄與金融行為，提升貸款審核準確性。\n 欺詐檢測：實時監控交易行為，偵測異常模式以降低詐欺風險。\n 自動交易：運用 AI 演算法快速分析市場數據，進行高頻交易以抓住投資機會。\n（3）製造業：\n 自動化生產：機器人與 AI 結合，自動執行重複性生產任務，提升生產效率。\n 品質控制：運用影像辨識技術檢測產品缺陷，提升檢測精準度，確保高品質出\n貨。\n 預測性維護：AI 分析設備運行數據，提前預測並預防機器故障。\n（4）交通：\n 自動駕駛：AI 技術結合感測器與導航系統，實現自動駕駛汽車的精準控制與路\n徑規劃。\n 交通流量預測：AI 分析歷史與即時交通數據，提供動態交通管理與路線建議。\n（5）娛樂：\n 遊戲開發：AI 生成自適應遊戲角色及情節，提升玩家的沉浸體驗。\n 虛擬現實：AI 與 VR 技術結合，創造更真實的沉浸式虛擬環境。\n 內容推薦：分析用戶偏好，提供個人化的音樂、影視及文章推薦。\n 第三章 人工智慧基礎概論\n3-3\n2.\n人工智慧的實現依賴於一個多層次的架構，每一層都扮演著關鍵角色，從基\n礎技術到應用開發，最終落地於實際場景。以下為其主要構成：\n（1）技術底層\n技術底層是人工智慧運作的基礎，提供必要的計算能力、數據支撐與核心演\n算法。主要包含以下要素：\nA. 資料處理與分析（Data Processing and Analysis）\n AI 的核心在於數據，資料處理包括數據清理、整合、儲存及分析。\n 關鍵技術如 ETL（Extract, Transform, Load）流程、資料庫管理及大數據處理平\n台（如 Hadoop、Spark 等）。\nB. 演算法（Algorithm）\n 為 AI 的邏輯基石，用於解決問題及提供決策支援。\n 常見的演算法包括迴歸分析（Regression Analysis）、分類演算法（Classification\nAlgorithms）、決策樹（Decision Tree）與基因演算法（Genetic Algorithm）等。\nC. 機器學習（Machine Learning）\n AI 的學習過程透過資料訓練模型來預測或分類，常見技術如監督式學習\n（Supervised Learning）、非監督式學習（Unsupervised Learning）與強化學習\n（Reinforcement Learning）等。\nD. 深度學習（Deep Learning）\n 構建於人工神經網路基礎之上，適用於處理非結構化數據，如語音辨識、影像\n處理與自然語言處理（NLP）等；常見的開發框架包括 TensorFlow、PyTorch 等。\n 第三章 人工智慧基礎概論\n3-4\nE. 專家系統（Expert System）\n 基於規則與知識庫，模擬人類專家的決策過程，廣泛應用於醫療診斷、財務分\n析等專業領域。\n（2）開發應用\n人工智慧的開發應用是將基礎技術轉化為實際功能與服務的關鍵階段，涵蓋\n模型設計、訓練、測試及部署等多個環節。其目標是讓 AI 技術能夠解決特定業務\n需求，並提升效率與價值。\n（3）實際運用\n將人工智慧技術應用落地為各行業創造價值的最終目標，運用目標包括：\n 設計行業解決方案：將 AI 技術應用於具體場景，如智慧醫療、智慧物流及智慧\n製造等。\n 打造產品與服務：開發基於 AI 的商業化產品，如語音助理、推薦演算法及智慧\n監控系統等。\n 優化業務流程：透過 AI 實現業務流程優化，提高企業運營效率及競爭力等。\n3.\n資料（數據）處理與分析是人工智慧項目中的基礎階段，旨在將原始數據轉\n化為高品質且適合分析的格式，進一步從中提取有價值的資訊。此階段包括數據\n蒐集、清洗、轉換與分析，目標是確保數據的品質、一致性與可用性。\n（1）數據蒐集（Data Collection）：\nA. 數據結構類型分類\n數據蒐集的來源廣泛，根據數據類型與應用需求，可分為以下幾類：\n 結構化數據（Structured Data）：具有清晰且固定結構的數據，通常以行列形式儲\n存，便於直接進行查詢與分析。常見於關聯式資料庫（如 MySQL、PostgreSQL）\n 第三章 人工智慧基礎概論\n3-5\n和規範化的電子表格。\n 半結構化數據（Semi-structured Data）：數據具有一定結構標籤，但格式靈活，\n無需嚴格遵循固定架構。通常以文件形式儲存，適用於描述複雜的層次化數據，\n如 XML、JSON、CSV 等。\n 非結構化數據（Unstructured Data）：無固定結構的數據，需經過處理和解析後\n才能進行分析。通常以檔案形式儲存，適合多媒體或自由文本類型數據，包括\n圖片、影像、音訊、文字內容，如電子郵件、文章等。\nB. 常見數據蒐集方法\n 問卷與調查：透過線上或線下方式，直接從目標受眾中蒐集第一手數據。此方\n法常用於市場研究、用戶回饋（反饋）蒐集或行為洞察，能夠精準捕捉目標群\n體的意見與需求。\n 自有產品數據：來自企業所開發或運營的產品或設備數據，通常與用戶的互動\n相關。例如自有的網站、App 應用，或實體裝置如智慧手錶、汽車等。\n 外部公開數據蒐集：透過 API 調用方式獲取公開可訪問的數據資源（如政府資\n料開放平臺 API 等），或利用網路爬蟲（Web Scraping）自動擷取網站公開數據\n（如新聞、價格資訊、商品評論等）。\n 外部付費數據購買：與第三方數據提供商合作，購買專業數據集以補充內部數\n據，例如市場調查數據或人口統計數據。\n 網路爬蟲（Web Scraping）：抓取網站公開數據，例如商品價格、使用者評論或\n新聞文章等。\n（2）數據清洗（Data Cleaning）：\n數據清洗是提升數據品質的重要步驟，目的是解決數據中的遺缺值、重複值、\n錯誤值與不一致性問題，確保數據的完整性與可靠性。以下是常見資料清洗過程\n的核心內容：\n 第三章 人工智慧基礎概論\n3-6\nA. 遺缺值（Missing Value）處理\n遺缺值是指數據中某些欄位沒有記錄有效數據，需根據業務需求選擇適當的\n處理方式：\n 填補遺缺值：使用統計方法填補（例如平均值、中位數、眾數等），或是利用插\n補法（Interpolation）或預測模型填補遺缺值（如基於迴歸分析預測等）。\n 刪除記錄：如果遺缺值占比高或數據不可修復，可直接刪除相關記錄（需謹慎\n評估刪除對樣本代表性的影響）。\nB. 重複值（Duplicate Value）處理\n重複值是指數據中存在相同內容的記錄，可能因多次導入資料或錯誤記錄而\n產生。\n 識別重複值：透過檢查主鍵、唯一識別碼或關鍵欄位，確認是否存在重複記錄。\n 刪除重複值：保留一份正確的記錄，刪除其他重複項。\nC. 錯誤值（Error/Invalid Value）處理\n指數據中的值不符合合理範圍或存在明顯錯誤。\n 檢測並修正明顯的錯誤值（例如超出合理範圍的數值、拼寫錯誤等），例如：年\n齡出現負數（如-5 歲）、錯誤的拼寫（如 Taiwan 被記錄為 Taiwwn）。\nD. 離群值（Outlier Value）處理\n指數據中遠離大多數其他數據點的異常值，通常可能是有意義的數據而非錯\n誤值。\n 離群值是數據集中明顯偏離其他數據點的異常值，可能反映數據的異常情況，\n也可能是雜訊或錯誤。在處理離群值時，需要根據業務需求和分析目標採取適\n當策略。\n 第三章 人工智慧基礎概論\n3-7\n（3）數據轉換（Data Transformation）\n將數據轉換成適合分析的格式。\n 數據格式轉換（Data Format Transformation）：將數據從一種格式轉換為另一種\n格式（如 CSV 轉換為 JSON）。\n 數據類型轉換（Data Type Conversion）：將數據從一種數據類型轉換為另一種數\n據類型（如字串轉換為數值）。\n 數據正規化/標準化（Data Normalization/ Standardization）：將數值數據縮放到特\n定範圍（如[0,1]或-1 至 1），以消除不同變數之間的單位影響，使數據在模型中\n具有可比性。\n 數據離散化（Data Discretization）：將連續型數據轉換為離散的區間或類別（如\n將年齡分為「青年」、「中年」、「老年」）。\n 數據縮減（Data Reduction）：透過特徵選擇、特徵提取或降維技術，如主成分分\n析（Principal Components Analysis, PCA）減少數據的維度或體積，從而提高分\n析效率並節省儲存空間。\n（4）數據分析（Data Analysis）\n數據分析是運用統計方法、機器學習及其他技術，從處理後的數據中提取有\n用資訊與洞察的過程。根據分析目的，可分為以下四種主要方法：\nA. 敘述性分析（Descriptive Analysis）：\n描述數據的基本特徵和分佈情況。使用各別有其優點、限制、適用領域的統\n計指標（如平均值、中位數、標準差、百分位數等），以及圖表（如直方圖、散佈\n圖、折線圖等）等來總結和呈現數據。\na. 平均值（Mean）：將一組數據的所有值相加後除以數據的個數，所得出的結果，\n代表了數據的平均水平。\n 優點：計算簡單，易於理解。\n 缺點：極端值（離群值）的影響較大，若數據集中有極端值，平均值可能會\n偏離數據的中心趨勢。\n 第三章 人工智慧基礎概論\n3-8\nb. 中位數（Median）：將一組數據按照大小順序排列，位於中間位置的值，如果數\n據個數為偶數，則取中間兩個數的平均值。\n 優點：不受極端值影響，能更好地反映數據的中心趨勢。\n 缺點：對數據分布的變動性不敏感。\nc. 標準差（Standard Deviation）：用來衡量一組數據的分散程度，標準差越大，數\n據的分散程度越大，反之亦然。\n 優點：能量化描述數據的分散程度，常用於比較不同組數據的分散情況。\n 缺點：計算相對複雜，且受極端值影響。\nd. 百分位數（Percentile）：將一組數據按照大小順序排列後，將數據分為 100 份，\n每份佔 1%，則第 p 百分位數是指有 p%的數據小於或等於它的值。\n 優點：能詳細描述數據的分佈情況，不受極端值影響。\n 缺點：計算相對複雜，對於較大的數據集計算量較大。\ne. 直方圖（Histogram）：將連續型數據分成幾個類別（通常稱為「組」或「bin」），\n並用矩形的高度表示每個類別中數據的個數。\n 優點：能直觀地展示數據的分布情況，包括集中趨勢、分散程度和是否有異\n常值，可快速了解數據的整體樣貌。\n 缺點：組間隔的選擇會影響直方圖的外觀，不同的組間隔可能產生不同的視\n覺效果。\nf. 散佈圖（Scatter plot）：用於展示兩個變量之間的關係，每個數據點代表一組觀\n察值，其位置由兩個變量的值決定。\n 優點：能直觀地顯示兩個變量之間的相關性，包括線性相關、非線性相關或\n無相關、可以幫助發現異常值。\n 缺點：當數據點過多時，圖形可能變得擁擠，難以觀察。\ng. 折線圖（Line chart）：用於顯示數據隨時間或其他連續變量的變化趨勢。\n 優點：能清晰地展示數據的變化趨勢，易於比較不同時間點的數據; 可以顯\n示多個變量的變化趨勢。\n 缺點：較不適合展示類別型數據。\n 第三章 人工智慧基礎概論\n3-9\nB. 探索性分析（Exploratory Analysis）\n探索性分析是一種數據分析方法，旨在無需預設假設的情況下，透過多角度\n探索數據，發現其中的模式、關聯和異常，為後續的深入分析或建模提供基礎。\n以下為探索性分析相關重要觀念：\na. 散佈圖矩陣（Scatter Plot Matrix）\n 特點與用途：用於展示多個變量兩兩之間的相關性，適合高維數據的初步探索。\n 應用範例：分析銷售數據中價格、數量與地區之間的互動關係。\nb. 熱圖（Heatmap）\n 特點與用途：透過色彩強度展示數據項目之間的關聯程度，通常用於相關分析。\n 應用範例：了解客戶消費行為特徵之間的關聯（如年齡與消費金額）。\nc. 平行坐標圖（Parallel Coordinates Plot）\n 特點與用途：適合分析高維數據，展示多個變量的趨勢和模式。\n 應用範例：比較不同產品類型在多項指標上的表現（如成本、收益、風險等）。\nd. 箱型圖/盒鬚圖（Box Plot）\n 特點與用途：展示數據分佈情況，突出離群值與中位數等特徵。\n 應用範例：比較不同地區的收入分佈差異。\ne. 相關性分析（Correlation Analysis）\n 特點與用途：測量兩個變量之間的相關性，如皮爾森相關係數（Pearson\nCorrelation Coefficient）。\n 應用範例：分析廣告支出與銷售收入之間的相關性，判斷廣告效果。\nf. 聚類分析（Clustering Analysis）\n 特點與用途：將數據分為多個組群，組內數據相似度高而組間差異大，如 K\n均值聚類（K-Means）、層次聚類（Hierarchical Clustering）等。\n 應用範例：客戶分群，根據消費行為將用戶分為高價值客戶、一般客戶等。\ng. 主成分分析（Principal Component Analysis, PCA）\n 特點與用途：減少數據維度，同時保留大部分數據內訊息，便於視覺化或進\n一步分析。\n 第三章 人工智慧基礎概論\n3-10\n 應用範例：簡化銷售數據的多維特徵以發現核心指標。\nh. 異常檢測（Anomaly Detection）\n 特點與用途：識別數據集中不符合預期的異常點，如離群值或罕見模式。\n 應用場景：檢測金融交易中的欺詐行為。\nC. 診斷性分析（Diagnostic Analysis）\n診斷性分析旨在探究數據中的特定現象或結果的根本原因。此類分析通常基\n於敘述性分析的結果，進一步深入了解數據背後的邏輯與影響因素。以下為常用\n的分析方法：\na. 鑽取/向下分析（Drill-down Analysis）\n 特點與用途：從宏觀數據逐層深入到細節層級，逐步鎖定問題範圍。\n 應用場景：銷售下降時，透過地區、產品類別或時間段分析，確定問題發生\n的具體區域或品類。\nb. 關聯分析（Association Analysis）\n 特點與用途：分析數據項目之間的共現關係或模式。方法如 Apriori 演算法，\n用於分析超市購物車數據（如「啤酒與尿布的關聯性」）。\n 應用場景：在推薦系統中發掘產品之間的購買關聯。\nc. 因果分析（Causal Analysis）\n 特點與用途：透過統計與實驗方法分析變量之間的因果關係，避免混淆相關\n性與因果性。方法如因果圖（Causal Diagrams）、隨機試驗（A/B 測試）。\n 應用場景：檢驗行銷活動對銷售增長的實際影響。\nD. 預測性分析（Predictive Analysis）\n預測性分析使用歷史數據來預測未來可能發生的事件或趨勢，通常是基於統\n計方法與機器學習模型。以下為常用的模型/方法：\na. 迴歸模型（Regression Models）\n 特點與用途：用於數值型結果的預測。\n 第三章 人工智慧基礎概論\n3-11\n 方法：線性迴歸、多元迴歸、邏輯迴歸等。\n 應用場景：預測房地產價格、銷售額、天氣變化等。\nb. 分類模型（Classification Models）\n 特點與用途：用於將數據分為不同類別。\n 方法：決策樹、隨機森林、支援向量機（Support Vector Machine, SVM）、深\n度學習（如神經網路等）。\n 應用場景：信用風險評估、疾病診斷、用戶行為預測。\nc. 時間序列模型（Time Series Models）\n 特點與用途：用於分析時間相關數據，捕捉趨勢、季節性與周期性模式。\n 方法：ARIMA、SARIMA、LSTM 等。\n 應用場景：銷售預測、需求規劃、股票價格預測。\nd. 集成學習方法（Ensemble Methods）\n 特點與用途：結合多個模型提高預測準確性。\n 方法：隨機森林（Random Forest）、梯度提升機（Gradient Boosting Machine,\nGBM）、極限梯度提升（eXtreme Gradient Boosting, XGBoost）等。\n4.\n演算法（Algorithm）在機器學習與人工智慧領域扮演著舉足輕重的角色，特\n別是在搜尋與排序方面，廣泛應用於網路資訊檢索、資料庫管理與各類數據處理。\n以下為幾種常見的搜尋與排序演算法：\n（1） 線性搜尋（Linear Search / Sequential Search）：從資料集的第一個元素開始，\n逐個與目標元素進行比較。如果找到匹配的元素，則搜尋成功；如果遍歷整\n個資料集後仍未找到，則搜尋失敗。\n（2） 二分搜尋（Binary Search）：首先將資料集的中間元素與目標元素進行比較。\n如果目標元素等於中間元素，則搜尋成功；如果目標元素小於中間元素，則\n在資料集的左半部分繼續搜尋；如果目標元素大於中間元素，則在資料集的\n右半部分繼續搜尋。重複以上步驟，直到找到目標元素或搜尋範圍為空。\n 第三章 人工智慧基礎概論\n3-12\n（3） 深度優先搜尋（Depth-First Search, DFS）：在圖形或樹狀結構。從起始節點開\n始，沿著一條路徑儘可能深地搜尋，直到到達葉節點或遇到已訪問過的節點，\n然後回溯到上一個節點，繼續搜尋其他路徑。\n（4） 廣度優先搜尋（Breadth-First Search, BFS）：在圖形或樹狀結構。從起始節點\n開始，首先訪問其所有相鄰的節點，然後再訪問這些相鄰節點的相鄰節點，\n依此類推，一層一層地擴散搜尋。\n以下介紹幾種常見且應用廣泛的演算法：\n（1） 線性迴歸（Linear Regression）：預測連續數值型的輸出變數，例如房價預測、\n銷售額預測、股票價格預測等。優點為簡單易懂、計算效率高；缺點是只能\n捕捉線性關係，對於非線性關係的資料擬合效果較差。其演算法原理為假設\n輸入變數（特徵）和輸出變數之間存在線性關係，試圖找到一條最佳的直線\n（或超平面，在高維空間中），盡可能地擬合資料點。\n（2） 邏輯迴歸（Logistic Regression）：邏輯迴歸雖然名稱中有「迴歸」，但實際上\n是一種分類演算法。使用 Sigmoid 函數將線性迴歸的輸出轉換為介於 0 和 1\n之間的機率值。通常設定一個閾值（例如 0.5），將機率值轉換為類別。優點\n為簡單易懂、計算效率高、輸出結果具有機率意義，但只能解決二元分類問\n題，對於多類別分類問題需要進行擴展。\n（3） K-最近鄰演算法（K-Nearest Neighbors, KNN）：屬於一種基於實例的學習演\n算法，對於一個新的輸入樣本，它會找出訓練集中與其最接近的 K 個樣本\n（最近鄰）。對於分類問題，將新樣本分類為 K 個最近鄰中出現次數最多的\n類別；對於迴歸問題，將新樣本的預測值設定為 K 個最近鄰的平均值或中位\n數。\n5.\n機器學習（Machine Learning）是一種透過數據訓練模型，使機器具備預測與\n分類能力的技術，常應用於文字辨識、語音辨識、圖像辨識等領域。一般而言，\n 第三章 人工智慧基礎概論\n3-13\n資料量愈大且經過完整的資料處理，模型的效果通常會更好。\n簡述機器學習的步驟包含：（1）準備訓練資料：包含資料的蒐集、過濾雜訊\n及前處理；（2）訓練模型：將前項準備好的訓練資料輸入演算法中，並適度調整\n參數，使模型儘量符合資料之模式或分佈；（3）測試及評估模型：測試並評估該\n模型的效能，並反覆訓練之；經多次調校仍不佳時，或許選用其他模型再重覆前\n述流程。\n依訓練方式，有以下幾種學習方法：\n（1）監督式學習（Supervised learning）\n監督式學習主要應用於分類（Classification）與迴歸（Regression）任務，透\n過帶有標記（Labeled Data）的訓練數據來訓練模型，使其學習輸入特徵與對應標\n記之間的關聯性。在訓練過程中，模型不斷調整內部參數，以提高對未知數據的\n預測準確度，從而實現對未見數據的有效分類或數值預測。分類模型目標為「如\n何將輸入數據分配至不同類別」，例如垃圾郵件過濾（辨別郵件是否為垃圾郵件）、\n影像識別（辨識圖片中的物件類別）。迴歸模型目標為「學習輸入變數與連續數值\n之間的映射關係」，例如房價預測（根據房屋特徵預測價格）、銷售額預測（根據\n市場數據預測未來銷售）。\n（2）非監督式學習（Unsupervised Learning）\n不同於監督式學習，無需使用事先標記好的訓練數據。演算法會自動從未標\n記的數據中發掘潛在的模式、結構或分群（Clustering），進而揭示數據內部的關聯\n性和特徵。非監督式學習常用於資料探索、特徵提取和數據降維等任務，廣泛應\n用於市場區隔分析、異常偵測、推薦系統和影像壓縮等領域。\n（3）強化學習（Reinforcement Learning, RL）\n強化學習不同於監督式學習和非監督式學習，是一種基於「回饋（反饋）機\n制」的學習方法，透過評分機制與獎勵措施的制定，讓人工智慧進行自我評估並\n 第三章 人工智慧基礎概論\n3-14\n朝獲取最大獎勵的方向進行學習。強化學習的核心在於讓代理（Agent）透過與環\n境的互動，學習如何選擇最佳行動策略，以獲得最大的累積回報。強化學習特別\n適合用於需要「試錯學習（Trial-and-Error）」和「長期規劃」的任務，例如遊戲 AI、\n機器人控制和自動駕駛等領域。\n6.\n深度學習（Deep Learning, DL）是一種機器學習的子領域，透過多層次的人\n工神經網路，從大量文本、語音、影像等數據中自動學習特徵。這些神經網路由\n許多相互連結的神經元組成，每個神經元接收前一層的輸出，經過非線性轉換後，\n再將結果傳遞給下一層。當大量數據反覆輸入神經網路時，網路內部的連接權重\n會不斷調整，使得模型能夠自動從數據中提取出深層且抽象的特徵。相較於傳統\n的機器學習方法，深度學習不需要人類專家手動設計特徵，而是讓模型自行學習。\n這使得深度學習在處理複雜的數據時，具有更強大的能力。深度學習在自然語言\n處理（如機器翻譯、文本生成）、電腦視覺（如影像辨識、物件偵測）、語音辨識\n（如語音助理、語音轉文字）以及生成式模型（Generative AI）等領域都有廣泛的\n應用。以下介紹深度學習的三大經典模型：\n（1）卷積神經網路（Convolutional Neural Networks, CNN）\n卷積神經網路（CNN）是深度學習領域中最具代表性的模型之一，特別擅長\n處理圖像數據。其設計靈感來自於生物學上的動物視覺皮層，能夠高效地提取圖\n像中的特徵。\nA. 結構組成：\n 卷積層（Convolutional Layer）：透過卷積運算提取數據的局部特徵，例如邊緣、\n紋理等。\n 池化層（Pooling Layer）：透過降維操作（如最大池化、平均池化），減少數據維\n度，防止過擬合。\n 第三章 人工智慧基礎概論\n3-15\n 全連接層（Fully Connected Layer）：將提取的特徵映射到輸出空間，進行分類或\n迴歸任務。\nB. 優點：\n 適合處理高維數據，參數量相比全連接網路顯著減少。\n 能夠提取層次化特徵，從低層特徵（如邊緣）到高層語義（如物體形狀）。\nC. 應用場景：\n 影像辨識：如人臉辨識、手寫數字分類（MNIST）。\n 物件偵測：如自動駕駛中的障礙物檢測。\n 圖像分割：如醫學影像中的病變檢測。\n（2）循環神經網路（Recurrent Neural Networks, RNN）：\nRNN 是專為處理序列數據而設計的深度學習模型，其關鍵特性是網路中存在\n循環連接，使得模型可以記憶序列中之前的資訊。\nA. 工作原理：\n RNN 的每個節點不僅接收當前的輸入，還會記住前一時刻的狀態，這使得 RNN\n能夠捕捉數據的時間依賴關係。\n 網路的輸出取決於當前輸入和前面的上下文，適合處理語音、文本等具有時間\n序列特性的數據。\nB. 改進版本：\n 長短期記憶網路（Long Short-Term Memory, LSTM）：透過引入遺忘門（forget\ngate）、輸入門（input gate）和輸出門（output gate），有效解決了梯度消失問題。\n 門控循環單元（Gated Recurrent Unit, GRU）：結構比 LSTM 更簡單，但在大多\n數應用中效果相近。\n 第三章 人工智慧基礎概論\n3-16\nC. 優點：\n 能夠有效捕捉序列數據中的長期依賴關係。\n 支持變長序列的處理，適用於多種場景。\nD. 缺點：\n 訓練過程容易出現梯度消失或梯度爆炸問題。\n 在處理長序列數據時，計算效率較低。\nE. 應用場景：\n 自然語言處理：如機器翻譯、文本生成。\n 語音辨識：如語音助理中的語音轉文字。\n 時間序列分析：如股票價格預測。\n（3）生成對抗網路（Generative Adversarial Networks, GAN）\n生成對抗網路（GAN）是深度學習中用於生成數據的強大模型，由兩個網路\n組成：生成器（Generator）和判別器（Discriminator），並透過對抗學習共同進步。\nA. 工作原理：\n 生成器（Generator）：接收隨機雜訊作為輸入，生成模擬的數據樣本。\n 判別器（Discriminator）：負責區分輸入數據是真實的還是生成的。\n 生成器的目標是「欺騙」判別器，使其無法區分數據來源；而判別器則試圖最\n大化其判斷準確性。這種對抗學習的過程促使生成器逐漸生成更逼真的數據。\nB. 優點：\n 能夠生成高品質的數據樣本，適用於影像、文本、語音等多領域。\n 在數據增強和模擬中有極大的應用潛力。\n 第三章 人工智慧基礎概論\n3-17\nC. 缺點：\n 訓練過程不穩定，可能出現模式崩潰（Mode Collapse）。\n 需要大量計算資源，對網路結構設計要求高。\nD. 應用場景：\n 圖像生成：如將草圖轉換為寫實圖片。\n 文本生成：如虛擬對話內容的創建。\n 語音合成：如生成逼真的語音樣本。\n7.\n生成式人工智慧（Generative AI）是一種強大的自然語言處理模型，透過龐大\n的參數數量，能夠根據使用者提供的提示詞，生成出連貫、有意義的文本回應。\n這些模型運作的原理是：根據輸入的提示詞，模型會在經過大量文本訓練後所建\n立的「文字機率分布」中，尋找最可能接續的文字，並以此方式逐字生成回應。\n模型的參數數量與其理解提示詞的能力、生成文本的品質息息相關。一般來說，\n參數越多，模型就越能捕捉到語言的細微差異，生成更為豐富多樣的回應。生成\n式人工智慧的訓練過程主要分為兩個階段：\n（1）訓練階段：\n模型會在大量的文本數據上進行訓練，學習語言的規律和模式。這個階段的\n目的是讓模型具備基本的語言理解和生成能力。模型會從大量的數據中學習到數\n據的分布、模式和特徵。\nA. 數據準備\n 數據蒐集：蒐集大量的、高品質的數據，這些數據將作為模型訓練的素材。數\n據的數量和品質直接影響模型的生成效果。\n 數據清洗：對蒐集到的數據進行清洗，去除雜訊、異常值和不一致的部分，確\n 第三章 人工智慧基礎概論\n3-18\n保數據的乾淨和可靠。\n 數據預處理：將數據轉換為模型可以處理的格式，例如，將文本轉換為數字向\n量。\nB. 模型選擇與搭建：\n 選擇模型：選擇適合任務的生成模型，常見的模型包括生成對抗網路（GAN）、\n變分自編碼器（VAE）、Transformer 等。\n 搭建模型：根據所選模型的結構，搭建模型的各個層級，包括輸入層、隱藏層\n和輸出層。\nC. 模型訓練：\n 損失函數：設計一個適當的損失函數，用來衡量模型生成的數據與真實數據之\n間的差異。\n 優化器：選擇一個優化器，如 Adam、SGD，用來更新模型的參數，使得模型生\n成的數據越來越接近真實數據。\n 迭代訓練：反覆輸入訓練數據，計算損失，並根據損失更新模型參數，直到模\n型收斂或達到預定的訓練次數。\n（2）微調階段：\n在預訓練模型的基礎上，使用特定領域或任務的數據進行進一步訓練，以提\n升模型在特定任務上的表現。\nA. 特定任務優化：\n 調整超參數：根據任務的具體需求，調整學習率、批量大小等超參數。\n 添加特定層：為模型添加一些特定於任務的層，如在文本生成任務中，可以添\n加一個語言模型層。\n 第三章 人工智慧基礎概論\n3-19\nB. 數據精調：\n 使用特定數據集：使用與特定任務相關的數據集進行微調，以提高模型在該任\n務上的效能。\n 數據增強：透過對數據進行一些變換，如旋轉、翻轉等，來增加數據的多樣性，\n提高模型的泛化能力。\n生成式人工智慧的訓練是一個複雜且迭代的過程，透過訓練和微調，模型能\n夠學習到數據的複雜模式，並生成具有創造性的內容，影響生成模型效果的因素\n包括：\n 數據品質：數據的數量、品質和多樣性對模型的效能有決定性的影響。\n 模型結構：不同的模型結構適合不同的任務。\n 超參數設置：合理的超參數設置可以加速模型的收斂並提高效能。\n 計算資源：訓練大型生成模型需要大量的計算資源。\n"
+            }
+          ]
+        },
+        "simplify": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify_Output', ``, 'boolean') }}",
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        -1760,
+        -672
+      ],
+      "id": "b5c4fbe7-1d5f-47b6-9a66-6993ea3ad54e",
+      "name": "Message a model in Perplexity1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1936,
+        -672
+      ],
+      "id": "6b6cd967-ab15-4765-858a-78247ef2c6ac",
+      "name": "OpenRouter Chat Model1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "simplify": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify_Output', ``, 'boolean') }}",
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        -1632,
+        -96
+      ],
+      "id": "d97ddb2d-da94-45e6-ae4d-35435e16bdbd",
+      "name": "Message a model in Perplexity3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1728,
+        -96
+      ],
+      "id": "133b36af-a41a-4b9c-9abb-7d77a97bdff4",
+      "name": "OpenRouter Chat Model2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=上網搜尋 \n加上 資料庫 (Tools data 1)\n從  {{ $today }} 得到的AI最新AI 工具、生成式AI規劃、AI各領域應用、\n給使用者準備拿來當 iPAS AI應用規劃師考試用的題目\n\n出10題選擇題  都不要重複 每一次生成的題目都要不同。\n\n# 題目內容方向\n請圍繞以下主題：\n\n只要題目就好  \n\n# 角色\n你是一位專為台灣「iPAS AI 應用規劃師」認證考試設計考題的專家。\n\n\n# 任務\n請根據我提供的2025 最新 AI 人工智慧基礎概論，生成 10 道選擇題。\n每一次生成的題目都要隨機不同。\n\n# 主題\n科目一:\n人工智慧基礎\n概論\n\n人工智慧概念\n\nAI 的定義與分類\nAI 治理概念\n\n資料處理與分析概念\n\n資料基本概念與來源\n資料整理與分析流程\n資料隱私與安全\n\n機器學習概念\n\n機器學習基本原理\n常見的機器學習模型\n\n鑑別式 AI 與生成式 AI\n概念\n\n鑑別式 AI 與生成式 AI 的基本原理\n鑑別式 AI 與生成式 AI 的整合應用\n\n\n\n也可以出 誘導類型的題目(何者為是？何者為非？)\n盡量多考一些提示詞用法(選項相似一點 可能只差少數幾個字)\n考一些專有名詞(選項相似)\n\n- \"correct_answer_letter\"： \n\"A\"2-3題\n\"B\"2-3題\n\"C\"2-3題\n\"D\"2-3題\n\n# 格式規則 (極度重要) 每一次生成的題目都要隨機不同。\n你必須且只能回覆一個符合 RFC 8259 標準的 JSON 陣列。\n陣列中應包含 10 個物件。\n在陣列前後，不准包含任何「說明文字」或像 ```json 這樣的 markdown 標籤。\n你的回覆必須能直接被 `JSON.parse()` 解析。\n每一次生成的題目都要不同。\n- \"correct_answer_letter\"： \n\"A\"2-3題\n\"B\"2-3題\n\"C\"2-3題\n\"D\"2-3題\n\n# 每個 JSON 物件的結構\n每一個物件都必須包含以下 key：\n- \"question\": (字串) 題目內容。\n- \"options\": (陣列) 一個包含四個選項字串的陣列。\n- \"correct_answer_index\": (數字) 正確答案的索引，範圍從 0 到 3。\n- \"correct_answer_letter\": (字串) 正確答案的字母，\"A\", \"B\", \"C\", 或 \"D\"。\n- \"topic\": (字串) 題目所屬的主要領域，例如：\"生成式AI應用與規劃\", \"AI倫理與法規\", \"AI技術與模型\"。\n- \"subtopic\": (字串) 題目的次領域，例如：\"模型評估\", \"電腦視覺\", \"自然語言處理\"。\n- \"concept\": (字串) 題目涉及的核心概念，例如：\"公平性評估\", \"提示工程\", \"RAG\"。\n- \"explanation\": (字串) 針對正確答案的詳盡解釋。\n\n\n\n選項可以出相似一點，難易度為 博士生 高級 等級 \n(每一個選項都很接近 每一個選項的字數都接近一樣多)\n\n\n你有tools 可以使用 拿來出考題\n1. Message a model in Perplexity\n2. Tools data 1",
+        "options": {
+          "systemMessage": "=極度重要：盡量都以生活應用，沉浸式 的模式出題目 \n\n- \"correct_answer_letter\"： A B C D 請平均分散 \n\"A\"2-3題\n\"B\"2-3題\n\"C\"2-3題\n\"D\"2-3題\n\n科目一:\n人工智慧基礎概論\n\n人工智慧概念\n\nAI 的定義與分類\nAI 治理概念\n\n資料處理與分析概念\n\n資料基本概念與來源\n資料整理與分析流程\n資料隱私與安全\n\n機器學習概念\n\n機器學習基本原理\n常見的機器學習模型\n\n鑑別式 AI 與生成式 AI\n概念\n\n鑑別式 AI 與生成式 AI 的基本原理\n鑑別式 AI 與生成式 AI 的整合應用\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1728,
+        -896
+      ],
+      "id": "964921cd-ca60-4ff8-bd89-f0a31f8ee02b",
+      "name": "ai_Basics"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=上網搜尋 並使用 (Tools data 1)\n從  {{ $today }} 得到的AI最新AI 工具、生成式AI規劃、AI各領域應用、\n給使用者準備拿來當 iPAS AI應用規劃師考試用的題目\n\n出10題選擇題  都不要重複 每一次生成的題目都要不同。\n\n# 題目內容方向\n請圍繞以下主題：\n\n只要題目就好  \n\n# 角色\n你是一位專為台灣「iPAS AI 應用規劃師」認證考試設計考題的專家。\n\n\n# 任務\n請根據我提供的2025 最新 生成式AI應用與規劃，生成 10 道選擇題。\n每一次生成的題目都要隨機不同。\n\n# 主題\n科目二:\n生成式AI應用與規劃\n\nNo code / Low code 概念\n\nNo Code / Low Code 的基本概念\nNo Code / Low Code 的優勢與限制\n\n生成式 AI 應用領域與工\n具使用\n\n生成式 AI 應用領域與常見工具\n如何善用生成式 AI 工具\n\n生成式 AI 導入評估規劃\n\n生成式 AI 導入評估\n生成式 AI 導入規劃\n生成式 AI 風險管理\n\n\n\n也可以出 誘導類型的題目(何者為是？何者為非？)\n盡量多考一些提示詞用法(選項字數都一樣 可能只差少數幾個字)\n考一些專有名詞(選項相似)\n\n- \"correct_answer_letter\"： \n\"A\"2-3題\n\"B\"2-3題\n\"C\"2-3題\n\"D\"2-3題\n\n# 格式規則 (極度重要) 每一次生成的題目都要隨機不同。\n你必須且只能回覆一個符合 RFC 8259 標準的 JSON 陣列。\n陣列中應包含 10 個物件。\n在陣列前後，不准包含任何「說明文字」或像 ```json 這樣的 markdown 標籤。\n你的回覆必須能直接被 `JSON.parse()` 解析。\n每一次生成的題目都要不同。\n- \"correct_answer_letter\"：\n\"A\"2-3題\n\"B\"2-3題\n\"C\"2-3題\n\"D\"2-3題\n\n# 每個 JSON 物件的結構\n每一個物件都必須包含以下 key：\n- \"question\": (字串) 題目內容。\n- \"options\": (陣列) 一個包含四個選項字串的陣列。\n- \"correct_answer_index\": (數字) 正確答案的索引，範圍從 0 到 3。\n- \"correct_answer_letter\": (字串) 正確答案的字母，\"A\", \"B\", \"C\", 或 \"D\"。\n- \"topic\": (字串) 題目所屬的主要領域，例如：\"生成式AI應用與規劃\", \"AI倫理與法規\", \"AI技術與模型\"。\n- \"subtopic\": (字串) 題目的次領域，例如：\"模型評估\", \"電腦視覺\", \"自然語言處理\"。\n- \"concept\": (字串) 題目涉及的核心概念，例如：\"公平性評估\", \"提示工程\", \"RAG\"。\n- \"explanation\": (字串) 針對正確答案的詳盡解釋。\n\n- \"correct_answer_letter\"：\n\"A\"2-3題\n\"B\"2-3題\n\"C\"2-3題\n\"D\"2-3題\n\n選項可以出相似一點，難易度為 博士生 老闆 等級 \n(每一個選項都要很接近 每一個選項的字數都接近一樣多)\n\n\n\n\n\n你有三個tools 可以使用 拿來出考題\n1. Message a model in Perplexity\n2. Tools data 1",
+        "options": {
+          "systemMessage": "=極度重要：盡量都以生活應用，沉浸式 的模式出題目 \n\n- \"correct_answer_letter\"： A B C D 請平均分散 \n\"A\"2-3題\n\"B\"2-3題\n\"C\"2-3題\n\"D\"2-3題\n\n科目一:\n人工智慧基礎概論\n\n人工智慧概念\n\nAI 的定義與分類\nAI 治理概念\n\n資料處理與分析概念\n\n資料基本概念與來源\n資料整理與分析流程\n資料隱私與安全\n\n機器學習概念\n\n機器學習基本原理\n常見的機器學習模型\n\n鑑別式 AI 與生成式 AI\n概念\n\n鑑別式 AI 與生成式 AI 的基本原理\n鑑別式 AI 與生成式 AI 的整合應用\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1728,
+        -320
+      ],
+      "id": "57fa824e-f450-4014-95b1-0c736590caea",
+      "name": "genai_planning2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=上網搜尋 從 AI開始發展 到 {{ $today }} 得到的AI最新新聞消息，(AI 工具、生成式AI規劃、AI各領域應用、AI科技台灣、全世界的公司的最新近況(AI資訊)、跟iPAS 有關的任何消息\n給使用者準備拿來當 iPAS AI應用規劃師考試用的題目\n\n出10題選擇題  都不要重複 也可以考我AI相關的歷史問題\n每一次生成的題目都要不同。\n\n# 題目內容方向\n請圍繞以下主題：生成式AI的相關歷史、2025最新 AI 工具、生成式 AI 規劃、AI 在各領域的應用、與 iPAS 考試相關的任何消息、2025 AI 科技在台灣與全世界的發展近況。\n\n只要題目就好  \n\n# 角色\n你是一位專為台灣「iPAS AI 應用規劃師」認證考試設計考題的專家。\n\n\n# 任務\n請根據我提供的2025 最新 AI 新聞內容也可以考我AI相關的歷史問題，生成 10 道選擇題。\n每一次生成的題目都要隨機不同。\n極度重要：盡量都以生活應用，沉浸式 的模式出題目 \n舉例：\n(如果是XXX工廠 需要做甚麼事情，會建議用甚麼AI？\n如果我是XX職業，需要完成某件事，可以用哪些AI工具？\n如果我在國外，我可以用什麼AI？ ...\n如果我是某某(國文 英文 數學 地理 國中 高中 大學 研究所 補習班...)老師，我要輔導教學學生 製作教案，可以怎麼運用AI...? )\n如果我是XXX工程師，我要準備研發研究某個領域， Vibe Coding 要怎麼執行？\n如果我是XXX設計師，我可以怎麼下提示詞...?\n如果是家庭主婦/夫，要擬定一個家庭計畫(旅遊、育兒、運動、理財、...)可以用哪些工具？\n如果我是主管 我要帶領員工 可以怎麼運用AI...?\n如果我是自媒體，我可以用那些 AI 工具？\n我的提示詞可以怎麼下？(選項出相似一點 )\nn8n 可以如何結合運用？ \napps script 適合做哪些事？\n也可以出 誘導類型的題目(何者為是？何者為非？)\n盡量多考一些提示詞用法(選項相似一點 可能只差少數幾個字)\n\n- \"correct_answer_letter\"： A B C D 請平均分散 不要都是A 不要都是B 不要都是C 不要都是D。\n\n# 格式規則 (極度重要) 每一次生成的題目都要隨機不同。\n你必須且只能回覆一個符合 RFC 8259 標準的 JSON 陣列。\n陣列中應包含 10 個物件。\n在陣列前後，不准包含任何「說明文字」或像 ```json 這樣的 markdown 標籤。\n你的回覆必須能直接被 `JSON.parse()` 解析。\n每一次生成的題目都要不同。\n- \"correct_answer_letter\"： \n\"A\"2-3題\n\"B\"2-3題\n\"C\"2-3題\n\"D\"2-3題\n\n# 每個 JSON 物件的結構\n每一個物件都必須包含以下 key：\n- \"question\": (字串) 題目內容。\n- \"options\": (陣列) 一個包含四個選項字串的陣列。\n- \"correct_answer_index\": (數字) 正確答案的索引，範圍從 0 到 3。\n- \"correct_answer_letter\": (字串) 正確答案的字母，\"A\", \"B\", \"C\", 或 \"D\"。\n- \"topic\": (字串) 題目所屬的主要領域，例如：\"生成式AI應用與規劃\", \"AI倫理與法規\", \"AI技術與模型\"。\n- \"subtopic\": (字串) 題目的次領域，例如：\"模型評估\", \"電腦視覺\", \"自然語言處理\"。\n- \"concept\": (字串) 題目涉及的核心概念，例如：\"公平性評估\", \"提示工程\", \"RAG\"。\n- \"explanation\": (字串) 針對正確答案的詳盡解釋。\n\n- \"correct_answer_letter\"： \n\"A\"2-3題\n\"B\"2-3題\n\"C\"2-3題\n\"D\"2-3題\n\n選項可以出相似一點，難易度為 研究生 主管 等級 \n(每一個選項都很接近 每一個選項的字數接近一樣多)\n\n科目一:\n人工智慧基礎\n概論\n\n人工智慧概念\n\nAI 的定義與分類\nAI 治理概念\n\n資料處理與分析概念\n\n資料基本概念與來源\n資料整理與分析流程\n資料隱私與安全\n\n機器學習概念\n\n機器學習基本原理\n常見的機器學習模型\n\n鑑別式 AI 與生成式 AI\n概念\n\n鑑別式 AI 與生成式 AI 的基本原理\n鑑別式 AI 與生成式 AI 的整合應用\n\n科目二:\n生成式AI應用\n與規劃\n\nNo code / Low code 概念\n\nNo Code / Low Code 的基本概念\nNo Code / Low Code 的優勢與限制\n\n生成式 AI 應用領域與工\n具使用\n\n生成式 AI 應用領域與常見工具\n如何善用生成式 AI 工具\n\n生成式 AI 導入評估規劃\n\n生成式 AI 導入評估\n生成式 AI 導入規劃\n生成式 AI 風險管理\n\n\n\n你有三個tools 可以使用 拿來出考題\n1. Message a model in Perplexity\n",
+        "options": {
+          "systemMessage": "極度重要：盡量都以生活應用，沉浸式 的模式出題目 \n舉例：\n(如果是XXX工廠 需要做甚麼事情，會建議用甚麼AI？\n如果我是XX職業，需要完成某件事，可以用哪些AI工具？\n如果我在國外，我可以用什麼AI？ ...\n如果我是某某(國文 英文 數學 地理 國中 高中 大學 研究所 補習班...)老師，我要輔導教學學生 製作教案，可以怎麼運用AI...? )\n如果我是XXX工程師，我要準備研發研究某個領域， Vibe Coding 要怎麼執行？\n如果我是XXX設計師，我可以怎麼下提示詞...?\n如果是家庭主婦/夫，要擬定一個家庭計畫(旅遊、育兒、運動、理財、...)可以用哪些工具？\n如果我是主管 我要帶領員工 可以怎麼運用AI...?\n如果我是自媒體，我可以用那些 AI 工具？\n我的提示詞可以怎麼下？(選項出相似一點 )\nn8n 可以如何結合運用？ \napps script 適合做哪些事？\n\n\n- \"correct_answer_letter\"： A B C D 請平均分散 不要都是A 不要都是B 不要都是C 不要都是D。\n\n科目一:\n人工智慧基礎概論\n\n人工智慧概念\n\nAI 的定義與分類\nAI 治理概念\n\n資料處理與分析概念\n\n資料基本概念與來源\n資料整理與分析流程\n資料隱私與安全\n\n機器學習概念\n\n機器學習基本原理\n常見的機器學習模型\n\n鑑別式 AI 與生成式 AI\n概念\n\n鑑別式 AI 與生成式 AI 的基本原理\n鑑別式 AI 與生成式 AI 的整合應用\n\n科目二:\n生成式AI應用與規劃\n\nNo code / Low code 概念\n\nNo Code / Low Code 的基本概念\nNo Code / Low Code 的優勢與限制\n\n生成式 AI 應用領域與工\n具使用\n\n生成式 AI 應用領域與常見工具\n如何善用生成式 AI 工具\n\n生成式 AI 導入評估規劃\n\n生成式 AI 導入評估\n生成式 AI 導入規劃\n生成式 AI 風險管理"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1728,
+        448
+      ],
+      "id": "2bd4f3f5-f4d6-43a7-9276-26d0d53183d6",
+      "name": "Message a model"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1776,
+        672
+      ],
+      "id": "ebd9ef1f-f7f3-4abf-92c5-1591beeb77d4",
+      "name": "OpenRouter Chat Model4",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "simplify": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify_Output', ``, 'boolean') }}",
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        -1632,
+        672
+      ],
+      "id": "88b5ba82-d0d1-41bf-9628-7645e2a5676e",
+      "name": "Message a model in Perplexity5",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('=== 解析GitHub現有題庫，獲取最大題號 ===');\n\ntry {\n  const firstInputItem = $input.first();\n  let rawFileContentString = null;\n  let existingQuestions = [];\n  let maxNumber = 0;\n\n  // 從GitHub節點獲取文件內容\n  if (firstInputItem.binary && firstInputItem.binary.fileBuffer) {\n    let actualBinaryContent = firstInputItem.binary.fileBuffer;\n    \n    if (Buffer.isBuffer(actualBinaryContent)) {\n      rawFileContentString = actualBinaryContent.toString('utf-8');\n    } else if (typeof actualBinaryContent === 'object' && actualBinaryContent.data) {\n      if (Buffer.isBuffer(actualBinaryContent.data)) {\n        rawFileContentString = actualBinaryContent.data.toString('utf-8');\n      } else if (typeof actualBinaryContent.data === 'string') {\n        rawFileContentString = Buffer.from(actualBinaryContent.data, 'base64').toString('utf-8');\n      }\n    }\n  }\n\n  if (rawFileContentString) {\n    try {\n      const parsedContent = JSON.parse(rawFileContentString);\n      \n      if (Array.isArray(parsedContent)) {\n        existingQuestions = parsedContent;\n      }\n      \n      // 計算最大題號\n      if (existingQuestions.length > 0) {\n        const numbers = existingQuestions.map(item => parseInt(item.number) || 0);\n        maxNumber = Math.max(...numbers);\n      }\n      \n      console.log(`✅ 成功解析現有題庫，共有 ${existingQuestions.length} 題，最大題號: ${maxNumber}`);\n      \n      return [{\n        json: {\n          status: 'success',\n          existingQuestions: existingQuestions,\n          maxNumber: maxNumber,\n          existingCount: existingQuestions.length\n        }\n      }];\n      \n    } catch (jsonError) {\n      console.log('❌ JSON解析失敗:', jsonError.message);\n      return [{\n        json: {\n          status: 'error',\n          maxNumber: 0,\n          existingQuestions: [],\n          existingCount: 0\n        }\n      }];\n    }\n  } else {\n    console.log('❌ 無法讀取GitHub文件內容');\n    return [{\n      json: {\n        status: 'error',\n        maxNumber: 0,\n        existingQuestions: [],\n        existingCount: 0\n      }\n    }];\n  }\n  \n} catch (error) {\n  console.log('❌ 處理過程發生錯誤:', error.message);\n  return [{\n    json: {\n      status: 'error',\n      maxNumber: 0,\n      existingQuestions: [],\n      existingCount: 0\n    }\n  }];\n}"
+      },
+      "id": "a9c9d667-81fb-4932-a05e-15ef2f074878",
+      "name": "解析現有題庫並獲取最大題號",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1952,
+        -896
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{ $json.textForLine }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1152,
+        -416
+      ],
+      "id": "a86074d4-de32-42f0-b064-8c4630ad72ef",
+      "name": "發送回應給 LINE",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===================================================\n// 中央資料處理中心 (輔助鍵版本)\n// 負責：\n// 1. 解析 OpenAI 回應\n// 1. 取得並清理從 OpenAI 來的資料\nconst rawContent = $input.first().json.output;\nconst jsonMatch = rawContent.match(/\\[.*\\]/s);\nif (!jsonMatch) { \n  throw new Error('在 OpenAI 的回覆中找不到有效的 JSON 陣列。'); \n}\n\nconst cleanContent = jsonMatch[0];\nlet questions = [];\n\ntry {\n  questions = JSON.parse(cleanContent);\n} catch (error) {\n  throw new Error('從 OpenAI 收到的資料不是有效的 JSON 格式！');\n}\n\n// 4. 準備基本資料\nconst today = new Date().toISOString().split('T')[0];\n\n// 5. 【核心】建立包含所有欄位的資料，並產生 unique_id\nconst dataForSheet = questions.map((q, index) => {\n  const questionNumber = index + 1;\n  // 建立格式為 \"YYYY-MM-DD-N\" 的唯一 ID，例如 \"2023-10-27-1\"\n  const uniqueId = `${today}-${questionNumber}`;\n\n  return {\n    // 【新增】我們的輔助鍵\n    unique_id: uniqueId,\n\n    // 原有的欄位（給「N8N iPAS AI題庫」工作表用）\n    date: today,\n    number: questionNumber,\n    question: q.question,\n    options: JSON.stringify(q.options),\n    correct_answer_letter: q.correct_answer_letter,\n    explanation: q.explanation,\n    topic: q.topic,\n    subtopic: q.subtopic,\n    concept: q.concept,\n\n    // 給「社群iPAS 題庫」工作表用的欄位\n    'No.': questionNumber, // 直接對應欄位名稱\n    'Question': q.question,\n    'Option A': q.options[0],\n    'Option B': q.options[1],\n    'Option C': q.options[2],\n    'Option D': q.options[3],\n    'Topic': q.topic,\n\n    // 給 LINE 用的訊息（只在第一筆資料中產生即可）\n    textForLine: \"\" // 先留空，稍後處理\n  };\n});\n\n// 6. 準備要發送到 LINE 的純文字訊息\nlet textForLine = \"💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n\";\nquestions.forEach((q, index) => {\n  textForLine += `第 ${index + 1} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i);\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += \"\\n\";\n});\ntextForLine += \"請依照格式回覆答案，例如：1A2B3C...\";\n\n// 7. 將 LINE 訊息附加到所有項目中，確保 LINE 節點能收到\nconst finalData = dataForSheet.map(item => ({\n  ...item,\n  textForLine: textForLine,\n}));\n\n\n// 8. 回傳合併後的資料\nreturn finalData.map(item => ({\n  json: item\n}));"
+      },
+      "id": "2116bc15-cb46-417b-a566-38f934a2442c",
+      "name": "處理題目與格式化1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        160
+      ],
+      "notesInFlow": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+          "mode": "list",
+          "cachedResultName": "N8N iPAS  AI題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 419388996,
+          "mode": "list",
+          "cachedResultName": "Ai 應用 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit#gid=419388996"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "question": "={{ $json.question }}",
+            "number": "={{ $json.number }}",
+            "options": "={{ $json.options }}",
+            "correct_answer_letter": "={{ $json.correct_answer_letter }}",
+            "explanation": "={{ $json.explanation }}",
+            "date": "={{ $json.date }}",
+            "unique_id": "={{ $json.unique_id }}"
+          },
+          "matchingColumns": [
+            "question"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correct_answer_letter",
+              "displayName": "correct_answer_letter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -928,
+        160
+      ],
+      "id": "cbf41b13-660e-40e6-b39c-c03561c5f75a",
+      "name": "寫入題庫1",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g",
+          "mode": "list",
+          "cachedResultName": "社群iPAS 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 545915479,
+          "mode": "list",
+          "cachedResultName": "daily_answers_apply",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=545915479"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "No.": "={{ $json.number }}",
+            "Option B": "={{ $json.option_b }}",
+            "Option C": "={{ $json.option_c }}",
+            "Option D": "={{ $json.option_d }}",
+            "Question": "={{ $json.question }}",
+            "Topic": "={{ $json.topic }}",
+            "Option A": "={{ $json.option_a }}",
+            "Correct Answer": "={{ $json.correct_answer_letter }}",
+            "explanation": "={{ $json.explanation }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "No.",
+              "displayName": "No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option A",
+              "displayName": "Option A",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Option B",
+              "displayName": "Option B",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option C",
+              "displayName": "Option C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option D",
+              "displayName": "Option D",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Correct Answer",
+              "displayName": "Correct Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -1152,
+        -32
+      ],
+      "id": "e93d4849-a8b6-452e-9ea3-316c65b71d91",
+      "name": "社群每日題目1",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===================================================\n// 簡化版：無需篩選條件，直接在原有格式中加入答題欄位\n// 這樣一個 Google Sheets 節點就能搞定，不用設定篩選條件\n// 1. 取得並清理從 OpenAI 來的資料\nconst rawContent = $input.first().json.output;\nconst jsonMatch = rawContent.match(/\\[.*\\]/s);\nif (!jsonMatch) { \n  throw new Error('在 OpenAI 的回覆中找不到有效的 JSON 陣列。'); \n}\n\nconst cleanContent = jsonMatch[0];\nlet questions = [];\n\ntry {\n  questions = JSON.parse(cleanContent);\n} catch (error) {\n  throw new Error('從 OpenAI 收到的資料不是有效的 JSON 格式！');\n}\n\n// 4. 準備基本資料\nconst today = new Date().toISOString().split('T')[0];\n\n// 5. 準備要發送到 LINE 的純文字訊息\nlet textForLine = \"💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n\";\nquestions.forEach((q, index) => {\n  textForLine += `第 ${index + 1} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i);\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += \"\\n\";\n});\ntextForLine += \"請依照格式回覆答案，例如：1A2B3C...\";\n\n// 6. 【合併版】建立包含所有欄位的資料\nconst dataForSheet = questions.map((q, index) => ({\n  // 原有的欄位（給你現有的「Ai 題庫」工作表用）\n  date: today,\n  number: index + 1,\n  question: q.question,\n  options: JSON.stringify(q.options),\n  correct_answer_letter: q.correct_answer_letter,\n  explanation: q.explanation,\n  topic: q.topic,\n  subtopic: q.subtopic,\n  concept: q.concept,\n  textForLine: textForLine,\n  \n  // 【新增】答題工作表需要的欄位\n  q_num: index + 1,\n  option_a: q.options[0],\n  option_b: q.options[1], \n  option_c: q.options[2],\n  option_d: q.options[3],\n  correct: \"\", // 早上留空，晚上才顯示答案\n  user_answer: \"\", // 讓成員填寫 A、B、C、D\n  user_name: \"\", // 讓成員填寫姓名\n  result: \"\" // 用公式自動計算\n}));\n\n// 7. 回傳合併後的資料（一次搞定！）\nreturn dataForSheet.map(item => ({\n  json: item\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        -32
+      ],
+      "id": "7de5e75c-a462-4201-a831-9bb35cc9ad2e",
+      "name": "每日新題目給社群1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g",
+          "mode": "list",
+          "cachedResultName": "社群iPAS 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 545915479,
+          "mode": "list",
+          "cachedResultName": "daily_answers_apply",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=545915479"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "unique_id": "={{ $json.unique_id }}",
+            "Question": "={{ $json.question }}"
+          },
+          "matchingColumns": [
+            "Question"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "No.",
+              "displayName": "No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Option A",
+              "displayName": "Option A",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Option B",
+              "displayName": "Option B",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Option C",
+              "displayName": "Option C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Option D",
+              "displayName": "Option D",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Correct Answer",
+              "displayName": "Correct Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -704,
+        160
+      ],
+      "id": "8a7f5c94-7de2-46ab-bf16-84a4ce297884",
+      "name": "寫入unique_id1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor item in _input.all():\n  item.json.myNewField = 1\nreturn _input.all()"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        160
+      ],
+      "id": "d5396610-cad8-444e-bb61-022147e59b04",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// [1] 取得 AI Node 上游的 output\nlet rawContent = $input.first().json.output;\n\n// [2] 嘗試解析文字內容：如果已經是陣列就直接用，如果是文字則正規萃取陣列\nlet questionsArr;\n\nif (typeof rawContent === 'string') {\n  const jsonMatch = rawContent.match(/\\[\\s*{.*}\\s*\\]/s);\n  if (!jsonMatch) {\n    throw new Error('在 AI 回覆中找不到有效的 JSON 陣列。收到內容: ' + rawContent);\n  }\n  try {\n    questionsArr = JSON.parse(jsonMatch[0]);\n  } catch (err) {\n    throw new Error('AI 回覆不是正確的 JSON 格式：' + err.message);\n  }\n} else if (Array.isArray(rawContent)) {\n  questionsArr = rawContent;\n} else {\n  throw new Error('AI Node output 必須是字串(含陣列)或直接為陣列');\n}\n\n// [3] 取得舊題庫（建議你的 workflow 有個前置節點處理現有題庫）\nconst existingData = $('解析現有題庫並獲取最大題號1').first().json || {};\nconst existingQuestions = existingData.existingQuestions || [];\nconst maxNumber = existingData.maxNumber || 0;\n\n// [4] 生成日期\nconst today = new Date().toISOString().split('T')[0];\n\n// [5] 處理新題目：補編號、日期\nconst processedNewQuestions = questionsArr.map((q, idx) => ({\n  ...q,\n  number: maxNumber + idx + 1,\n  date: today\n}));\n\n// [6] 準備寫入 Google Sheets\nconst dataForSheet = processedNewQuestions.map((q) => ({\n  date: q.date,\n  number: q.number,\n  question: q.question,\n  options: JSON.stringify(q.options), // 字串化\n  correct_answer_letter: q.correct_answer_letter,\n  explanation: q.explanation,\n  topic: q.topic,\n  subtopic: q.subtopic,\n  concept: q.concept\n}));\n\n// [7] 合併舊題庫與新題目（GitHub 用）\nconst allQuestions = [...existingQuestions, ...processedNewQuestions];\n\n// [8] 準備 LINE 推送文字\nlet textForLine = `💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n`;\nprocessedNewQuestions.forEach((q) => {\n  textForLine += `第 ${q.number} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i);\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += '\\n';\n});\ntextForLine += '請依照格式回覆答案，例如：1A2B3C...';\n\n// [9] 輸出每個 item（for Google Sheets），每 item 都帶完整題庫（GitHub 用）\nreturn dataForSheet.map(item => ({\n  json: {\n    ...item,\n    textForLine,\n    allQuestions,                 // for github json\n    newQuestions: processedNewQuestions // 方便後續節點取用\n  }\n}));\n"
+      },
+      "id": "33a3f523-f36d-429a-9cbf-9ee9d8a3ee49",
+      "name": "處理新題目並準備合併1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1376,
+        -224
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "nickleo9",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "GenAI",
+          "mode": "list"
+        },
+        "filePath": "daily_answers_apply.json",
+        "fileContent": "={{ $json.fileContent }}",
+        "commitMessage": "={{ $json.updateMessage }}"
+      },
+      "id": "0cb9de93-0913-475a-a6d8-cb3da1e25df4",
+      "name": "更新GitHub題庫",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        -928,
+        -224
+      ],
+      "typeVersion": 1,
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('=== 準備GitHub更新 ===');\n\ntry {\n  const firstItem = $input.first();\n  const allQuestions = firstItem.json.allQuestions;\n  const newQuestions = firstItem.json.newQuestions;\n\n  if (!allQuestions || !Array.isArray(allQuestions)) {\n    throw new Error('無法取得完整題庫資料');\n  }\n\n  const updatedContent = JSON.stringify(allQuestions, null, 4);\n\n  console.log(`✅ 準備更新GitHub，新增 ${newQuestions.length} 題，總題數: ${allQuestions.length}`);\n\n  return [{\n    json: {\n      fileContent: updatedContent,\n      totalQuestions: allQuestions.length,\n      updateMessage: `新增 ${newQuestions.length} 題，總計 ${allQuestions.length} 題 - ${new Date().toISOString().split('T')[0]}`\n    }\n  }];\n\n} catch (error) {\n  console.log('❌ 準備GitHub更新時發生錯誤:', error.message);\n  return [{\n    json: { status: 'error', message: '準備GitHub更新時發生錯誤: ' + error.message }\n  }];\n}\n"
+      },
+      "id": "144d122c-2d30-450e-8b1c-e95f6c73403a",
+      "name": "準備GitHub更新資料",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1152,
+        -224
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1IeuCTLAJp-Te0wiNwHnoR4blMqt_yhmfNXyAyEj9Qaw",
+          "mode": "list",
+          "cachedResultName": "iPAS 每日題目",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IeuCTLAJp-Te0wiNwHnoR4blMqt_yhmfNXyAyEj9Qaw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "daily_answers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.Date }}",
+            "No.": "={{ $json['No.'] }}",
+            "Option B": "={{ $json['Option B'] }}",
+            "Option C": "={{ $json['Option C'] }}",
+            "Option D": "={{ $json['Option D'] }}",
+            "Question": "={{ $json.Question }}",
+            "Topic": "={{ $json.Topic }}",
+            "Option A": "={{ $json['Option A'] }}",
+            "Correct Answer": "={{ $json['Correct Answer'] }}",
+            "explanation": "={{ $json.explanation }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "No.",
+              "displayName": "No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option A",
+              "displayName": "Option A",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Option B",
+              "displayName": "Option B",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option C",
+              "displayName": "Option C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option D",
+              "displayName": "Option D",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Correct Answer",
+              "displayName": "Correct Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -928,
+        -32
+      ],
+      "id": "73782bdb-2b4d-4e5a-84fb-821f1da5458d",
+      "name": "portaly1",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===================================================\n// 中央資料處理中心 (輔助鍵版本)\n// 負責：\n// 1. 解析 OpenAI 回應\n// 1. 取得並清理從 OpenAI 來的資料\nconst rawContent = $input.first().json.output;\nconst jsonMatch = rawContent.match(/\\[.*\\]/s);\nif (!jsonMatch) { \n  throw new Error('在 OpenAI 的回覆中找不到有效的 JSON 陣列。'); \n}\n\nconst cleanContent = jsonMatch[0];\nlet questions = [];\n\ntry {\n  questions = JSON.parse(cleanContent);\n} catch (error) {\n  throw new Error('從 OpenAI 收到的資料不是有效的 JSON 格式！');\n}\n\n// 4. 準備基本資料\nconst today = new Date().toISOString().split('T')[0];\n\n// 5. 【核心】建立包含所有欄位的資料，並產生 unique_id\nconst dataForSheet = questions.map((q, index) => {\n  const questionNumber = index + 1;\n  // 建立格式為 \"YYYY-MM-DD-N\" 的唯一 ID，例如 \"2023-10-27-1\"\n  const uniqueId = `${today}-${questionNumber}`;\n\n  return {\n    // 【新增】我們的輔助鍵\n    unique_id: uniqueId,\n\n    // 原有的欄位（給「N8N iPAS AI題庫」工作表用）\n    date: today,\n    number: questionNumber,\n    question: q.question,\n    options: JSON.stringify(q.options),\n    correct_answer_letter: q.correct_answer_letter,\n    explanation: q.explanation,\n    topic: q.topic,\n    subtopic: q.subtopic,\n    concept: q.concept,\n\n    // 給「社群iPAS 題庫」工作表用的欄位\n    'No.': questionNumber, // 直接對應欄位名稱\n    'Question': q.question,\n    'Option A': q.options[0],\n    'Option B': q.options[1],\n    'Option C': q.options[2],\n    'Option D': q.options[3],\n    'Topic': q.topic,\n\n    // 給 LINE 用的訊息（只在第一筆資料中產生即可）\n    textForLine: \"\" // 先留空，稍後處理\n  };\n});\n\n// 6. 準備要發送到 LINE 的純文字訊息\nlet textForLine = \"💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n\";\nquestions.forEach((q, index) => {\n  textForLine += `第 ${index + 1} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i);\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += \"\\n\";\n});\ntextForLine += \"請依照格式回覆答案，例如：1A2B3C...\";\n\n// 7. 將 LINE 訊息附加到所有項目中，確保 LINE 節點能收到\nconst finalData = dataForSheet.map(item => ({\n  ...item,\n  textForLine: textForLine,\n}));\n\n\n// 8. 回傳合併後的資料\nreturn finalData.map(item => ({\n  json: item\n}));"
+      },
+      "id": "b48a5235-bd3b-451d-ade9-e336a95d01a8",
+      "name": "處理題目與格式化2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        -608
+      ],
+      "notesInFlow": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+          "mode": "list",
+          "cachedResultName": "N8N iPAS  AI題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1100918911,
+          "mode": "list",
+          "cachedResultName": "Ai 概論 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit#gid=1100918911"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "question": "={{ $json.question }}",
+            "number": "={{ $json.number }}",
+            "options": "={{ $json.options }}",
+            "correct_answer_letter": "={{ $json.correct_answer_letter }}",
+            "explanation": "={{ $json.explanation }}",
+            "date": "={{ $json.date }}",
+            "unique_id": "={{ $json.unique_id }}"
+          },
+          "matchingColumns": [
+            "question"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correct_answer_letter",
+              "displayName": "correct_answer_letter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -928,
+        -608
+      ],
+      "id": "82c086c3-6cce-4445-b4e8-908d42f0cd02",
+      "name": "寫入題庫2",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g",
+          "mode": "list",
+          "cachedResultName": "社群iPAS 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2062335204,
+          "mode": "list",
+          "cachedResultName": "daily_answers_basis",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=2062335204"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.date }}",
+            "No.": "={{ $json.number }}",
+            "Option B": "={{ $json.option_b }}",
+            "Option C": "={{ $json.option_c }}",
+            "Option D": "={{ $json.option_d }}",
+            "Question": "={{ $json.question }}",
+            "Topic": "={{ $json.topic }}",
+            "Option A": "={{ $json.option_a }}",
+            "Correct Answer": "={{ $json.correct_answer_letter }}",
+            "explanation": "={{ $json.explanation }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "No.",
+              "displayName": "No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option A",
+              "displayName": "Option A",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Option B",
+              "displayName": "Option B",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option C",
+              "displayName": "Option C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option D",
+              "displayName": "Option D",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Correct Answer",
+              "displayName": "Correct Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -1152,
+        -800
+      ],
+      "id": "1bd3aed8-6368-44d0-b28a-f4e4b1892f63",
+      "name": "社群每日題目2",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===================================================\n// 簡化版：無需篩選條件，直接在原有格式中加入答題欄位\n// 這樣一個 Google Sheets 節點就能搞定，不用設定篩選條件\n// 1. 取得並清理從 OpenAI 來的資料\nconst rawContent = $input.first().json.output;\nconst jsonMatch = rawContent.match(/\\[.*\\]/s);\nif (!jsonMatch) { \n  throw new Error('在 OpenAI 的回覆中找不到有效的 JSON 陣列。'); \n}\n\nconst cleanContent = jsonMatch[0];\nlet questions = [];\n\ntry {\n  questions = JSON.parse(cleanContent);\n} catch (error) {\n  throw new Error('從 OpenAI 收到的資料不是有效的 JSON 格式！');\n}\n\n// 4. 準備基本資料\nconst today = new Date().toISOString().split('T')[0];\n\n// 5. 準備要發送到 LINE 的純文字訊息\nlet textForLine = \"💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n\";\nquestions.forEach((q, index) => {\n  textForLine += `第 ${index + 1} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i);\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += \"\\n\";\n});\ntextForLine += \"請依照格式回覆答案，例如：1A2B3C...\";\n\n// 6. 【合併版】建立包含所有欄位的資料\nconst dataForSheet = questions.map((q, index) => ({\n  // 原有的欄位（給你現有的「Ai 題庫」工作表用）\n  date: today,\n  number: index + 1,\n  question: q.question,\n  options: JSON.stringify(q.options),\n  correct_answer_letter: q.correct_answer_letter,\n  explanation: q.explanation,\n  topic: q.topic,\n  subtopic: q.subtopic,\n  concept: q.concept,\n  textForLine: textForLine,\n  \n  // 【新增】答題工作表需要的欄位\n  q_num: index + 1,\n  option_a: q.options[0],\n  option_b: q.options[1], \n  option_c: q.options[2],\n  option_d: q.options[3],\n  correct: \"\", // 早上留空，晚上才顯示答案\n  user_answer: \"\", // 讓成員填寫 A、B、C、D\n  user_name: \"\", // 讓成員填寫姓名\n  result: \"\" // 用公式自動計算\n}));\n\n// 7. 回傳合併後的資料（一次搞定！）\nreturn dataForSheet.map(item => ({\n  json: item\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        -800
+      ],
+      "id": "90d92762-89b7-4751-ae05-b32bc32f770a",
+      "name": "每日新題目給社群2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g",
+          "mode": "list",
+          "cachedResultName": "社群iPAS 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2062335204,
+          "mode": "list",
+          "cachedResultName": "daily_answers_basis",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=2062335204"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "unique_id": "={{ $json.unique_id }}",
+            "Question": "={{ $json.question }}"
+          },
+          "matchingColumns": [
+            "Question"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "No.",
+              "displayName": "No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Option A",
+              "displayName": "Option A",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Option B",
+              "displayName": "Option B",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Option C",
+              "displayName": "Option C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Option D",
+              "displayName": "Option D",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Correct Answer",
+              "displayName": "Correct Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -704,
+        -608
+      ],
+      "id": "c0e9da96-b100-45a4-bf10-8f1099fb6b20",
+      "name": "寫入unique_id2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "# Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor item in _input.all():\n  item.json.myNewField = 1\nreturn _input.all()"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        -608
+      ],
+      "id": "e1edbf1b-77a0-4c21-b9b9-9119b9a400ed",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// [1] 取得 AI Node 上游的 output\nlet rawContent = $input.first().json.output;\n\n// [2] 嘗試解析文字內容：如果已經是陣列就直接用，如果是文字則正規萃取陣列\nlet questionsArr;\n\nif (typeof rawContent === 'string') {\n  const jsonMatch = rawContent.match(/\\[\\s*{.*}\\s*\\]/s);\n  if (!jsonMatch) {\n    throw new Error('在 AI 回覆中找不到有效的 JSON 陣列。收到內容: ' + rawContent);\n  }\n  try {\n    questionsArr = JSON.parse(jsonMatch[0]);\n  } catch (err) {\n    throw new Error('AI 回覆不是正確的 JSON 格式：' + err.message);\n  }\n} else if (Array.isArray(rawContent)) {\n  questionsArr = rawContent;\n} else {\n  throw new Error('AI Node output 必須是字串(含陣列)或直接為陣列');\n}\n\n// [3] 取得舊題庫（建議你的 workflow 有個前置節點處理現有題庫）\nconst existingData = $('解析現有題庫並獲取最大題號').first().json || {};\nconst existingQuestions = existingData.existingQuestions || [];\nconst maxNumber = existingData.maxNumber || 0;\n\n// [4] 生成日期\nconst today = new Date().toISOString().split('T')[0];\n\n// [5] 處理新題目：補編號、日期\nconst processedNewQuestions = questionsArr.map((q, idx) => ({\n  ...q,\n  number: maxNumber + idx + 1,\n  date: today\n}));\n\n// [6] 準備寫入 Google Sheets\nconst dataForSheet = processedNewQuestions.map((q) => ({\n  date: q.date,\n  number: q.number,\n  question: q.question,\n  options: JSON.stringify(q.options), // 字串化\n  correct_answer_letter: q.correct_answer_letter,\n  explanation: q.explanation,\n  topic: q.topic,\n  subtopic: q.subtopic,\n  concept: q.concept\n}));\n\n// [7] 合併舊題庫與新題目（GitHub 用）\nconst allQuestions = [...existingQuestions, ...processedNewQuestions];\n\n// [8] 準備 LINE 推送文字\nlet textForLine = `💡 今日份的 iPAS AI 應用規劃師練習題 💡\\n\\n`;\nprocessedNewQuestions.forEach((q) => {\n  textForLine += `第 ${q.number} 題: ${q.question}\\n`;\n  q.options.forEach((opt, i) => {\n    const letter = String.fromCharCode(65 + i);\n    textForLine += `  (${letter}) ${opt}\\n`;\n  });\n  textForLine += '\\n';\n});\ntextForLine += '請依照格式回覆答案，例如：1A2B3C...';\n\n// [9] 輸出每個 item（for Google Sheets），每 item 都帶完整題庫（GitHub 用）\nreturn dataForSheet.map(item => ({\n  json: {\n    ...item,\n    textForLine,\n    allQuestions,                 // for github json\n    newQuestions: processedNewQuestions // 方便後續節點取用\n  }\n}));\n"
+      },
+      "id": "ed312250-ab91-406a-9200-1c8a1ebaf2da",
+      "name": "處理新題目並準備合併2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1376,
+        -992
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "nickleo9",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "GenAI",
+          "mode": "list",
+          "cachedResultName": "GenAI",
+          "cachedResultUrl": "https://github.com/nickleo9/GenAI"
+        },
+        "filePath": "daily_answers_basis.json",
+        "fileContent": "={{ $json.fileContent }}",
+        "commitMessage": "={{ $json.updateMessage }}"
+      },
+      "id": "03bdf0f7-cd1d-4c8d-bced-a5d5f5817465",
+      "name": "更新GitHub題庫2",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        -928,
+        -992
+      ],
+      "typeVersion": 1,
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('=== 準備GitHub更新 ===');\n\ntry {\n  const firstItem = $input.first();\n  const allQuestions = firstItem.json.allQuestions;\n  const newQuestions = firstItem.json.newQuestions;\n\n  if (!allQuestions || !Array.isArray(allQuestions)) {\n    throw new Error('無法取得完整題庫資料');\n  }\n\n  const updatedContent = JSON.stringify(allQuestions, null, 4);\n\n  console.log(`✅ 準備更新GitHub，新增 ${newQuestions.length} 題，總題數: ${allQuestions.length}`);\n\n  return [{\n    json: {\n      fileContent: updatedContent,\n      totalQuestions: allQuestions.length,\n      updateMessage: `新增 ${newQuestions.length} 題，總計 ${allQuestions.length} 題 - ${new Date().toISOString().split('T')[0]}`\n    }\n  }];\n\n} catch (error) {\n  console.log('❌ 準備GitHub更新時發生錯誤:', error.message);\n  return [{\n    json: { status: 'error', message: '準備GitHub更新時發生錯誤: ' + error.message }\n  }];\n}\n"
+      },
+      "id": "df79d775-3d6d-4aff-929f-14049b05ba81",
+      "name": "準備GitHub更新資料2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1152,
+        -992
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1IeuCTLAJp-Te0wiNwHnoR4blMqt_yhmfNXyAyEj9Qaw",
+          "mode": "list",
+          "cachedResultName": "iPAS 每日題目",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1IeuCTLAJp-Te0wiNwHnoR4blMqt_yhmfNXyAyEj9Qaw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "daily_answers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.Date }}",
+            "No.": "={{ $json['No.'] }}",
+            "Option B": "={{ $json['Option B'] }}",
+            "Option C": "={{ $json['Option C'] }}",
+            "Option D": "={{ $json['Option D'] }}",
+            "Question": "={{ $json.Question }}",
+            "Topic": "={{ $json.Topic }}",
+            "Option A": "={{ $json['Option A'] }}",
+            "Correct Answer": "={{ $json['Correct Answer'] }}",
+            "explanation": "={{ $json.explanation }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "No.",
+              "displayName": "No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option A",
+              "displayName": "Option A",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Option B",
+              "displayName": "Option B",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option C",
+              "displayName": "Option C",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Option D",
+              "displayName": "Option D",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Correct Answer",
+              "displayName": "Correct Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "explanation",
+              "displayName": "explanation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unique_id",
+              "displayName": "unique_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "cellFormat": "RAW"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -928,
+        -800
+      ],
+      "id": "f514d7e0-b577-4043-9509-7cd5dd4e132d",
+      "name": "portaly2",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "notesInFlow": false,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "nickleo9",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "GenAI",
+          "mode": "list"
+        },
+        "filePath": "daily_answers_apply.json",
+        "binaryPropertyName": "fileBuffer",
+        "additionalParameters": {}
+      },
+      "id": "b7189d15-a199-41ac-bcc8-cbaefc860a49",
+      "name": "讀取GitHub現有題庫",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        -2160,
+        -320
+      ],
+      "typeVersion": 1,
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('=== 解析GitHub現有題庫，獲取最大題號 ===');\n\ntry {\n  const firstInputItem = $input.first();\n  let rawFileContentString = null;\n  let existingQuestions = [];\n  let maxNumber = 0;\n\n  // 從GitHub節點獲取文件內容\n  if (firstInputItem.binary && firstInputItem.binary.fileBuffer) {\n    let actualBinaryContent = firstInputItem.binary.fileBuffer;\n    \n    if (Buffer.isBuffer(actualBinaryContent)) {\n      rawFileContentString = actualBinaryContent.toString('utf-8');\n    } else if (typeof actualBinaryContent === 'object' && actualBinaryContent.data) {\n      if (Buffer.isBuffer(actualBinaryContent.data)) {\n        rawFileContentString = actualBinaryContent.data.toString('utf-8');\n      } else if (typeof actualBinaryContent.data === 'string') {\n        rawFileContentString = Buffer.from(actualBinaryContent.data, 'base64').toString('utf-8');\n      }\n    }\n  }\n\n  if (rawFileContentString) {\n    try {\n      const parsedContent = JSON.parse(rawFileContentString);\n      \n      if (Array.isArray(parsedContent)) {\n        existingQuestions = parsedContent;\n      }\n      \n      // 計算最大題號\n      if (existingQuestions.length > 0) {\n        const numbers = existingQuestions.map(item => parseInt(item.number) || 0);\n        maxNumber = Math.max(...numbers);\n      }\n      \n      console.log(`✅ 成功解析現有題庫，共有 ${existingQuestions.length} 題，最大題號: ${maxNumber}`);\n      \n      return [{\n        json: {\n          status: 'success',\n          existingQuestions: existingQuestions,\n          maxNumber: maxNumber,\n          existingCount: existingQuestions.length\n        }\n      }];\n      \n    } catch (jsonError) {\n      console.log('❌ JSON解析失敗:', jsonError.message);\n      return [{\n        json: {\n          status: 'error',\n          maxNumber: 0,\n          existingQuestions: [],\n          existingCount: 0\n        }\n      }];\n    }\n  } else {\n    console.log('❌ 無法讀取GitHub文件內容');\n    return [{\n      json: {\n        status: 'error',\n        maxNumber: 0,\n        existingQuestions: [],\n        existingCount: 0\n      }\n    }];\n  }\n  \n} catch (error) {\n  console.log('❌ 處理過程發生錯誤:', error.message);\n  return [{\n    json: {\n      status: 'error',\n      maxNumber: 0,\n      existingQuestions: [],\n      existingCount: 0\n    }\n  }];\n}"
+      },
+      "id": "cd05f69b-edf2-4506-9601-2e7a2600598c",
+      "name": "解析現有題庫並獲取最大題號1",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1952,
+        -320
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "nickleo9",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "GenAI",
+          "mode": "list"
+        },
+        "filePath": "應用模擬考題.json",
+        "binaryPropertyName": "fileBuffer",
+        "additionalParameters": {}
+      },
+      "id": "526d4ee0-ab7b-4eb8-9551-d523570973b9",
+      "name": "讀取GitHub現有題庫3",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        -2176,
+        448
+      ],
+      "typeVersion": 1,
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('=== 解析GitHub現有題庫，獲取最大題號 ===');\n\ntry {\n  const firstInputItem = $input.first();\n  let rawFileContentString = null;\n  let existingQuestions = [];\n  let maxNumber = 0;\n\n  // 從GitHub節點獲取文件內容\n  if (firstInputItem.binary && firstInputItem.binary.fileBuffer) {\n    let actualBinaryContent = firstInputItem.binary.fileBuffer;\n    \n    if (Buffer.isBuffer(actualBinaryContent)) {\n      rawFileContentString = actualBinaryContent.toString('utf-8');\n    } else if (typeof actualBinaryContent === 'object' && actualBinaryContent.data) {\n      if (Buffer.isBuffer(actualBinaryContent.data)) {\n        rawFileContentString = actualBinaryContent.data.toString('utf-8');\n      } else if (typeof actualBinaryContent.data === 'string') {\n        rawFileContentString = Buffer.from(actualBinaryContent.data, 'base64').toString('utf-8');\n      }\n    }\n  }\n\n  if (rawFileContentString) {\n    try {\n      const parsedContent = JSON.parse(rawFileContentString);\n      \n      if (Array.isArray(parsedContent)) {\n        existingQuestions = parsedContent;\n      }\n      \n      // 計算最大題號\n      if (existingQuestions.length > 0) {\n        const numbers = existingQuestions.map(item => parseInt(item.number) || 0);\n        maxNumber = Math.max(...numbers);\n      }\n      \n      console.log(`✅ 成功解析現有題庫，共有 ${existingQuestions.length} 題，最大題號: ${maxNumber}`);\n      \n      return [{\n        json: {\n          status: 'success',\n          existingQuestions: existingQuestions,\n          maxNumber: maxNumber,\n          existingCount: existingQuestions.length\n        }\n      }];\n      \n    } catch (jsonError) {\n      console.log('❌ JSON解析失敗:', jsonError.message);\n      return [{\n        json: {\n          status: 'error',\n          maxNumber: 0,\n          existingQuestions: [],\n          existingCount: 0\n        }\n      }];\n    }\n  } else {\n    console.log('❌ 無法讀取GitHub文件內容');\n    return [{\n      json: {\n        status: 'error',\n        maxNumber: 0,\n        existingQuestions: [],\n        existingCount: 0\n      }\n    }];\n  }\n  \n} catch (error) {\n  console.log('❌ 處理過程發生錯誤:', error.message);\n  return [{\n    json: {\n      status: 'error',\n      maxNumber: 0,\n      existingQuestions: [],\n      existingCount: 0\n    }\n  }];\n}"
+      },
+      "id": "f1d2bc8a-6f31-436a-99ec-7d19999981b8",
+      "name": "解析現有題庫並獲取最大題號2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1952,
+        448
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code4').item.json.category }}",
+                    "rightValue": "=ai_basics",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0478002d-2b40-445d-b03a-be9c91576eb9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5cc24f36-1d11-4103-8e4d-63b33eafd1b2",
+                    "leftValue": "={{ $('Code4').item.json.category }}",
+                    "rightValue": "=genai_planning",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "49a5deb8-b12b-44f8-ba27-ea74f188fcae",
+                    "leftValue": "={{ $('Code4').item.json.category }}",
+                    "rightValue": "default",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2400,
+        1136
+      ],
+      "id": "181c34d4-bf09-403e-b110-d689bec85051",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dateInTaipei = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));\nconst day = dateInTaipei.getDay();\n\nlet category = '';\nif ([1,3,5].includes(day)) {\n  category = 'ai_basics'; // 人工智慧基礎概論\n} else if ([2,4,6].includes(day)) {\n  category = 'genai_planning'; // 生成式 AI應用與規劃\n} else if (day === 0) {\n  category = 'default'; // 原本的邏輯\n}\n\nreturn [{ day, category }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2624,
+        1152
+      ],
+      "id": "037c17ec-6ef4-4906-be39-a0997e0f165d",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+          "mode": "list",
+          "cachedResultName": "N8N iPAS  AI題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 419388996,
+          "mode": "list",
+          "cachedResultName": "Ai 應用 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit#gid=419388996"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $today.toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -2176,
+        1152
+      ],
+      "id": "39c5b342-8a0d-4e42-9f7e-5072085f3532",
+      "name": "讀取題庫1",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+          "mode": "list",
+          "cachedResultName": "N8N iPAS  AI題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ai 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $today.toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -2176,
+        1344
+      ],
+      "id": "56a690c5-7b2e-443b-b849-4177f6f7315c",
+      "name": "讀取題庫2",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1TO3NzPIEF2PZ5EpZJwQSgbGRCc2fRohODaqPfgVQTag",
+          "mode": "list",
+          "cachedResultName": "ipas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TO3NzPIEF2PZ5EpZJwQSgbGRCc2fRohODaqPfgVQTag/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "科目一",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TO3NzPIEF2PZ5EpZJwQSgbGRCc2fRohODaqPfgVQTag/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -1584,
+        -688
+      ],
+      "id": "100b932c-9f31-491b-9fea-3ede9629944c",
+      "name": "data 1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1TO3NzPIEF2PZ5EpZJwQSgbGRCc2fRohODaqPfgVQTag",
+          "mode": "list",
+          "cachedResultName": "ipas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TO3NzPIEF2PZ5EpZJwQSgbGRCc2fRohODaqPfgVQTag/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 686184740,
+          "mode": "list",
+          "cachedResultName": "科目二",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TO3NzPIEF2PZ5EpZJwQSgbGRCc2fRohODaqPfgVQTag/edit#gid=686184740"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -1536,
+        -96
+      ],
+      "id": "f750761f-6fb3-4703-9a53-e32dfd41ab25",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        -1600
+      ],
+      "id": "903f9185-399a-44dc-a6ef-1bebb1f4de18",
+      "name": "Line Messaging",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "events": [
+          "message"
+        ]
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessagingTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        -1616
+      ],
+      "id": "038da8c8-ec4b-4a5b-809e-4dcbfbd22ca5",
+      "name": "Line Messaging Trigger",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=我要準備iPAS 應用規劃師的考試，請針對 {{ $json.message.text }} 做回應",
+        "options": {
+          "systemMessage": "=You are a helpful assistant\n\n所有跟時間有關的 都已 {{$today}} 為主\n你是 iPAS 應用規劃師的專業幫手\n很清楚 iPAS 應用規劃師 初級 的所有考試資料\n(含關鍵字 含考古題 含所有參考資料 含下次甚麼時候考試 含通過率多少 難易度多少  科目一考題 科目二考題 報考人數...)\n下次考試時間 先用 perplexity 搜尋看看\n\n\n如果有人在問 題目 相關問題\n請使用 Tools  (sheet) 查詢題目\n\n我現在每周1 每周3 每周5 \n會生成 ai_basics 的題目 \n\n每周 2 每周4 每周6\n會生成 genai_planning 的題目\n\n每周日\n會生成 default 的題目\n\nconst dateInTaipei = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Taipei' }));\nconst day = dateInTaipei.getDay();\n\nlet category = '';\nif ([1,3,5].includes(day)) {\n  category = 'ai_basics'; // 人工智慧基礎概論\n} else if ([2,4,6].includes(day)) {\n  category = 'genai_planning'; // 生成式 AI應用與規劃\n} else if (day === 0) {\n  category = 'default'; // 原本的邏輯\n}\n\nreturn [{ day, category }];\n\n\n\n以上都是各10題\n\n都有列入\nhttps://nickleo9.github.io/GenAI/index.html\n我的模擬考系統當中\n\n\n每次回應都提出三個反問的問題\n\n你有工具 Tools 都可以調用使用\n1. perplexity\n2. sheet"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1216,
+        -1616
+      ],
+      "id": "19aa8264-ed61-40c1-8c7e-59ce3a4b647b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -1376
+      ],
+      "id": "6270580a-1aa3-4928-8273-12443f102732",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "simplify": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify_Output', ``, 'boolean') }}",
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        -1344
+      ],
+      "id": "b59e8a4b-51f9-4131-9a97-91720d64ac95",
+      "name": "Perplexity",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.source.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1488,
+        -1376
+      ],
+      "id": "c9bc5cf7-ba5b-4451-8cd4-439282e9e610",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "showLoadingAnimation",
+        "chatId": "={{ $json.source.userId }}"
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        -1776
+      ],
+      "id": "cb674313-0a5f-4be0-ad45-4e7e0604c516",
+      "name": "Line Messaging1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+          "mode": "list",
+          "cachedResultName": "N8N iPAS  AI題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 419388996,
+          "mode": "list",
+          "cachedResultName": "Ai 應用 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit#gid=419388996"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -1168,
+        -1312
+      ],
+      "id": "0da2016a-2418-4e5a-93c9-eda8fdbd7463",
+      "name": "genai_planning",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+          "mode": "list",
+          "cachedResultName": "N8N iPAS  AI題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ai 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -784,
+        -1328
+      ],
+      "id": "7a1c7e5b-550a-43d9-af15-58d3cf22aaef",
+      "name": "default",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+          "mode": "list",
+          "cachedResultName": "N8N iPAS  AI題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1100918911,
+          "mode": "list",
+          "cachedResultName": "Ai 概論 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0/edit#gid=1100918911"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -992,
+        -1328
+      ],
+      "id": "488339f0-ff14-46bd-a415-fabd23962d5e",
+      "name": "ai_basics",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1696,
+        -1376
+      ],
+      "id": "a1f0de9c-51d4-497c-9488-d3c447d09e7e",
+      "name": "Google Gemini Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -1152,
+        -560
+      ],
+      "id": "86d97be2-5fbb-4a01-9ad8-cc24fa7bcbc4",
+      "name": "Aggregate"
+    }
+  ],
+  "connections": {
+    "處理題目與格式化": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LINE回覆webhook": {
+      "main": [
+        [
+          {
+            "node": "loading/start",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理用戶答案": {
+      "main": [
+        [
+          {
+            "node": "發送回應給 LINE2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫入題庫": {
+      "main": [
+        [
+          {
+            "node": "寫入unique_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉換格式傳給line": {
+      "main": [
+        [
+          {
+            "node": "發送回應給 LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取題庫": {
+      "main": [
+        [
+          {
+            "node": "處理用戶答案",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "每日新題目給社群": {
+      "main": [
+        [
+          {
+            "node": "社群每日題目",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "寫入題庫",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "每日上午10點觸發": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理新題目並準備合併": {
+      "main": [
+        [
+          {
+            "node": "準備GitHub更新資料1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備GitHub更新資料1": {
+      "main": [
+        [
+          {
+            "node": "更新GitHub題庫1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "社群每日題目": {
+      "main": [
+        [
+          {
+            "node": "portaly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "讀取GitHub現有題庫2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "讀取GitHub現有題庫",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "讀取GitHub現有題庫3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取GitHub現有題庫2": {
+      "main": [
+        [
+          {
+            "node": "解析現有題庫並獲取最大題號",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity1": {
+      "ai_tool": [
+        [
+          {
+            "node": "ai_Basics",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫入unique_id": {
+      "main": [
+        []
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ai_Basics",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity3": {
+      "ai_tool": [
+        [
+          {
+            "node": "genai_planning2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "genai_planning2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ai_Basics": {
+      "main": [
+        [
+          {
+            "node": "處理新題目並準備合併2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "每日新題目給社群2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "處理題目與格式化2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "轉換格式傳給line",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "genai_planning2": {
+      "main": [
+        [
+          {
+            "node": "處理新題目並準備合併1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "每日新題目給社群1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "處理題目與格式化1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "轉換格式傳給line",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Message a model",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity5": {
+      "ai_tool": [
+        [
+          {
+            "node": "Message a model",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "轉換格式傳給line",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "處理新題目並準備合併",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "每日新題目給社群",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "處理題目與格式化",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析現有題庫並獲取最大題號": {
+      "main": [
+        [
+          {
+            "node": "ai_Basics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理題目與格式化1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫入題庫1": {
+      "main": [
+        [
+          {
+            "node": "寫入unique_id1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "社群每日題目1": {
+      "main": [
+        [
+          {
+            "node": "portaly1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "每日新題目給社群1": {
+      "main": [
+        [
+          {
+            "node": "社群每日題目1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "寫入題庫1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理新題目並準備合併1": {
+      "main": [
+        [
+          {
+            "node": "準備GitHub更新資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備GitHub更新資料": {
+      "main": [
+        [
+          {
+            "node": "更新GitHub題庫",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理題目與格式化2": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫入題庫2": {
+      "main": [
+        [
+          {
+            "node": "寫入unique_id2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "社群每日題目2": {
+      "main": [
+        [
+          {
+            "node": "portaly2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "每日新題目給社群2": {
+      "main": [
+        [
+          {
+            "node": "社群每日題目2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "寫入題庫2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理新題目並準備合併2": {
+      "main": [
+        [
+          {
+            "node": "準備GitHub更新資料2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備GitHub更新資料2": {
+      "main": [
+        [
+          {
+            "node": "更新GitHub題庫2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取GitHub現有題庫": {
+      "main": [
+        [
+          {
+            "node": "解析現有題庫並獲取最大題號1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取GitHub現有題庫3": {
+      "main": [
+        [
+          {
+            "node": "解析現有題庫並獲取最大題號2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析現有題庫並獲取最大題號1": {
+      "main": [
+        [
+          {
+            "node": "genai_planning2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析現有題庫並獲取最大題號2": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "讀取題庫",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "讀取題庫1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "讀取題庫2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取題庫1": {
+      "main": [
+        [
+          {
+            "node": "處理用戶答案",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取題庫2": {
+      "main": [
+        [
+          {
+            "node": "處理用戶答案",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data 1": {
+      "ai_tool": [
+        [
+          {
+            "node": "ai_Basics",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "genai_planning2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "genai_planning": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "default": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ai_basics": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:每日上午9點觸發": {
+      "recurrenceRules": []
+    },
+    "node:每日晚上7點": {
+      "recurrenceRules": []
+    },
+    "node:每日上午11點觸發": {
+      "recurrenceRules": []
+    },
+    "node:每日上午10點觸發": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "bb90bdbd-2a6d-4ba4-87ef-3522f20c020b",
+  "triggerCount": 3,
+  "shared": [
+    {
+      "updatedAt": "2025-08-15T01:14:34.488Z",
+      "createdAt": "2025-08-15T01:14:34.488Z",
+      "role": "workflow:owner",
+      "workflowId": "EGdfu08NW795Jy2h",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

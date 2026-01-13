@@ -1,0 +1,287 @@
+{
+  "updatedAt": "2025-07-20T17:10:38.452Z",
+  "createdAt": "2025-07-17T03:37:19.726Z",
+  "id": "O0Qvd4E7bpxAPF7j",
+  "name": "顧問諮詢表單",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "consultation-form",
+        "options": {}
+      },
+      "name": "Webhook - 接收問卷",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        960
+      ],
+      "id": "e34b5780-2dfa-4a07-8a4b-496e3d868c0f",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "=🔔 **新客戶諮詢通知**\n\n👤 **客戶：** {{ $node['Webhook - 接收問卷'].json.body.name }}\n📧 **Email：** {{ $node['Webhook - 接收問卷'].json.body.email }}\n🏢 **公司：** {{ $node['Webhook - 接收問卷'].json.body.company || '個人' }}\n🏭 **行業：** {{ $node['Webhook - 接收問卷'].json.body.industry }}\n📊 **來源：** {{ $node['Webhook - 接收問卷'].json.body.referral_source }}\n\n🎯 **場景：** {{ $node['Webhook - 接收問卷'].json.body.scenario_type }}\n💰 **預算：** {{ $node['Webhook - 接收問卷'].json.body.budget }}\n⏰ **急迫度：** {{ $node['Webhook - 接收問卷'].json.body.urgency }}\n\n🔥 **主要痛點：**\n{{ $node['Webhook - 接收問卷'].json.body.biggest_pain }}\n\n**立即聯繫客戶！** 🚀",
+        "additionalFields": {}
+      },
+      "name": "Telegram - 通知我",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        980,
+        820
+      ],
+      "id": "ea923c0f-7a1f-4297-9220-2284a374c4aa",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=你是專業的 n8n 自動化顧問，請根據以下客戶資料生成詳細分析報告：\n\n【客戶基本資訊】\n- 姓名：{{ $json['您的姓名'] }}\n- 公司：{{ $json['公司/品牌名稱'] }}\n- 行業類別：{{ $json['您的行業類別或生活狀況？'] }}\n- Line ID：{{ $json['Line ID'] }}\n【痛點分析】\n- 主要場景：\n- 重複性工作：\n- 具體痛點：{{ $json['描述您最大的痛點情境'] }}\n- 每日時間消耗：{{ $json['每天花多少時間處理這些重複工作？'] }}\n- 造成影響：{{ $json['這些重複工作造成什麼影響？（可複選）'] }}\n\n【需求與期望】\n- 希望自動化：{{ $json['最希望自動化哪些流程？（可複選）'] }}\n- 期望效果：{{ $json['期望達成的效果？（可複選）'] }}\n- 投資預算：{{ $json['願意投資的預算範圍？'] }}\n\n\n\n\n請生成包含以下部分的專業報告：\n\n1. 【痛點診斷】- 分析核心問題和根本原因\n2. 【價值分析】- 量化時間成本和機會成本\n3. 【解決方案】- 提供3個優先級的自動化建議\n4. 【實施計畫】- 分階段實施步驟與時程\n5. 【投資回報】- ROI計算與效益預估\n6. 【下一步】- 明確的行動建議\n\n\n\n請生成一份專業的分析報告，包含：\n1. 痛點診斷\n2. 解決方案建議\n3. 自動化實施計劃\n4. 預期效益分析\n5. 下一步行動建議\n\n請用繁體中文，專業但易懂的語調。報告要專業、具體、可行，字數約800-1200字。\n\n\n請使用 mcp tools\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        180,
+        140
+      ],
+      "id": "932ecb8d-1c58-4ee3-82f5-b0ac6a9e5292",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 9
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1NrrQo6XwZ4cw3lW6_iWBiEwK-9m7A99eSXXLMemGals",
+          "mode": "list",
+          "cachedResultName": "AI自動化痛點診斷 - 發現您的效率提升機會 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NrrQo6XwZ4cw3lW6_iWBiEwK-9m7A99eSXXLMemGals/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1441177885,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NrrQo6XwZ4cw3lW6_iWBiEwK-9m7A99eSXXLMemGals/edit#gid=1441177885"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        40
+      ],
+      "id": "c57c8979-9940-4ea7-8dda-55df70d6a670",
+      "name": "Google Sheets Trigger",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        40
+      ],
+      "id": "b3073699-d443-48bd-8330-7070f134c584",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        100,
+        320
+      ],
+      "id": "4702138d-56f5-4cb5-8203-0ac92bc2910d",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Code').item.json['電子郵件地址'] }}",
+        "subject": "=您的 問卷分析報告",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        900,
+        140
+      ],
+      "id": "3089c660-aff0-4584-a1ca-a6397178390b",
+      "name": "Send a message",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://nickleo9.zeabur.app/mcp/dafa4d0e-e6f5-431f-ab24-d85c18d9dad9",
+        "include": "=all"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        360,
+        500
+      ],
+      "id": "f416c458-42cf-4309-b751-60e3285e4672",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "path": "dafa4d0e-e6f5-431f-ab24-d85c18d9dad9"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        440
+      ],
+      "id": "1965d577-b208-4408-a739-c962996f247a",
+      "name": "MCP Server Trigger",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -500,
+        660
+      ],
+      "id": "ed8af0a9-2c3b-4991-86b4-c0efa0477bc6",
+      "name": "Send a message in Gmail1",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "Webhook - 接收問卷": {
+      "main": [
+        []
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Send a message in Gmail1": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Google Sheets Trigger": {
+      "documentId": "1NrrQo6XwZ4cw3lW6_iWBiEwK-9m7A99eSXXLMemGals",
+      "sheetId": 1441177885,
+      "lastIndexChecked": 1
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "a391f09f-b0c1-476a-94c8-d245b13578a8",
+  "triggerCount": 3,
+  "shared": [
+    {
+      "updatedAt": "2025-07-17T03:37:19.726Z",
+      "createdAt": "2025-07-17T03:37:19.726Z",
+      "role": "workflow:owner",
+      "workflowId": "O0Qvd4E7bpxAPF7j",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-07-17T02:27:03.988Z",
+      "createdAt": "2025-07-17T02:27:03.988Z",
+      "id": "fzgcBwEKJ4UevZYf",
+      "name": "諮詢自動化"
+    }
+  ]
+}

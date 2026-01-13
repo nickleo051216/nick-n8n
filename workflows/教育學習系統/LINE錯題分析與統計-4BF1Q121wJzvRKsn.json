@@ -1,0 +1,195 @@
+{
+  "updatedAt": "2025-07-01T16:48:25.188Z",
+  "createdAt": "2025-07-01T16:47:38.743Z",
+  "id": "4BF1Q121wJzvRKsn",
+  "name": "LINE錯題分析與統計",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "node_1",
+      "name": "LINE錯題分析接收",
+      "type": "n8n-nodes-base.webhook",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-answer-analysis",
+        "responseMode": "responseNode"
+      },
+      "position": [
+        0,
+        300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "id": "node_2",
+      "name": "解析答題結果",
+      "type": "n8n-nodes-base.code",
+      "parameters": {
+        "jsCode": "// 解析 LINE 傳來的答題結果\nconst webhookData = $input.first().json;\nconst messageText = webhookData.body.events[0].message.text;\nconst userId = webhookData.body.events[0].source.userId;\nconst replyToken = webhookData.body.events[0].replyToken;\n\nconsole.log('收到訊息:', messageText);\nconsole.log('用戶ID:', userId);\n\n// 解析答題格式：1A2B3C4D5A... 或 \"答案：1A2B3C4D\"\nlet answerPattern = /(\\d+)([ABCD])/g;\nlet match;\nconst userAnswers = [];\n\n// 清理訊息內容\nlet cleanMessage = messageText.replace(/答案[：:]?\\s*/g, '').replace(/\\s+/g, '');\n\nwhile ((match = answerPattern.exec(cleanMessage)) !== null) {\n  userAnswers.push({\n    questionNumber: parseInt(match[1]),\n    selectedAnswer: match[2],\n    answerIndex: match[2].charCodeAt(0) - 65 // A=0, B=1, C=2, D=3\n  });\n}\n\nif (userAnswers.length === 0) {\n  // 如果沒有找到標準格式，嘗試其他格式\n  const simplePattern = /([ABCD])/g;\n  const letters = cleanMessage.match(simplePattern);\n  \n  if (letters && letters.length > 0) {\n    letters.forEach((letter, index) => {\n      userAnswers.push({\n        questionNumber: index + 1,\n        selectedAnswer: letter,\n        answerIndex: letter.charCodeAt(0) - 65\n      });\n    });\n  }\n}\n\nconsole.log('解析到的答案:', userAnswers);\n\nreturn [{\n  json: {\n    userId: userId,\n    replyToken: replyToken,\n    originalMessage: messageText,\n    userAnswers: userAnswers,\n    totalAnswered: userAnswers.length,\n    timestamp: new Date().toISOString(),\n    needsAnalysis: userAnswers.length > 0\n  }\n}];"
+      },
+      "position": [
+        200,
+        300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "id": "node_3",
+      "name": "分析錯題並生成報告",
+      "type": "n8n-nodes-base.code",
+      "parameters": {
+        "jsCode": "// 模擬題庫資料 (實際應該從 Google Sheets 或 JSON 檔案讀取)\n// 這裡使用您提供的題庫格式\nconst questionBank = [\n  {\n    \"number\": 1,\n    \"question\": \"多模態AI (Multimodal AI) 的定義是什麼？\",\n    \"correct_answer_letter\": \"B\",\n    \"correct_answer_index\": 1,\n    \"topic\": \"5.神經網路模型與技術\",\n    \"subtopic\": \"5.3.重要技術概念\",\n    \"concept\": \"多模態AI (Multimodal AI)\"\n  },\n  {\n    \"number\": 2,\n    \"question\": \"語言翻譯的基本原理是什麼？\",\n    \"correct_answer_letter\": \"A\",\n    \"correct_answer_index\": 0,\n    \"topic\": \"3.生成式AI應用技能\",\n    \"subtopic\": \"3.1.文字生成工具與應用\",\n    \"concept\": \"語言翻譯\"\n  }\n  // 這裡可以添加更多題目...\n];\n\nconst userData = $input.first().json;\nconst userAnswers = userData.userAnswers;\n\nlet correctCount = 0;\nlet wrongAnswers = [];\nlet topicStats = {};\n\n// 分析每個答案\nuserAnswers.forEach(userAnswer => {\n  const questionNum = userAnswer.questionNumber;\n  const question = questionBank.find(q => q.number === questionNum);\n  \n  if (question) {\n    const isCorrect = userAnswer.selectedAnswer === question.correct_answer_letter;\n    \n    if (isCorrect) {\n      correctCount++;\n    } else {\n      wrongAnswers.push({\n        questionNumber: questionNum,\n        question: question.question,\n        userAnswer: userAnswer.selectedAnswer,\n        correctAnswer: question.correct_answer_letter,\n        topic: question.topic,\n        subtopic: question.subtopic,\n        concept: question.concept\n      });\n    }\n    \n    // 統計各主題表現\n    if (!topicStats[question.topic]) {\n      topicStats[question.topic] = { correct: 0, total: 0 };\n    }\n    topicStats[question.topic].total++;\n    if (isCorrect) {\n      topicStats[question.topic].correct++;\n    }\n  }\n});\n\n// 計算分數和等級\nconst totalQuestions = userAnswers.length;\nconst score = Math.round((correctCount / totalQuestions) * 100);\nlet grade = 'D';\nif (score >= 90) grade = 'A+';\nelse if (score >= 80) grade = 'A';\nelse if (score >= 70) grade = 'B';\nelse if (score >= 60) grade = 'C';\n\n// 生成建議\nlet suggestions = [];\nif (wrongAnswers.length > 0) {\n  const weakTopics = Object.entries(topicStats)\n    .filter(([topic, stats]) => stats.correct / stats.total < 0.7)\n    .map(([topic]) => topic);\n  \n  if (weakTopics.length > 0) {\n    suggestions.push(`需要加強：${weakTopics.join('、')}`);\n  }\n}\n\n// 生成分析報告文字\nlet reportText = `📊 答題分析報告\\n\\n`;\nreportText += `🎯 總體表現：\\n`;\nreportText += `• 答題數量：${totalQuestions} 題\\n`;\nreportText += `• 正確題數：${correctCount} 題\\n`;\nreportText += `• 答對率：${score}% (${grade})\\n\\n`;\n\nif (wrongAnswers.length > 0) {\n  reportText += `❌ 錯題分析：\\n`;\n  wrongAnswers.forEach(wrong => {\n    reportText += `• 第${wrong.questionNumber}題：您選 ${wrong.userAnswer}，正解 ${wrong.correctAnswer}\\n`;\n    reportText += `  主題：${wrong.concept}\\n`;\n  });\n  reportText += `\\n`;\n}\n\nif (suggestions.length > 0) {\n  reportText += `💡 學習建議：\\n`;\n  suggestions.forEach(suggestion => {\n    reportText += `• ${suggestion}\\n`;\n  });\n}\n\nreturn [{\n  json: {\n    ...userData,\n    analysis: {\n      totalQuestions,\n      correctCount,\n      wrongCount: wrongAnswers.length,\n      score,\n      grade,\n      wrongAnswers,\n      topicStats,\n      suggestions\n    },\n    reportText,\n    analysisComplete: true\n  }\n}];"
+      },
+      "position": [
+        400,
+        300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "id": "node_4",
+      "name": "更新錯題統計到Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "parameters": {
+        "operation": "append",
+        "documentId": "1QXJ0VGe735d5aWS-aC6XHBrhg62wDIl-oqN6ybZIcg0",
+        "sheetName": "答題統計",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "用戶ID": "={{$json.userId}}",
+            "答題時間": "={{$json.timestamp}}",
+            "總題數": "={{$json.analysis.totalQuestions}}",
+            "正確數": "={{$json.analysis.correctCount}}",
+            "答對率": "={{$json.analysis.score}}",
+            "等級": "={{$json.analysis.grade}}",
+            "錯題數": "={{$json.analysis.wrongCount}}",
+            "主要弱點": "={{$json.analysis.suggestions.join('; ')}}"
+          }
+        }
+      },
+      "position": [
+        600,
+        300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "id": "node_5",
+      "name": "發送分析報告到LINE",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{$env.LINE_CHANNEL_ACCESS_TOKEN}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\\n  \\\"replyToken\\\": \\\"{{$json.replyToken}}\\\",\\n  \\\"messages\\\": [\\n    {\\n      \\\"type\\\": \\\"text\\\",\\n      \\\"text\\\": \\\"{{$json.reportText.replace(/\\\\n/g, '\\\\\\\\n');}}\\\"\\n    }\\n  ]\\n}"
+      },
+      "position": [
+        800,
+        300
+      ],
+      "typeVersion": 1
+    },
+    {
+      "id": "node_6",
+      "name": "觸發題庫同步",
+      "type": "n8n-nodes-base.httpRequest",
+      "parameters": {
+        "method": "POST",
+        "url": "{{$env.N8N_WEBHOOK_URL}}/webhook/trigger-github-sync",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\\n  \\\"source\\\": \\\"line_analysis\\\",\\n  \\\"timestamp\\\": \\\"{{$json.timestamp}}\\\",\\n  \\\"trigger_reason\\\": \\\"答題分析完成，觸發題庫同步\\\"\\n}"
+      },
+      "position": [
+        1000,
+        300
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "LINE錯題分析接收": {
+      "main": [
+        [
+          {
+            "node": "解析答題結果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "解析答題結果": {
+      "main": [
+        [
+          {
+            "node": "分析錯題並生成報告",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分析錯題並生成報告": {
+      "main": [
+        [
+          {
+            "node": "更新錯題統計到Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "觸發題庫同步",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新錯題統計到Sheets": {
+      "main": [
+        [
+          {
+            "node": "發送分析報告到LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "f667c97b-a9ff-4b58-8695-a113a6079ff3",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-07-01T16:47:38.743Z",
+      "createdAt": "2025-07-01T16:47:38.743Z",
+      "role": "workflow:owner",
+      "workflowId": "4BF1Q121wJzvRKsn",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

@@ -1,0 +1,925 @@
+{
+  "updatedAt": "2025-11-29T06:28:05.225Z",
+  "createdAt": "2025-06-29T16:16:46.773Z",
+  "id": "pnS1THZ7AKj4hEP6",
+  "name": "threadsAUTO LINE",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2124649275,
+          "mode": "list",
+          "cachedResultName": "Line post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2124649275"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('GetLastestUnpublish1').item.json.id }}",
+            "ContainerId": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Posted",
+              "displayName": "Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        32
+      ],
+      "id": "83ceacf0-08a3-4f30-a62b-00914acaf756",
+      "name": "InsertContainerId1",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.threads.net/v1.0/23977660861892336/threads_publish",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "THAA7nqV3aYj5BUVNCaGtmV0ZA4dkcwTHU4b3M4MkVoRENnVHVkWDB4T0tlQ0NaZAk41U2NXa2txakI1YlpUeC1JUXJGWmV5ZA0EzVW1VOWZA3eHZAaeVdxUXVXSmF6cnA1NTdWTXh0SEJmODZAFVDBPekRRZAXF5MkprRWl6ZAlZAMUlRmUUQxUQZDZD"
+            },
+            {
+              "name": "creation_id",
+              "value": "={{ $json.ContainerId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        944,
+        32
+      ],
+      "id": "f9cf06c2-32b5-4de2-8f9f-6876de7de1bd",
+      "name": "PublishPost1",
+      "executeOnce": true,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.threads.net/v1.0/23977660861892336/threads",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "media_type",
+              "value": "TEXT"
+            },
+            {
+              "name": "access_token",
+              "value": "THAA7nqV3aYj5BUVNCaGtmV0ZA4dkcwTHU4b3M4MkVoRENnVHVkWDB4T0tlQ0NaZAk41U2NXa2txakI1YlpUeC1JUXJGWmV5ZA0EzVW1VOWZA3eHZAaeVdxUXVXSmF6cnA1NTdWTXh0SEJmODZAFVDBPekRRZAXF5MkprRWl6ZAlZAMUlRmUUQxUQZDZD"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.Content }}"
+            },
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        512,
+        32
+      ],
+      "id": "a7fcea96-91a4-49a5-88d2-22eb376c8fb5",
+      "name": "CreatePostContainer1",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2124649275,
+          "mode": "list",
+          "cachedResultName": "Line post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2124649275"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -160,
+        32
+      ],
+      "id": "0144b6df-9f4f-4b29-a6a8-48097e1775ba",
+      "name": "GetAllPost1",
+      "alwaysOutputData": false,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2124649275,
+          "mode": "list",
+          "cachedResultName": "Line post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2124649275"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        64,
+        32
+      ],
+      "id": "92b80302-199d-45f0-9111-a8017d23b416",
+      "name": "GetLastestUnpublish1",
+      "alwaysOutputData": false,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 修正版：處理布爾值和字串的混合情況\nconst allPosts = $input.all();\nconst unpublishedPosts = allPosts.filter(item => {\n  const posted = item.json.Posted;\n  \n  // 處理不同類型的 Posted 值\n  if (posted === true || posted === \"true\" || posted === \"True\") {\n    return false; // 已發布，排除\n  }\n  \n  if (posted === false || posted === \"false\" || posted === \"False\" || posted === \"\" || posted === null || posted === undefined) {\n    return true; // 未發布，保留\n  }\n  \n  return true; // 預設為未發布\n});\n\n// 取得第一筆未發布的貼文\nif (unpublishedPosts.length > 0) {\n  return [unpublishedPosts[0]];\n} else {\n  return []; // 沒有未發布的貼文，返回空陣列\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        32
+      ],
+      "id": "a3220079-7a76-4cfa-9888-4fe6a18249a5",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2124649275,
+          "mode": "list",
+          "cachedResultName": "Line post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2124649275"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Posted": "TRUE",
+            "id": "={{ $('InsertContainerId1').item.json.id }}",
+            "Time": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Posted",
+              "displayName": "Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1168,
+        32
+      ],
+      "id": "ded21396-2a99-4705-9cd1-147b6f76c74d",
+      "name": "UpdatePostStatus",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"{{ $('取得最新草稿1').item.json.Content.toString().replace(/\\n/g, '\\\\n');}}   Line 小幫手已發布\"\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        32
+      ],
+      "id": "c58b10a4-51be-43f3-9cb0-163db05d6af5",
+      "name": "通知已發送1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2124649275,
+          "mode": "list",
+          "cachedResultName": "Line post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2124649275"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Content",
+              "lookupValue": "={{ $json.Content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -608,
+        32
+      ],
+      "id": "a9ccf712-b02d-41c0-9477-ca90a9ca8004",
+      "name": "取得最新草稿1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2124649275,
+          "mode": "list",
+          "cachedResultName": "Line post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2124649275"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Content": "={{ $json.Content }}",
+            "Posted": "=FALSE"
+          },
+          "matchingColumns": [
+            "Posted"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Posted",
+              "displayName": "Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -384,
+        32
+      ],
+      "id": "6033c68d-13a2-4a54-b0d4-ff9f24fe5564",
+      "name": "Google Sheets2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2124649275,
+          "mode": "list",
+          "cachedResultName": "Line post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=2124649275"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Content": "={{ $json.body.events[0].message.text }}",
+            "Posted": "FALSE"
+          },
+          "matchingColumns": [
+            "Posted"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Posted",
+              "displayName": "Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -816,
+        32
+      ],
+      "id": "2db9d168-9ed6-4879-a986-0ae41b609863",
+      "name": "Google Sheets3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer Q2mG2MF8mkrbdlttGU57MoWsKXLSSjEVe6l8WSlHxbmcywvXnaFjOWTWhMzDXJx8mLXUqBKvZkHCQA6vMeTcQPskZqG8ixBDx9AuM4KuJzuWvQSoulvM2cGK6wxSeySBPgarLBnWV/ic/PCptrzNaQdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.body.events[0].source.userId }}"
+            },
+            {
+              "name": "loadingSeconds",
+              "value": "40"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -816,
+        -160
+      ],
+      "id": "fd524af1-0c8c-4f14-8fe3-1c12b092c98e",
+      "name": "loading/start1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ff63efad-d344-4da0-bf64-a187d4d629d6",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        32
+      ],
+      "id": "48ab4c9a-78a0-4b20-bb71-f6197239b04b",
+      "name": "Webhook1",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "multicast"
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -394.54448436899133,
+        256
+      ],
+      "id": "788520f4-4ffe-46c8-81aa-f0243870e39f",
+      "name": "Line Messaging",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "InsertContainerId1": {
+      "main": [
+        [
+          {
+            "node": "PublishPost1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PublishPost1": {
+      "main": [
+        [
+          {
+            "node": "UpdatePostStatus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CreatePostContainer1": {
+      "main": [
+        [
+          {
+            "node": "InsertContainerId1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetAllPost1": {
+      "main": [
+        [
+          {
+            "node": "GetLastestUnpublish1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetLastestUnpublish1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "CreatePostContainer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpdatePostStatus": {
+      "main": [
+        [
+          {
+            "node": "通知已發送1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得最新草稿1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets2": {
+      "main": [
+        [
+          {
+            "node": "GetAllPost1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets3": {
+      "main": [
+        [
+          {
+            "node": "取得最新草稿1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "loading/start1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e638fb12-8d4e-4dfb-8818-e50427fb369f",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-06-29T16:16:46.773Z",
+      "createdAt": "2025-06-29T16:16:46.773Z",
+      "role": "workflow:owner",
+      "workflowId": "pnS1THZ7AKj4hEP6",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

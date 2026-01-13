@@ -1,0 +1,530 @@
+{
+  "updatedAt": "2025-12-06T07:23:19.800Z",
+  "createdAt": "2025-10-14T16:43:51.692Z",
+  "id": "3muwgkW0nOWyWI9H",
+  "name": "網站發文",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        304
+      ],
+      "id": "9d7ee3ef-63eb-40c9-92bc-def308739e5d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "title": "={{ $('Code in JavaScript').item.json.Title }}",
+        "additionalFields": {
+          "authorId": 1,
+          "content": "={{ $json.output }}",
+          "status": "publish",
+          "format": "standard",
+          "categories": [
+            10
+          ],
+          "tags": [
+            12
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.wordpress",
+      "typeVersion": 1,
+      "position": [
+        1824,
+        416
+      ],
+      "id": "4ad9caef-c4ed-4ced-8d30-828b4975b46d",
+      "name": "Create a post1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得輸入的資料\nconst items = $input.all();\n\n// 處理每一筆資料\nconst processedItems = items.map(item => {\n  const content = item.json.Content;\n  \n  // 找到第一個換行符號的位置\n  const firstNewlineIndex = content.indexOf('\\n');\n  \n  let title = '';\n  let body = '';\n  \n  if (firstNewlineIndex !== -1) {\n    // 分割標題（第一行）\n    title = content.substring(0, firstNewlineIndex).trim();\n    \n    // 分割內文（剩餘部分）\n    body = content.substring(firstNewlineIndex + 1).trim();\n  } else {\n    // 如果沒有換行符號，整個內容就是標題\n    title = content.trim();\n    body = '';\n  }\n  \n  // 回傳新的資料結構\n  return {\n    json: {\n      ...item.json,  // 保留原始所有欄位\n      Title: title,   // 新增標題欄位\n      Body: body      // 新增內文欄位\n    }\n  };\n});\n\nreturn processedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        416
+      ],
+      "id": "70cc23e3-8668-48fb-9901-d32e3123fb5d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=將這段 {{ $json.Body }} (原本是發布在社群上的)\n重新生成 部落格的形式，要準備發佈到網站 \n\n\n任務：將 Threads 社群貼文轉換成深度部落格文章\n\n原始貼文內容\n{{ $json.Body }}\n\n轉換指南\n1. 內容擴充策略\n- 保留核心訊息：維持原文的主要觀點和個人經驗\n- 深化論述：將簡短的觀點展開成完整段落，加入更多細節、例子和實際應用\n- 加入故事性：如果原文有提到經驗，請擴充成完整的故事，包含：\n- 當時的情境\n- 遇到的挑戰\n- 如何解決\n- 得到的啟發\n補充實用資訊：加入讀者可以立即應用的技巧、步驟或工具\n\n2. 文章結構\n請按照以下結構重新組織內容：\n\n開場（引起共鳴）\n- 用一個問題或情境開場，讓讀者產生「對！我也遇過這個問題」的感覺\n- 簡短說明為什麼這個主題重要\n\n主要內容（3-5 個段落）\n每個段落聚焦一個重點\n- 使用小標題 區分段落\n- 加入具體例子、數據或對比\n- 適時使用：\n  - 列點說明（當有多個要點時）\n  - 引用框（重要觀念）\n  - 實際案例（真實經驗）\n\n 現在，請根據以上指南，將原始貼文改寫成一篇吸引人的部落格文章。\n\n記住三個關鍵：\n1. 真實：用真實經驗和感受，不要空談理論\n2. 實用：給讀者帶得走的價值，不只是資訊\n3. 溫暖：像朋友聊天，不是老師上課\n\n請以 Markdown (要注意去掉 ** 等符號) 格式輸出完整文章。\n\n\n不用 hastag",
+        "options": {
+          "systemMessage": "\n\n\n你是一位專業的內容創作專家，特別擅長將社群媒體的短文轉換成深度且有溫度的部落格文章。\n\n你的寫作特色：\n- 保持親切、平易近人的語氣\n- 善於用故事和實例說明概念\n- 能將複雜的技術用白話文解釋\n- 文章結構清晰，易讀性高\n 內容既有深度又接地氣\n改寫原則：\n1. 內容要比原文更豐富，但不偏離主題\n2. 保持 Nick 的個人風格和語氣\n3. 加入更多細節、例子和實用建議\n4. 文章要有結構，但不死板\n5. 結尾要自然引導互動，但不強迫推銷\n\n絕對不要：\n- 使用過度誇大或推銷的語言\n- 寫出空洞的口號\n- 改變原文的核心訊息\n- 使用過多專業術語而不解釋\n- 寫出 AI 感很重的文章（要像真人寫的）"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1376,
+        416
+      ],
+      "id": "2fb4f5ca-e042-44fb-838e-6e76b59938b0",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        672
+      ],
+      "id": "26b309ec-3402-449e-95fc-8ce055f7b582",
+      "name": "OpenRouter Chat Model1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        752,
+        400
+      ],
+      "id": "8efdc2c4-8579-4f0a-977c-2cf7b17fb4ec",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "threads-post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "PublishWP Status",
+              "lookupValue": "no"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        96,
+        400
+      ],
+      "id": "0dfcac9c-e3bc-47b0-80e3-40445e3f9708",
+      "name": "Get row(s) in sheet",
+      "executeOnce": true,
+      "credentials": "[REMOVED]",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "threads-post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Code in JavaScript').item.json.id }}",
+            "PublishWP Status": "done"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Posted",
+              "displayName": "Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PublishWP Status",
+              "displayName": "PublishWP Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2144,
+        416
+      ],
+      "id": "7e81ea8a-de35-46f4-a5e6-f557df9ae8bd",
+      "name": "Update row in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "=今日文章 已發布 請點擊連結查看：{{ $('Create a post1').item.json.guid.rendered }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2400,
+        416
+      ],
+      "id": "76d20134-b772-4973-9dc5-6a0f5a3f9509",
+      "name": "Send a text message",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "=今日文章 共 6篇 已發布 請點擊連結查看 https://znstudio216.com/category/ai-daily/",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        256
+      ],
+      "id": "3942ab5e-aeee-459e-9c4b-e45250f46d41",
+      "name": "Send a text message1",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.slice(0, 6);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        400
+      ],
+      "id": "302d2634-2979-4cbc-aff9-1afbc9025238",
+      "name": "處理6筆"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        576
+      ],
+      "id": "5695e515-53b4-4f2d-9a63-1ffe974a1298",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "hours"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2608,
+        416
+      ],
+      "id": "8a6ac6a3-0ec0-4e6b-8f06-68e0fe030a6e",
+      "name": "Wait",
+      "webhookId": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a post1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Create a post1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "處理6筆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理6筆": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    },
+    "node:Google Sheets Trigger": {
+      "documentId": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+      "sheetId": 0,
+      "lastIndexChecked": 300
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ac2368c9-bcea-4ef0-9de0-5fe8e9c4440a",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-10-14T16:43:51.692Z",
+      "createdAt": "2025-10-14T16:43:51.692Z",
+      "role": "workflow:owner",
+      "workflowId": "3muwgkW0nOWyWI9H",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

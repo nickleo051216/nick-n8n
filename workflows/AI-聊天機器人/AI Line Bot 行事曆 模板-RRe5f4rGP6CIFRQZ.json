@@ -1,0 +1,1849 @@
+{
+  "updatedAt": "2025-12-30T02:32:38.383Z",
+  "createdAt": "2025-10-27T15:32:26.736Z",
+  "id": "RRe5f4rGP6CIFRQZ",
+  "name": "AI Line Bot 行事曆 模板",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=回應這個訊息：{{ $json.chat_input }}\n以繁體中文，純文字輸出，不要帶 HTML。\n\n日期以{{ $now; Asia/Taipei}}為主\n\n新增行程前，都先檢查該天行程是否有其他活動，如果有重疊的時間，詢問是否要新增？還是改期？或是其他安排？\n\n如果沒有重疊 立即新增\n\n**重要：使用 Google Calendar 更新工具時，請使用以下精確的參數名稱：**\n- Event_ID: 行程的唯一識別碼\n- Description: 要新增的備註內容\n\n如果訊息中包含地點資訊，請同時生成該地點的 Google 地圖搜尋連結，格式為 `https://www.google.com/maps/search/?api=1&query=[地點名稱]`。請將此連結視為備註的一部分，並在回覆中顯示給使用者。\n\n如果使用者提到行程相關資訊，請特別注意以下要素：\n- 標題/主題\n- 日期和時間\n- 地點 (餐廳、會議室、地址等)\n- 備註 (特殊需求、注意事項、參與人員等)\n\n- 標題/主題 → title\n- 日期和時間 → start_time, end_time  \n- 地點 → location\n- 備註 → notes\n\n例如：\n「明天下午2點在台北101開會，記得帶筆電」\n→ 標題：開會、時間：明天14:00、地點：台北101、備註：記得帶筆電\n\n「週五晚上7點在欣葉餐廳聚餐，約5個人」\n→ 標題：聚餐、時間：週五19:00、地點：欣葉餐廳、備註：約5個人\n\n如果是照片，請幫我分析思考這是代表甚麼意思？\n\n反問我3個問題 跟{{ $json.chat_input }}訊息有關的問題\n\n如果有提到 關於行事曆的日期 時間 主題等問題\n套用 Tool 並建立\n\n\n\n都以條列式回應\n\n\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -320,
+        928
+      ],
+      "id": "6a8bcf4f-cf50-4e54-92d9-22bb281d3021",
+      "name": "AI 語言模型"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 完整輸出 items 結構，查看所有可能的位置\nconsole.log(\"完整項目結構:\");\nitems.forEach((item, index) => {\n  console.log(`項目 ${index} 的結構:`, JSON.stringify(item, null, 2));\n  \n  // 遞迴尋找 replyToken\n  function findReplyToken(obj, path = '') {\n    if (!obj || typeof obj !== 'object') return;\n    \n    Object.keys(obj).forEach(key => {\n      if (key === 'replyToken') {\n        console.log(`發現 replyToken 在路徑: ${path}.${key}, 值: ${obj[key]}`);\n      }\n      if (typeof obj[key] === 'object' && obj[key] !== null) {\n        findReplyToken(obj[key], path ? `${path}.${key}` : key);\n      }\n    });\n  }\n  \n  findReplyToken(item);\n});\n\n// 尋找 replyToken (優先順序: 根層級 > json 屬性 > 深層結構)\nlet replyToken = null;\nlet replyTokenItem = null;\n\n// 方法1：直接在根層級查找\nreplyTokenItem = items.find(item => item.replyToken !== undefined);\nif (replyTokenItem) {\n  replyToken = replyTokenItem.replyToken;\n  console.log(\"方法1找到 replyToken:\", replyToken);\n}\n\n// 方法2：在 json 屬性中查找\nif (!replyToken) {\n  replyTokenItem = items.find(item => item.json && item.json.replyToken !== undefined);\n  if (replyTokenItem) {\n    replyToken = replyTokenItem.json.replyToken;\n    console.log(\"方法2找到 replyToken:\", replyToken);\n  }\n}\n\n// 方法3：嘗試在深層結構中查找\nif (!replyToken) {\n  replyTokenItem = items.find(item => \n    item.json && item.json.body && item.json.body.events && \n    item.json.body.events[0] && item.json.body.events[0].replyToken\n  );\n  if (replyTokenItem) {\n    replyToken = replyTokenItem.json.body.events[0].replyToken;\n    console.log(\"方法3找到 replyToken:\", replyToken);\n  }\n}\n\n// 如果都找不到，使用預設值\nif (!replyToken) {\n  console.warn(\"未找到 replyToken，使用預設值\");\n  replyToken = \"a222dd152afa4c1186599196a0c238de\";\n}\n\n// 找到包含 AI 輸出的項目（來自 AI 語言模型節點）\nconst outputItem = items.find(item => item.json && item.json.output !== undefined);\nlet aiResponse = \"無法獲取回應\";\n\nif (outputItem) {\n  aiResponse = outputItem.json.output.trim();\n  console.log(\"找到原始 AI 輸出，長度:\", aiResponse.length, \"字元\");\n} else {\n  console.warn(\"未找到 AI 輸出，使用預設文本\");\n}\n\n// 檢查是否需要分段發送訊息\n// LINE 文字訊息限制為 5000 字元，我們使用較保守的 4000 字元分段\nconst MAX_LENGTH = 4000;\nlet segments = [];\n\nif (aiResponse.length <= MAX_LENGTH) {\n  // 短訊息，直接發送\n  segments = [aiResponse];\n  console.log(\"短訊息，直接發送\");\n} else {\n  // 長訊息需要分段\n  console.log(\"訊息太長，需要分段發送\");\n  \n  // 智能分段 - 嘗試在段落或句子處分割\n  let remainingText = aiResponse;\n  while (remainingText.length > 0) {\n    let segmentLength = Math.min(remainingText.length, MAX_LENGTH);\n    \n    // 如果不是最後一段且長度達到上限，嘗試在句子結尾或段落處分割\n    if (segmentLength === MAX_LENGTH && remainingText.length > MAX_LENGTH) {\n      // 尋找合適的分割點（換行符、句號、問號、驚嘆號）\n      const preferredBreaks = ['\\n\\n', '\\n', '。', '！', '？', '。', '.', '!', '?'];\n      \n      for (const breakChar of preferredBreaks) {\n        // 從最大長度位置向前查找最近的分隔符\n        const lastBreakPos = remainingText.lastIndexOf(breakChar, MAX_LENGTH);\n        if (lastBreakPos > MAX_LENGTH * 0.7) { // 至少要有 70% 的長度\n          segmentLength = lastBreakPos + breakChar.length;\n          break;\n        }\n      }\n    }\n    \n    // 提取當前段落\n    const segment = remainingText.substring(0, segmentLength);\n    segments.push(segment);\n    \n    // 更新剩餘文本\n    remainingText = remainingText.substring(segmentLength);\n  }\n  \n  console.log(`訊息已分為 ${segments.length} 段`);\n}\n\n// 創建符合 LINE API 格式的訊息數組\nconst messages = segments.map(segment => ({\n  type: \"text\",\n  text: segment\n}));\n\n// 返回格式化結果\nreturn [\n  {\n    json: {\n      replyToken: replyToken,\n      text: aiResponse\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        928
+      ],
+      "id": "b7d1989d-5e7a-4234-b016-673be241d935",
+      "name": "處理 AI 回應"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer 請貼上自己的 Line Channel access token (long-lived)"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('行事曆').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{$json.text.replace(/\\n/g, '\\\\n');}}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        304,
+        928
+      ],
+      "id": "12a58217-d7de-4ad3-8b22-414cf9f90269",
+      "name": "發送回應給 LINE"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 請貼上自己的 Line Channel access token (long-lived)"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.body.events[0].source.userId }}"
+            },
+            {
+              "name": "loadingSeconds",
+              "value": "60"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1456,
+        624
+      ],
+      "id": "dedcac7e-d45d-46a2-89f3-5ec426517c9f",
+      "name": "loading/start"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('行事曆').item.json.body.events[0].message.type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c5c5ba43-467d-40fb-8b23-cbdc2e207743"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3c6645bc-26c8-473b-9e8d-96ce335e6157",
+                    "leftValue": "={{ $('行事曆').item.json.body.events[0].message.type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b2a1ad81-cbbd-434c-bac2-16c8a32275ae",
+                    "leftValue": "={{ $('行事曆').item.json.body.events[0].message.type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1248,
+        832
+      ],
+      "id": "6d20ca37-cfdb-45a1-a32f-3e8fef4d3ed5",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19e2a5fa-6e69-4dfa-9ef3-56db37a277e1",
+              "name": "chat_input",
+              "value": "={{ $('行事曆').item.json.body.events[0].message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "96ddeea0-23c6-4d89-9c0f-fad22d460047",
+              "name": "type",
+              "value": "text",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        624
+      ],
+      "id": "ed6f39e4-7a2f-4c88-acd8-182fb856523b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -800,
+        832
+      ],
+      "id": "c5d8d9e4-aff6-40c1-acbd-3e6aedd388cf",
+      "name": "OpenAI",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92008b54-ed4c-46f1-9e77-60cf9646f3c8",
+              "name": "chat_input",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "848d064d-e72e-49c7-a6e3-2b464ca1bc39",
+              "name": "type",
+              "value": "voice",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        832
+      ],
+      "id": "37835efb-6763-43c9-99c9-f5475bd660d5",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-2024-11-20",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-2024-11-20"
+        },
+        "text": "請幫我閱讀這張圖片裡面的資訊",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -800,
+        1024
+      ],
+      "id": "631cfa2b-2e47-40bf-9bc7-783a9ea8219a",
+      "name": "OpenAI1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92008b54-ed4c-46f1-9e77-60cf9646f3c8",
+              "name": "chat_input",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "848d064d-e72e-49c7-a6e3-2b464ca1bc39",
+              "name": "type",
+              "value": "image",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        1024
+      ],
+      "id": "0b609f4a-30d2-42f9-bb67-29cbfbca1eab",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        1152
+      ],
+      "id": "8a52bfea-9543-43ed-ba2d-36dd6dc01b08",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "default",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -240,
+        1152
+      ],
+      "id": "2c5c977d-9ac1-4d6e-bbf7-4f4a27bef881",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "path": "1220 calendar"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -192
+      ],
+      "id": "2bb89dbc-356f-40c9-8f90-69291ec062b5",
+      "name": "google Tool MCP",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1220course",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        720
+      ],
+      "id": "3969973e-3caa-4cdc-8e7d-9405fa5e8a7e",
+      "name": "行事曆",
+      "webhookId": "[REMOVED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://nickleo9.zeabur.app/mcp/83f04fe2-0b33-4250-b012-3cc2f278d49a/sse",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        1152
+      ],
+      "id": "e9070bc7-694b-4eb1-82c0-8e8c576adf57",
+      "name": "MCP Client1"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "nickleo3@gmail.com",
+          "mode": "list",
+          "cachedResultName": "nickleo3@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location', ``, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        32
+      ],
+      "id": "fe12c4b3-ecca-4ac1-a46c-bd3e17a50875",
+      "name": "Google Calendar create",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "nickleo3@gmail.com",
+          "mode": "list",
+          "cachedResultName": "nickleo3@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        32
+      ],
+      "id": "841d18d9-5251-4e8f-9e51-738fc6034171",
+      "name": "Google delete",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "nickleo3@gmail.com",
+          "mode": "list",
+          "cachedResultName": "nickleo3@gmail.com"
+        },
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}",
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        32
+      ],
+      "id": "5203c859-717b-44ec-af02-da2739b9558a",
+      "name": "Google search",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "nickleo3@gmail.com",
+          "mode": "list",
+          "cachedResultName": "nickleo3@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "updateFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID', ``, 'string') }}",
+          "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location', ``, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        832,
+        32
+      ],
+      "id": "ef8053c5-92d8-4a0e-8e06-0f898df3bf4e",
+      "name": "Google update Calendar",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('行事曆').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 請貼上自己的 Line Channel access token (long-lived)"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1024,
+        1024
+      ],
+      "id": "d174b863-0a87-4a3d-a71e-3f43781166c7",
+      "name": "圖片"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('行事曆').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 請貼上自己的 Line Channel access token (long-lived)"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1024,
+        832
+      ],
+      "id": "9ce2b82c-a637-4b50-9f22-222074df4f3f",
+      "name": "語音"
+    },
+    {
+      "parameters": {
+        "jsCode": "items[0].json.sessionId = $input.first().json.body.events[0].source.userId\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        832
+      ],
+      "id": "7f64fcad-805d-4146-9023-ca37c7a7af4c",
+      "name": "把 webhook 等輸入中的 userId，存在 sessionId 欄位"
+    },
+    {
+      "parameters": {
+        "content": "MCP 專區\n此區 也可以另外存在獨立的 workflow\n(也可供其他 Workflow 使用)",
+        "height": 528,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "0b2388cf-a658-4be0-9de3-9cf7bc77832f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## 這是我的社群：\n## [ZN AI 樂園](https://line.me/ti/g2/m9R6Fd9CF2SiMIA2wheULFoBZUtsoFV7ckW8MA?utm_source=invitation&utm_medium=link_copy&utm_campaign=default/)\n歡迎點擊 ZN AI 樂園\n\n一起加入分享討論 n8n AI \n\nNick Chang｜nickleo051216@gmail.com｜\n\n0932-684-051\n\n個人網站：[ZN Studio](https://portaly.cc/zn.studio)\n\nThreads： ZN Studio\n[@nickai216](https://www.threads.com/@nickai216)\n\nLine ： [客服](https://lin.ee/Faz0doj)",
+        "height": 640,
+        "width": 288,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2256,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "46879ddb-2a6d-4717-8b35-921509e55a3b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "1. 請更換成自己的  Line Channel access token (long-lived)\n\n2. 請更換成自己的 GPT API\n\n3. 請更換成自己的 Google API\n\n即可使用此模板\n",
+        "height": 832,
+        "width": 2432,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1904,
+        544
+      ],
+      "typeVersion": 1,
+      "id": "a50b5694-1c52-4ca6-acc2-9861e8f972d3",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=回應這個訊息：{{ $json.chat_input }}\n以繁體中文，純文字輸出，不要帶 HTML。\n\n日期以{{ $now; Asia/Taipei}}為主\n\n新增行程前，都先檢查該天行程是否有其他活動，如果有重疊的時間，詢問是否要新增？還是改期？或是其他安排？\n\n如果沒有重疊 立即新增\n\n**重要：使用 Google Calendar 更新工具時，請使用以下精確的參數名稱：**\n- Event_ID: 行程的唯一識別碼\n- Description: 要新增的備註內容\n\n如果訊息中包含地點資訊，請同時生成該地點的 Google 地圖搜尋連結，格式為 `https://www.google.com/maps/search/?api=1&query=[地點名稱]`。請將此連結視為備註的一部分，並在回覆中顯示給使用者。\n\n如果使用者提到行程相關資訊，請特別注意以下要素：\n- 標題/主題\n- 日期和時間\n- 地點 (餐廳、會議室、地址等)\n- 備註 (特殊需求、注意事項、參與人員等)\n\n- 標題/主題 → title\n- 日期和時間 → start_time, end_time  \n- 地點 → location\n- 備註 → notes\n\n例如：\n「明天下午2點在台北101開會，記得帶筆電」\n→ 標題：開會、時間：明天14:00、地點：台北101、備註：記得帶筆電\n\n「週五晚上7點在欣葉餐廳聚餐，約5個人」\n→ 標題：聚餐、時間：週五19:00、地點：欣葉餐廳、備註：約5個人\n\n如果是照片，請幫我分析思考這是代表甚麼意思？\n\n反問我3個問題 跟{{ $json.chat_input }}訊息有關的問題\n\n如果有提到 關於行事曆的日期 時間 主題等問題\n套用 Tool 並建立\n\n\n\n都以條列式回應\n\n\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -144,
+        -464
+      ],
+      "id": "16706383-42f2-42cb-84a7-45fd900c14ad",
+      "name": "AI 語言模型1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('行事曆1').item.json.body.events[0].message.type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c5c5ba43-467d-40fb-8b23-cbdc2e207743"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3c6645bc-26c8-473b-9e8d-96ce335e6157",
+                    "leftValue": "={{ $('行事曆1').item.json.body.events[0].message.type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b2a1ad81-cbbd-434c-bac2-16c8a32275ae",
+                    "leftValue": "={{ $('行事曆1').item.json.body.events[0].message.type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1072,
+        -448
+      ],
+      "id": "eceaf1e3-9e11-4941-9f3a-c8f90c48c0ec",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -624,
+        -320
+      ],
+      "id": "7e5b1448-f260-42eb-aa71-e4ced70029ae",
+      "name": "OpenAI2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92008b54-ed4c-46f1-9e77-60cf9646f3c8",
+              "name": "chat_input",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "848d064d-e72e-49c7-a6e3-2b464ca1bc39",
+              "name": "type",
+              "value": "voice",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        -320
+      ],
+      "id": "fa4912d8-a74c-4f45-a210-1cf467f52e6c",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-2024-11-20",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-2024-11-20"
+        },
+        "text": "請幫我閱讀這張圖片裡面的資訊",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -624,
+        -128
+      ],
+      "id": "44996124-a5df-4abc-9ea5-7a2c0d18b687",
+      "name": "OpenAI3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92008b54-ed4c-46f1-9e77-60cf9646f3c8",
+              "name": "chat_input",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "848d064d-e72e-49c7-a6e3-2b464ca1bc39",
+              "name": "type",
+              "value": "image",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        -128
+      ],
+      "id": "99357fce-96a8-4f53-be02-97e3905c3c35",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -224
+      ],
+      "id": "9881ed86-ec43-4a76-a8c7-81431c78819b",
+      "name": "OpenRouter Chat Model1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('行事曆1').item.json.body.events[0].source.userId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -64,
+        -224
+      ],
+      "id": "516e2624-acdf-4d08-bc01-9180b0877298",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1220course",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1360,
+        -608
+      ],
+      "id": "7732ef20-0b57-42a7-b651-6c7d781b95d6",
+      "name": "行事曆1",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('行事曆1').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer Jg+6xRnTh+0CFNOeeFTCbihuntoSGHenNj9wWKokbWG1ERRNB9DDZS+fzQT3Abfn+kYi9UQd6SeEfpN+Ak95ZgQg7x49rtM+eQVMlApWZQCE7EzaiZABsz3/QLgmqpzEsTBUOBVZWRmtZjongwd41QdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -848,
+        -128
+      ],
+      "id": "74f61674-dc7e-43bb-9342-a1f44291251c",
+      "name": "圖片1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('行事曆1').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer Jg+6xRnTh+0CFNOeeFTCbihuntoSGHenNj9wWKokbWG1ERRNB9DDZS+fzQT3Abfn+kYi9UQd6SeEfpN+Ak95ZgQg7x49rtM+eQVMlApWZQCE7EzaiZABsz3/QLgmqpzEsTBUOBVZWRmtZjongwd41QdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -848,
+        -320
+      ],
+      "id": "edfbf6f7-016c-4b8e-8ced-f679e1c17f67",
+      "name": "語音1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "U3663ce702b6def5582c3eb7454fa6b12",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -464
+      ],
+      "id": "48af403c-61d2-4406-a6e5-88583f23fd67",
+      "name": "Line Messaging",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "showLoadingAnimation",
+        "chatId": "[REMOVED]"
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        -224
+      ],
+      "id": "bc42534b-5bb9-442d-936f-0e8d87976fb1",
+      "name": "Line Messaging1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19e2a5fa-6e69-4dfa-9ef3-56db37a277e1",
+              "name": "chat_input",
+              "value": "={{ $json.body.events[0].message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "96ddeea0-23c6-4d89-9c0f-fad22d460047",
+              "name": "type",
+              "value": "text",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        -512
+      ],
+      "id": "d7f95e89-7542-420e-b29c-20eccc70a814",
+      "name": "Edit Fields3",
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "events": [
+          "*"
+        ]
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessagingTrigger",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -1296
+      ],
+      "id": "f3d2ef68-c7d1-43b5-9acd-a8aed9cbb21f",
+      "name": "Line Messaging Trigger",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('行事曆1').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer Jg+6xRnTh+0CFNOeeFTCbihuntoSGHenNj9wWKokbWG1ERRNB9DDZS+fzQT3Abfn+kYi9UQd6SeEfpN+Ak95ZgQg7x49rtM+eQVMlApWZQCE7EzaiZABsz3/QLgmqpzEsTBUOBVZWRmtZjongwd41QdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2016,
+        -640
+      ],
+      "id": "6776cb04-77da-4c2c-b98b-dac061baac46",
+      "name": "圖片2"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('行事曆1').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer Jg+6xRnTh+0CFNOeeFTCbihuntoSGHenNj9wWKokbWG1ERRNB9DDZS+fzQT3Abfn+kYi9UQd6SeEfpN+Ak95ZgQg7x49rtM+eQVMlApWZQCE7EzaiZABsz3/QLgmqpzEsTBUOBVZWRmtZjongwd41QdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2016,
+        -832
+      ],
+      "id": "11e50a08-d4e0-47e3-9ceb-61e79be52cec",
+      "name": "語音2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c5c5ba43-467d-40fb-8b23-cbdc2e207743"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3c6645bc-26c8-473b-9e8d-96ce335e6157",
+                    "leftValue": "={{ $json.message.type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b2a1ad81-cbbd-434c-bac2-16c8a32275ae",
+                    "leftValue": "={{ $json.message.type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "image"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1216,
+        -1312
+      ],
+      "id": "dfdd2ffd-719c-4011-b86b-8c1ed3a5cd5a",
+      "name": "Switch3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=回應這個訊息：123\n以繁體中文，純文字輸出，不要帶 HTML。\n\n日期以{{ $now; Asia/Taipei}}為主\n\n新增行程前，都先檢查該天行程是否有其他活動，如果有重疊的時間，詢問是否要新增？還是改期？或是其他安排？\n\n如果沒有重疊 立即新增\n\n**重要：使用 Google Calendar 更新工具時，請使用以下精確的參數名稱：**\n- Event_ID: 行程的唯一識別碼\n- Description: 要新增的備註內容\n\n如果訊息中包含地點資訊，請同時生成該地點的 Google 地圖搜尋連結，格式為 `https://www.google.com/maps/search/?api=1&query=[地點名稱]`。請將此連結視為備註的一部分，並在回覆中顯示給使用者。\n\n如果使用者提到行程相關資訊，請特別注意以下要素：\n- 標題/主題\n- 日期和時間\n- 地點 (餐廳、會議室、地址等)\n- 備註 (特殊需求、注意事項、參與人員等)\n\n- 標題/主題 → title\n- 日期和時間 → start_time, end_time  \n- 地點 → location\n- 備註 → notes\n\n例如：\n「明天下午2點在台北101開會，記得帶筆電」\n→ 標題：開會、時間：明天14:00、地點：台北101、備註：記得帶筆電\n\n「週五晚上7點在欣葉餐廳聚餐，約5個人」\n→ 標題：聚餐、時間：週五19:00、地點：欣葉餐廳、備註：約5個人\n\n如果是照片，請幫我分析思考這是代表甚麼意思？\n\n反問我3個問題 跟{{ $json.chat_input }}訊息有關的問題\n\n如果有提到 關於行事曆的日期 時間 主題等問題\n套用 Tool 並建立\n\n\n\n都以條列式回應\n\n\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1648,
+        -1456
+      ],
+      "id": "7e957abd-5835-4cdd-b861-8ff71bd30a96",
+      "name": "AI 語言模型2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1616,
+        -1248
+      ],
+      "id": "bb898e6a-0e50-4f68-8d7a-96375128334a",
+      "name": "OpenAI Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "U3663ce702b6def5582c3eb7454fa6b12",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.output }}",
+              "quickReply": {
+                "items": [
+                  {}
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1952,
+        -1456
+      ],
+      "id": "b1c1a2e5-31b3-4017-85ec-9440caf0e239",
+      "name": "Line Messaging3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "nickleo051216@gmail.com",
+          "mode": "list",
+          "cachedResultName": "nickleo051216@gmail.com"
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        2304,
+        -48
+      ],
+      "id": "d86a0ead-2f10-450b-a6cf-77cab7d57524",
+      "name": "Create an event",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://nickleo9.zeabur.app/mcp/1220 calendar/sse",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        -224
+      ],
+      "id": "95c5e7ed-80f7-45a4-afe0-e6bb2cbd2cb4",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "events": [
+          "*"
+        ]
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessagingTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        976
+      ],
+      "id": "5866ad6f-7b85-4b82-9efc-363780e99b0d",
+      "name": "Line Messaging Trigger1",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "U3663ce702b6def5582c3eb7454fa6b12",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.output }}",
+              "quickReply": {
+                "items": [
+                  {}
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        304,
+        768
+      ],
+      "id": "75253721-6071-4e8b-bbe9-5c2e27f99cda",
+      "name": "Line Messaging4",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "events": [
+          "*"
+        ]
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessagingTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        -416
+      ],
+      "id": "bb74a49f-f78f-4129-9f49-c4d3e88ed481",
+      "name": "Line Messaging Trigger2",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "AI 語言模型": {
+      "main": [
+        [
+          {
+            "node": "處理 AI 回應",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理 AI 回應": {
+      "main": [
+        [
+          {
+            "node": "發送回應給 LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "語音",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "圖片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "行事曆": {
+      "main": [
+        [
+          {
+            "node": "把 webhook 等輸入中的 userId，存在 sessionId 欄位",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "loading/start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar create": {
+      "ai_tool": [
+        [
+          {
+            "node": "google Tool MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google delete": {
+      "ai_tool": [
+        [
+          {
+            "node": "google Tool MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google search": {
+      "ai_tool": [
+        [
+          {
+            "node": "google Tool MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google update Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "google Tool MCP",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "圖片": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "語音": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "把 webhook 等輸入中的 userId，存在 sessionId 欄位": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI 語言模型1": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "語音1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "圖片1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI 語言模型1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI 語言模型1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "行事曆1": {
+      "main": [
+        []
+      ]
+    },
+    "圖片1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "語音1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch3": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI 語言模型2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI 語言模型2": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging3": {
+      "main": [
+        []
+      ]
+    },
+    "Create an event": {
+      "main": [
+        []
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI 語言模型1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Line Messaging Trigger": [
+      {
+        "json": {
+          "type": "message",
+          "message": {
+            "type": "text",
+            "id": "592880078090928197",
+            "quoteToken": "5rx7wrjZxaWOGvU_aNPDCF7ZtPNI73e9RVps51Q6lDKQJOD2hXrQvybBXKjTsuVGPoQrQgK_sWFmyNSxwhHvesg9I8pEmQ92Be4t_FVP5fP_T2eEuGD9KdgCOCm366YU7BIlSeO5aVl-wmn_Oskaaw",
+            "markAsReadToken": "GWpgAG0BVM0ZYiXBrnJuTOIdP4J_w6Y6cucg-OQvG4_livsCaAMD9-uJCmPI-DRYcxiuoRojj62A4Z9BhE7yv8nNG6oiRJQOS3rW8HNOIipPk7luN-U9j21od9TJEek1jlsjD9GOcQWwftmU2YWHdAWOgqRlweohMEuJItfcJy_8kjxnMmpM_5k2hxM0CZ9MlmskMXsWYU7o_y-xn9-6bQ",
+            "text": "zxc"
+          },
+          "webhookEventId": "01KCXA7G9DSFR60HKYJC729SR8",
+          "deliveryContext": {
+            "isRedelivery": false
+          },
+          "timestamp": 1766215368498,
+          "source": {
+            "type": "user",
+            "userId": "U3663ce702b6def5582c3eb7454fa6b12"
+          },
+          "replyToken": "f7bfef4c7bf4486fa9bc496e09035a52",
+          "mode": "active",
+          "destination": "Uf9f971a6d920b9b47901c545e9e6505d"
+        }
+      }
+    ]
+  },
+  "versionId": "709dac46-8215-4b5a-b56a-c421c9b32fa3",
+  "triggerCount": 5,
+  "shared": [
+    {
+      "updatedAt": "2025-10-27T15:32:26.736Z",
+      "createdAt": "2025-10-27T15:32:26.736Z",
+      "role": "workflow:owner",
+      "workflowId": "RRe5f4rGP6CIFRQZ",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-26T15:44:53.730Z",
+      "createdAt": "2025-11-26T15:44:53.730Z",
+      "id": "2euOtEGydkJo44Ap",
+      "name": "範本"
+    }
+  ]
+}

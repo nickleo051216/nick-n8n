@@ -1,0 +1,72 @@
+# 環境變數
+.env
+.env.local
+.env.*.local
+*.env
+
+# API Keys 和憑證
+**/config/*.key
+**/config/*.pem
+**/credentials/
+credentials.json
+token.json
+
+# n8n 相關
+.n8n/
+*.n8n
+
+# 暫存檔案
+*.tmp
+*.temp
+*.log
+logs/
+*.bak
+
+# 系統檔案
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# 個人筆記（不公開）
+PRIVATE_NOTES.md
+TODO_PRIVATE.md
+NOTES.md
+
+# 備份檔案
+backup/
+*.backup
+
+# Claude Code
+.claude/
+
+# 測試資料
+test-data/
+mock-data/
+
+# 編譯輸出
+dist/
+build/
+out/

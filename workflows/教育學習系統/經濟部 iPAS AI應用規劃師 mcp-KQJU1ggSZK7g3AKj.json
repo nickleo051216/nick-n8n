@@ -1,0 +1,182 @@
+{
+  "updatedAt": "2025-08-15T02:52:49.215Z",
+  "createdAt": "2025-08-15T02:42:41.053Z",
+  "id": "KQJU1ggSZK7g3AKj",
+  "name": "經濟部 iPAS AI應用規劃師 mcp",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "5b869e10-259c-4eb8-a2c1-37f444343a65"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -176
+      ],
+      "id": "88353c4e-6c3b-4a11-bcf1-1d7d4adea30f",
+      "name": "MCP Server Trigger",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1xyGiiJ8SgXMO-kFD0h2JvJs1ch59zvc_",
+            "mode": "list",
+            "cachedResultName": "經濟部 iPAS AI應用規劃師",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1xyGiiJ8SgXMO-kFD0h2JvJs1ch59zvc_"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -176,
+        160
+      ],
+      "id": "fca7ae0e-dc91-41b7-bc1e-4e7b1eb7e3fa",
+      "name": "Search files and folders",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        272,
+        160
+      ],
+      "id": "bff3b60d-57cc-496b-85e4-4155368b0f56",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        496,
+        160
+      ],
+      "id": "aa33031c-9ede-4cc4-b2b7-6fb91c52aac2",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "https://drive.google.com/file/d/1HiB97eZvMEejZgTwM7mS2hgt51dZ4DcZ/view?usp=sharing",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        48,
+        160
+      ],
+      "id": "89d231e9-5a70-49da-8f08-6bae0930f292",
+      "name": "Download file",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('File', ``, 'string') }}",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        416,
+        -32
+      ],
+      "id": "2bb174d0-8760-439c-9cb1-445ed551bd55",
+      "name": "Download file in Google Drive",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file in Google Drive": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "713acde2-7bce-4ab4-9680-d9f935f6a347",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-08-15T02:42:41.053Z",
+      "createdAt": "2025-08-15T02:42:41.053Z",
+      "role": "workflow:owner",
+      "workflowId": "KQJU1ggSZK7g3AKj",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

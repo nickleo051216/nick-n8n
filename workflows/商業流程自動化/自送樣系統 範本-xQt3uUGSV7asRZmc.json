@@ -1,0 +1,5602 @@
+{
+  "updatedAt": "2025-11-30T03:11:16.861Z",
+  "createdAt": "2025-11-26T15:44:55.296Z",
+  "id": "xQt3uUGSV7asRZmc",
+  "name": "自送樣系統 範本",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        -1232
+      ],
+      "id": "fd8402e4-f0b0-4b31-a60a-367006d9986e",
+      "name": "Google Sheets Trigger",
+      "retryOnFail": true,
+      "executeOnce": false,
+      "credentials": "[REMOVED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Google Sheets Trigger').item.json['填寫人'] }}-{{ $('Google Sheets Trigger').item.json['採樣日期'] }}.pdf",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1Y2PamF9yKXWaK8agYgGyt8rZ9A57PTls",
+          "mode": "list",
+          "cachedResultName": "未開專編",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Y2PamF9yKXWaK8agYgGyt8rZ9A57PTls"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1520,
+        -1232
+      ],
+      "id": "be941250-70c5-46c3-a4cb-0dab4b4b5ab4",
+      "name": "Upload file",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "events": [
+          "message",
+          "postback",
+          "*"
+        ]
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessagingTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        -368
+      ],
+      "id": "2899287d-5bd0-4db1-bd70-e28554a507b9",
+      "name": "Line Messaging Trigger",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant 樣品小幫手\n你可以支援查詢自送樣 報告進度\n報告完成 專案只要 上傳 PDF 檔案 (檔名要是 專編)\n就可以自動更新 實際報告日期 (已收到檔案當天為報告日期)\n\n只要有客戶填寫表單 你就會自動自動發訊息 並請專案人員提供 專編 (會更新上去)\n提供專編後 就會寄信給相關人員\n並確認是否有收到樣品 (收到樣品 就會自動填入收樣日期 還沒收到 就寫待確)\n\n當有人回應\nXX-X  專編樣品已到\n就自動更新\n收樣日期 及更新 報告日期為 收樣日+14日曆天 (例假日自動跳過)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        224
+      ],
+      "id": "d838f6eb-a54c-412b-99a2-3d3028e27c6c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        448
+      ],
+      "id": "8806b2e3-1f06-4d20-9207-009ecc4c4e53",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "={{ $('Line Messaging Trigger').item.json.message.quoteToken }}",
+              "text": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        320
+      ],
+      "id": "714e17b0-9a44-4566-8b2f-7432db599cd4",
+      "name": "Line Messaging",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -464,
+        448
+      ],
+      "id": "e16ba22d-db6d-425d-a62f-fa693cc369e9",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "showLoadingAnimation",
+        "chatId": "={{ $json.source.userId }}"
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -1168,
+        -464
+      ],
+      "id": "5f186009-4e0b-43fa-923b-f78c86a1fbd6",
+      "name": "動畫",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "messages": {
+          "values": [
+            {
+              "text": "=自送樣通知 連結如下：{{ $json['檔案連結'] }}\n\nSHEET 序號為:{{ $json.Number }}\n\n填寫人：{{ $('讀取填寫人 基質').item.json['填寫人'] }}\n基質：{{ $('讀取填寫人 基質').item.json['基質'] }}\n採樣日期：{{ $('轉換日期格式').item.json['採樣日期_格式化'] }}\n請輸入序號+專編：\n(例如:7-A01-1 or 13-L12-17)"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        -1168
+      ],
+      "id": "2eec80d6-c5af-4117-841d-9ba40ae2fc49",
+      "name": "傳送通知",
+      "executeOnce": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "專案編號"
+            },
+            {
+              "lookupColumn": "Number",
+              "lookupValue": "={{ $('擷取 專編').item.json.sequenceNumber }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        -464
+      ],
+      "id": "0237e25f-905a-4b9b-a1b8-91693abb8d20",
+      "name": "讀取最新無專編樣品",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 節點名稱：Code - 解析專編與序號 + 簽收資訊\nconst messageText = $input.first().json.message.text;\nconst inputData = $input.first().json;\n\n// 1. 定義正規表達式來捕捉兩個關鍵部分\n//    - Group 1 (序號): (\\d+) -> 匹配開頭的連續數字\n//    - 分隔符: \\s*[-—\\s]\\s* -> 匹配中間可選的空格、連字號(-)或全形破折號(—)\n//    - Group 2 (專編): ([A-Z]\\d{2}-\\d+) -> 匹配專編格式 (例如 A02-2)\nconst regex = /(\\d+)\\s*[-—\\s]\\s*([A-Z]\\d{2}-\\d+)/i;\nconst match = messageText.match(regex);\n\n// 2. 檢查是否成功匹配\nif (!match) {\n  throw new Error('❌ 錯誤：無法從訊息中找到「序號-專編」！\\n\\n請確保格式為：序號-專編 (例如: 5-A02-2)');\n}\n\n// 3. 提取並清理結果\nconst sequenceNumber = match[1].trim(); // 序號 (Group 1)\nconst projectCode = match[2].toUpperCase().trim(); // 專編 (Group 2，轉大寫)\n\n// 4. 格式驗證 (確保專編格式正確)\nconst validCodeFormat = /^[A-Z]\\d{2}-\\d+$/.test(projectCode);\nif (!validCodeFormat) {\n  throw new Error('❌ 專編格式錯誤！\\n\\n您輸入的專編部分: ' + projectCode + '，正確格式應為 A02-2');\n}\n\n// 5. 取得簽收資訊\n// 從 LINE webhook 取得 timestamp (毫秒)，轉換為台灣時間格式\nconst timestamp = inputData.timestamp || Date.now();\nconst signTime = new Date(timestamp).toLocaleString('zh-TW', {\n  timeZone: 'Asia/Taipei',\n  year: 'numeric',\n  month: '2-digit',\n  day: '2-digit',\n  hour: '2-digit',\n  minute: '2-digit',\n  second: '2-digit',\n  hour12: false\n});\n\n// 取得 UserID 作為簽收人\nconst userId = inputData.source?.userId || 'Unknown';\n\n// 6. 輸出結果\nreturn {\n  json: {\n    projectCode: projectCode,           // 例如：A02-2\n    sequenceNumber: sequenceNumber,     // 例如：5\n    userId: userId,                     // LINE User ID\n    originalMessage: messageText,       // 原始訊息\n    signTime: signTime,                 // 簽收時間（台灣時間）\n    signPersonName: userId              // 簽收人（對應你的 Google Sheets 欄位名稱）\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -464
+      ],
+      "id": "4c09b46c-1fc8-4830-97bf-2b3dbaede380",
+      "name": "擷取 專編"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "專案編號": "={{ $('擷取 專編').item.json.projectCode }}",
+            "row_number": "={{ $json.row_number }}",
+            "Status": "已提供專編，待出報告"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        96,
+        -464
+      ],
+      "id": "c76717a6-32be-4990-b033-dbbbeb4d975c",
+      "name": "更新專編上去",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "={{ $('Line Messaging Trigger').item.json.message.quoteToken }}",
+              "text": "=已將此專編({{ $('更新專編上去').item.json['專案編號'] }})及委託單所需資料寄出 請查看信箱 \n\n請回答 \n是否已收到樣品( 請回復 V / X)？",
+              "quickReply": {
+                "items": [
+                  {
+                    "actionType": "postback",
+                    "data": "V",
+                    "label": "V"
+                  },
+                  {
+                    "actionType": "postback",
+                    "data": "X",
+                    "label": "X"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        -368
+      ],
+      "id": "bf405477-bd90-49db-9232-7ab6b895a053",
+      "name": "Line Messaging1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 節點名稱：計算預計報告日期\n\n// 取得採樣日期（文字格式）\nconst samplingDateText = $input.first().json['採樣日期'] ;\n\n// 解析日期並加 14 天\nconst samplingDate = new Date(samplingDateText);\nconst reportDate = new Date(samplingDate);\nreportDate.setDate(reportDate.getDate() + 14);\n\n// 格式化輸出（2025/11/20）\nconst formattedReportDate = reportDate.toLocaleDateString('zh-TW', {\n  year: 'numeric',\n  month: '2-digit',\n  day: '2-digit'\n});\n\n// 回傳結果\nreturn {\n  json: {\n    ...$input.first().json,           // 保留原有資料\n    預計報告日期: formattedReportDate  // 新增這個欄位\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        -848
+      ],
+      "id": "8a2132f7-f6e9-45d8-a16f-f478428053bb",
+      "name": "轉換格式"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "收樣日期"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -544,
+        -656
+      ],
+      "id": "7dee2bf2-d560-47a4-927b-ef285d20f5ba",
+      "name": "Get row(s) in sheet1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "預計報告日期": "=等樣品收到再更新",
+            "Status": "尚未收到樣品"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        -656
+      ],
+      "id": "c31045ff-e866-4f5f-a952-d8b3d3270874",
+      "name": "Update row in sheet1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Line Messaging Trigger').item.json.message.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -592,
+        448
+      ],
+      "id": "51766c05-5752-45e0-bfea-3ea8f0e02b32",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "={{ $('Line Messaging Trigger').item.json.message.quoteToken }}",
+              "text": "=請等待收到樣品，再來此輸入 :XX-X樣品已收到  系統會自動更新此報告日期"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -656
+      ],
+      "id": "4c912e62-bd41-4a73-8912-a40b3894233c",
+      "name": "Line Messaging2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "=",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "=",
+              "text": "=已更新報告日期為：{{ $json['預計報告日期'] }}\n並已寄信通知客戶：{{ $('轉換格式').item.json['電子郵件地址'] }}\n\n待報告電子檔完成\n請上傳 PDF 檔案\n(檔名請改成 專編 {{ $('轉換格式').item.json['專案編號'] }})\n\n以利系統自動更新實際收到報告日期\n"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -752
+      ],
+      "id": "07a40c65-1280-493e-b66b-d7f23ba32738",
+      "name": "Line Messaging3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Google Sheets 的日期起始點是 1899-12-30\nconst EXCEL_EPOCH = new Date(1899, 11, 30);\nconst TAIWAN_OFFSET_MS = 8 * 60 * 60 * 1000;\n\n// 轉換序列數字為日期的函數\nfunction serialToDate(serial) {\n  if (!serial || typeof serial !== 'number') {\n    return serial; // 如果不是數字，直接返回原值\n  }\n  \n  // 計算天數和時間\n  const days = Math.floor(serial);\n  const timeFraction = serial - days;\n  \n  // 計算毫秒數\n  const milliseconds = (days * 24 * 60 * 60 * 1000 + timeFraction * 24 * 60 * 60 * 1000) - TAIWAN_OFFSET_MS;\n  \n  // 創建日期物件\n  const date = new Date(EXCEL_EPOCH.getTime() + milliseconds);\n  \n  return date.toISOString();\n}\n\n// 格式化為台灣時間字串\nfunction formatToTaiwanTime(isoString) {\n  const date = new Date(isoString);\n  \n  // 轉為台北時區 (UTC+8)\n  const options = {\n    timeZone: 'Asia/Taipei',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit',\n    hour12: false\n  };\n  \n  return new Intl.DateTimeFormat('zh-TW', options).format(date);\n}\n\n// 格式化為只有日期\nfunction formatDateOnly(isoString) {\n  const date = new Date(isoString);\n  \n  const options = {\n    timeZone: 'Asia/Taipei',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit'\n  };\n  \n  return new Intl.DateTimeFormat('zh-TW', options).format(date);\n}\n\n// 處理所有輸入項目\nfor (const item of $input.all()) {\n  // 轉換時間戳記\n  if (item.json.時間戳記) {\n    const timestampISO = serialToDate(item.json.時間戳記);\n    item.json.時間戳記_ISO = timestampISO;\n    item.json.時間戳記_格式化 = formatToTaiwanTime(timestampISO);\n  }\n  \n  // 轉換採樣日期\n  if (item.json.採樣日期) {\n    const samplingDateISO = serialToDate(item.json.採樣日期);\n    item.json.採樣日期_ISO = samplingDateISO;\n    item.json.採樣日期_格式化 = formatDateOnly(samplingDateISO);\n  }\n  \n  // 如果收樣日期也是數字格式，也轉換它\n  if (item.json.收樣日期 && typeof item.json.收樣日期 === 'number') {\n    const receiveDateISO = serialToDate(item.json.收樣日期);\n    item.json.收樣日期_ISO = receiveDateISO;\n    item.json.收樣日期_格式化 = formatDateOnly(receiveDateISO);\n  }\n  \n  // 如果預計報告日期也是數字格式，也轉換它\n  if (item.json.預計報告日期 && typeof item.json.預計報告日期 === 'number') {\n    const reportDateISO = serialToDate(item.json.預計報告日期);\n    item.json.預計報告日期_ISO = reportDateISO;\n    item.json.預計報告日期_格式化 = formatDateOnly(reportDateISO);\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        -1216
+      ],
+      "id": "eeb6b045-51e3-45f0-9fda-064e7997c3aa",
+      "name": "轉換日期格式"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "專案編號",
+              "lookupValue": "={{ $json.message.fileName.replace(/\\.[^.]+$/, '') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1168,
+        -272
+      ],
+      "id": "88deffe5-0150-44b9-bd91-fca6728d003e",
+      "name": "Get row(s) in sheet2",
+      "alwaysOutputData": false,
+      "credentials": "[REMOVED]",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "={{ $('Line Messaging Trigger').item.json.message.quoteToken }}",
+              "text": "={{ $json['專案編號'] }}\n\n此份報告 \n已更新報告日期 為 {{ $json['實際收到報告日期'] }}\n請記得開立請款明細 寄信給 {{ $('Get row(s) in sheet2').item.json['電子郵件地址'] }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -176
+      ],
+      "id": "697e0069-a64b-42fe-a18a-c4e725692ee5",
+      "name": "Line Messaging4",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1cR9O0_NqhcSz-m5qja9CdAZtbjbx4JhmgceuZ8ybxFc",
+          "mode": "list",
+          "cachedResultName": "實驗室模板",
+          "cachedResultUrl": "https://docs.google.com/document/d/1cR9O0_NqhcSz-m5qja9CdAZtbjbx4JhmgceuZ8ybxFc/edit?usp=drivesdk"
+        },
+        "name": "={{ $json['填寫人'] }}-{{ $json['採樣日期'] }}-{{ $json['基質'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        848,
+        -1232
+      ],
+      "id": "edca34ab-a443-43d3-8466-28d8d8c6d8c9",
+      "name": "Copy file",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf",
+              "drawingsToFormat": "application/pdf",
+              "slidesToFormat": "application/pdf",
+              "sheetsToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1296,
+        -1232
+      ],
+      "id": "66a78710-d2f1-442d-8b78-4c7200e48d82",
+      "name": "把檔案轉成PDF",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "填寫人": "={{ $('Google Sheets Trigger').item.json['填寫人'] }}",
+            "檔案連結": "={{ $json.webViewLink }}",
+            "檔案id": "={{ $json.id }}",
+            "WordID": "={{ $('模板').item.json.documentId }}",
+            "Number": "={{ $('Loop Over Items').item.json.Number }}"
+          },
+          "matchingColumns": [
+            "Number"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1744,
+        -1232
+      ],
+      "id": "31e0ab49-8ba9-456f-b60a-4a0b294ff4c5",
+      "name": "把檔案連結 ID 更新上去",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "be0a737f-f037-4641-a83a-8ec0d8d6955a",
+              "leftValue": "={{ $('Google Sheets Trigger').item.json['是否已回簽報價單'] }}",
+              "rightValue": "否，尚未收到報價單，並會提醒承辦人員開立報價單",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -272,
+        -1312
+      ],
+      "id": "468ecdc5-a813-412a-a6a0-a6b40d9bb1d2",
+      "name": "確認是否有報價"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "專案編號": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('______using_to_match_', ``, 'string') }}",
+            "收樣日期": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('____', ``, 'string') }}",
+            "預計報告日期": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('______', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "專案編號"
+          ],
+          "schema": [
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -336,
+        448
+      ],
+      "id": "6174dfda-bea7-4755-9461-619e2e1f3dbe",
+      "name": "Update row in sheet in Google Sheets",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "專案編號": "={{ $json['專案編號'] }}",
+            "實際收到報告日期": "={{ $today.format('yyyy-MM-dd') }}",
+            "Status": "已收到報告"
+          },
+          "matchingColumns": [
+            "專案編號"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -544,
+        -176
+      ],
+      "id": "dd8f3db3-7732-4fa5-879b-888efa0fed77",
+      "name": "收到報告 更新報告日",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🍳 料理比喻：從訊息中找出專編，並記錄簽收資訊\n\nconst messageText = $input.first().json.message.text || \"\";\n\n// 清理文字\nlet cleanedText = messageText\n  .replace(/專編/g, '')\n  .replace(/[：:]/g, '')\n  .replace(/樣品已到/g, '')\n  .replace(/\\s+/g, '')\n  .toUpperCase();\n\n// 抓出專編（例如：S11-1）\nconst codeMatch = cleanedText.match(/\\b[A-Z]\\d{2}-\\d+\\b/);\n\nif (!codeMatch) {\n  throw new Error('❌ 無法從訊息中解析出專編代碼！\\n\\n訊息內容：' + messageText);\n}\n\nconst projectCode = codeMatch[0];\n\n// ===== 新增：簽收資訊 =====\nconst today = new Date();\nconst taipeiTime = new Date(today.getTime() + (8 * 60 * 60 * 1000));\nconst signTime = taipeiTime.toISOString().replace('T', ' ').substring(0, 19);\nconst signPerson = $input.first().json.source.userId;\nconst signPersonName = \"內部人員-\" + signPerson.substring(signPerson.length - 6);\n\n// 收樣日期和預計報告日期\nconst samplingDate = taipeiTime.toISOString().split('T')[0];\nconst reportDate = new Date(taipeiTime);\nreportDate.setDate(reportDate.getDate() + 14);\nconst reportDateStr = reportDate.toISOString().split('T')[0];\n\nreturn {\n  json: {\n    projectCode,\n    samplingDate,\n    reportDate: reportDateStr,\n    signTime,                        // 新增\n    signPerson,                      // 新增\n    signPersonName,                  // 新增\n    userId: $input.first().json.source.userId,\n    replyToken: $input.first().json.replyToken,\n    originalMessage: messageText\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        32
+      ],
+      "id": "34148be6-1661-44e7-92b0-d28991abae6d",
+      "name": "樣品已到 擷取專編"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "專案編號": "={{ $json.projectCode }}",
+            "收樣日期": "={{ $today.format('yyyy-MM-dd') }}",
+            "預計報告日期": "={{ $json.reportDate }}",
+            "Status": "已提供專編，待出報告"
+          },
+          "matchingColumns": [
+            "專案編號"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        96,
+        32
+      ],
+      "id": "3a6af9e4-abe1-4129-a79f-f814ad6ed388",
+      "name": "更新收樣日 預計報告日",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "=",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "=",
+              "text": "=已更新報告日期為：{{ $json['預計報告日期'] }}\n並已寄信通知客戶：\n\n待報告電子檔完成\n請上傳 PDF 檔案\n(檔名請改成 專編 {{ $json['專案編號'] }})\n\n以利系統自動更新實際收到報告日期\n"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        320,
+        128
+      ],
+      "id": "748e0ec2-8c52-4890-8404-4ae2d1fce947",
+      "name": "Line Messaging5",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "從誰寄出",
+        "toEmail": "給誰，如有多人 sample@gmail.com,test@yahoo.com.tw,...",
+        "subject": "=自送樣報價單未提供 : {{ $('Google Sheets Trigger').item.json['填寫人'] }}-{{ $('Google Sheets Trigger').item.json['基質'] }}",
+        "emailFormat": "text",
+        "text": "=填單人：{{ $('Google Sheets Trigger').item.json['填寫人'] }}\n{{ $('Google Sheets Trigger').item.json['基質'] }}\n{{ $('Google Sheets Trigger').item.json['採樣日期'] }}\n\n尚未提供報價單\n請協助通知相關人員 並開立報價單 給 \n{{ $('Google Sheets Trigger').item.json['電子郵件地址'] }}",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        -1440
+      ],
+      "id": "8dd28633-3b4b-4c5f-9683-994a7f8ae7cc",
+      "name": "沒有的話 寄信通知給業助",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "subject": "=自送樣 通知 新專編 : {{ $('更新專編上去').item.json['專案編號'] }}",
+        "emailFormat": "text",
+        "text": "=填單人：{{ $('讀取最新無專編樣品').item.json['填寫人'] }}\n{{ $('讀取最新無專編樣品').item.json['基質'] }}\n{{ $('讀取最新無專編樣品').item.json['採樣日期'] }}\n專編為：{{ $('更新專編上去').item.json['專案編號'] }}\n\n詳情請見附件",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        992,
+        -352
+      ],
+      "id": "08db0512-5de9-44cc-b4fb-44d9ccfd514b",
+      "name": "寄給公司主管",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1392,
+        656
+      ],
+      "id": "6bfbdd5e-2c94-4419-950d-98a32f2e23bc",
+      "name": "Schedule Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "實際收到報告日期"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1168,
+        656
+      ],
+      "id": "948e35bc-ff27-423a-9ecd-aabe20247f2b",
+      "name": "Get row(s) in sheet3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1af374d7-20a7-4c9a-9128-3c9ec269f170",
+              "leftValue": "={{ $json.totalCount }}",
+              "rightValue": "={{$today}}",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -720,
+        656
+      ],
+      "id": "01291162-fb7b-462a-9b27-04c508f5361a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "=U461d14f07d42db51fff5f1c68bf792ad",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "=",
+              "text": "={{ $json.message }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        656
+      ],
+      "id": "2ee25b26-0b7d-4aa9-93f4-a5d8e0610282",
+      "name": "Line Messaging6",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "content": "有客戶填寫表單之後的處理\n\nWebhook 是跟Ian 一樣\n有人填表單 就會透過 GAS 傳送到 n8n\n\n",
+        "height": 560,
+        "width": 3888
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1504,
+        -1568
+      ],
+      "typeVersion": 1,
+      "id": "eb16f83f-7a07-46d0-926d-b701407bf947",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{填寫人}}",
+              "replaceText": "={{ $('讀取填寫人 基質').item.json['填寫人'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{基質}}",
+              "replaceText": "={{ $('讀取填寫人 基質').item.json['基質'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{採樣日期_格式化}}",
+              "replaceText": "={{ $('轉換日期格式').item.json['採樣日期_格式化'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{時間戳記_格式化}}",
+              "replaceText": "={{ $('確認是否有報價').item.json['時間戳記_格式化'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{電子郵件地址}}",
+              "replaceText": "={{ $('讀取填寫人 基質').item.json['電子郵件地址'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{最終簽收人}}",
+              "replaceText": "{{待簽收}}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{最終簽收時間}}",
+              "replaceText": "{{待簽收時間}}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{專案編號}}",
+              "replaceText": "{{待提供}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -1232
+      ],
+      "id": "64325f4e-ba10-4b13-92d0-fe0d29845540",
+      "name": "模板",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🍳 料理比喻：把所有食材(資料)分類成「快過期」和「已過期」兩堆\n\nconst today = new Date();\ntoday.setHours(0, 0, 0, 0); // 設定為今天凌晨 00:00\n\nconst overdue = [];      // 已逾期的樣本\nconst upcoming = [];     // 即將到期的樣本(1-3天內)\n\n// 遍歷每一筆資料\nfor (const item of $input.all()) {\n  const data = item.json;\n  \n  // 取得「預計報告日期」（修正：從 data 取得，不是 $input.first()）\n  const expectedDateStr = data['預計報告日期'];\n  \n  // 跳過沒有日期或是「等樣品收到再更新」的資料\n  if (!expectedDateStr || expectedDateStr === '等樣品收到再更新') {\n    continue;\n  }\n  \n  // 轉換成日期格式\n  const expectedDate = new Date(expectedDateStr);\n  expectedDate.setHours(0, 0, 0, 0);\n  \n  // 檢查日期是否有效\n  if (isNaN(expectedDate.getTime())) {\n    continue; // 如果日期無效，跳過這筆\n  }\n  \n  // 計算距離今天還有幾天\n  const diffTime = expectedDate - today;\n  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));\n  \n  // 準備資料物件（使用實際的欄位名稱）\n  const itemData = {\n    專案編號: data['專案編號'] || '未填寫',\n    填寫人: data['填寫人'] || '未填寫',\n    基質: data['基質'] || '未填寫',\n    預計報告日期: expectedDateStr,\n    收樣日期: data['收樣日期'] || '未填寫',\n    距離天數: diffDays\n  };\n  \n  // 分類\n  if (diffDays < 0) {\n    // 已經逾期\n    overdue.push(itemData);\n  } else if (diffDays >= 1 && diffDays <= 2) {\n    // 1-3天內到期\n    upcoming.push(itemData);\n  }\n}\n\n// 輸出結果\nreturn [{\n  json: {\n    overdue: overdue,\n    upcoming: upcoming,\n    totalCount: overdue.length + upcoming.length,\n    overdueCount: overdue.length,\n    upcomingCount: upcoming.length,\n    checkDate: today.toISOString().split('T')[0]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        656
+      ],
+      "id": "bf767eb9-3467-4acc-a33a-55fbd806227d",
+      "name": "快過期」和「已過期"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🍳 料理比喻：把分類好的食材做成一道菜(組合成訊息)\n\nconst data = $input.first().json;\nconst checkDate = data.checkDate;\nconst overdue = data.overdue || [];\nconst upcoming = data.upcoming || [];\n\n// 開始組合訊息\nlet message = `📊 送樣報告狀態提醒(${checkDate})\\n\\n`;\n\n// 已逾期區塊\nif (overdue.length > 0) {\n  message += `🔴 已逾期(${overdue.length} 筆)\\n`;\n  overdue.forEach(item => {\n    const daysOverdue = Math.abs(item.距離天數);\n    message += `━━━━━━━━━━━━━━\\n`;\n    message += `專案編號：${item.專案編號}\\n`;\n    message += `填寫人：${item.填寫人}\\n`;\n    message += `基質：${item.基質}\\n`;\n    message += `預計日期：${item.預計報告日期}\\n`;\n    message += `⚠️ 逾期 ${daysOverdue} 天\\n\\n`;\n  });\n}\n\n// 即將到期區塊\nif (upcoming.length > 0) {\n  message += ` 即將到期(${upcoming.length} 筆)\\n`;\n  upcoming.forEach(item => {\n    message += `━━━━━━━━━━━━━━\\n`;\n    message += `專案編號：${item.專案編號}\\n`;\n    message += `填寫人：${item.填寫人}\\n`;\n    message += `基質：${item.基質}\\n`;\n    message += `預計日期：${item.預計報告日期}\\n`;\n    message += ` 剩餘 ${item.距離天數} 天\\n\\n`;\n  });\n}\n\nreturn [{\n  json: {\n    message: message,\n    overdueCount: overdue.length,\n    upcomingCount: upcoming.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        656
+      ],
+      "id": "ceef8207-1a58-4650-ba56-9739e2e2e418",
+      "name": "組合成訊息"
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $('讀取無報告日期').item.json['電子郵件地址'] }}",
+        "subject": "=XX公司 自送樣通知 報告專編為: {{ $('更新收樣日&預計報告日').item.json['專案編號'] }}",
+        "emailFormat": "text",
+        "text": "=填單人：{{ $('讀取無報告日期').item.json['填寫人'] }}\n基質為：{{ $('讀取無報告日期').item.json['基質'] }}\n採樣日期為：{{ $('讀取無報告日期').item.json['採樣日期'] }}\n專編為：{{ $('更新收樣日&預計報告日').item.json['專案編號'] }}\n\n感謝您的提供\n預計報告出具日期為\n(以收到樣品 & 表單填寫完畢 為收樣日+14日曆天 )：\n{{ $('更新收樣日&預計報告日').item.json['預計報告日期'] }}\n\n請以實際收到日為主\n\n如想確認實際報告進度\n請洽詢 官方帳號:\n@XXXXX\n連絡電話：02-XXXX-XXXX\n官方網址：WWW...\n\n\n",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1216,
+        -944
+      ],
+      "id": "f45a0855-59c7-4ea5-a8bc-345296ed90db",
+      "name": "寄給客戶1",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "客戶信": "V",
+            "專案編號": "={{ $('更新收樣日&預計報告日').item.json[\"專案編號\"] }}",
+            "Status": "已提供專編，待出報告"
+          },
+          "matchingColumns": [
+            "專案編號"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        -944
+      ],
+      "id": "673d1bec-ec9b-44d0-8149-3af0bdb4dff6",
+      "name": "Update row in sheet2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "預計報告日期"
+            },
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "已提供專編，待出報告"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -544,
+        -848
+      ],
+      "id": "21a607bc-916b-4a52-b360-432ba7617fd1",
+      "name": "讀取無報告日期",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "收樣日期": "={{ $('轉換格式').item.json['採樣日期'] }}",
+            "預計報告日期": "={{ $('轉換格式').item.json['預計報告日期'] }}",
+            "專案編號": "={{ $('轉換格式').item.json['專案編號'] }}",
+            "簽收人": "={{ $json.profile.displayName }}",
+            "簽收時間": "={{ $now }}",
+            "Status": "已收到樣品"
+          },
+          "matchingColumns": [
+            "專案編號"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        320,
+        -848
+      ],
+      "id": "a4fa7ffa-1daf-46d1-872f-8da78dfa4509",
+      "name": "更新收樣日&預計報告日",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $('Get row(s) in sheet').item.json['電子郵件地址'] }}",
+        "subject": "=XX公司 自送樣通知 報告專編為: {{ $('更新收樣日 預計報告日').item.json['專案編號'] }}",
+        "emailFormat": "text",
+        "text": "=填單人：{{ $('Get row(s) in sheet').item.json['填寫人'] }}\n基質為：{{ $('Get row(s) in sheet').item.json['基質'] }}\n採樣日期為：{{ $('Get row(s) in sheet').item.json['採樣日期'] }}\n專編為：{{ $('更新收樣日 預計報告日').item.json['專案編號'] }}\n\n感謝您的提供\n預計報告出具日期為\n(以收到樣品 & 表單填寫完畢 為收樣日+14日曆天 )：\n{{ $('更新收樣日 預計報告日').item.json['預計報告日期'] }}\n\n請以實際收到日為主\n\n如想確認實際報告進度\n請洽詢 官方帳號:\n@XXXXX\n連絡電話：02-XXXX-XXXX\n官方網址：WWW...\n\n\n",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        992,
+        32
+      ],
+      "id": "660c8203-3790-458c-b480-55ad87e9bd21",
+      "name": "寄給客戶",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "客戶信": "V",
+            "專案編號": "={{ $('Get row(s) in sheet').item.json[\"專案編號\"] }}"
+          },
+          "matchingColumns": [
+            "專案編號"
+          ],
+          "schema": [
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1216,
+        32
+      ],
+      "id": "ae5164e8-04b6-4206-921c-1ab82089e701",
+      "name": "Update row in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Get row(s) in sheet').item.json['填寫人'] }}-{{ $('Get row(s) in sheet').item.json['採樣日期'] }}.pdf",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "145ZLK9tJ370YdNxkxGRz_vu5GhyWfUHr",
+          "mode": "list",
+          "cachedResultName": "已開專編",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/145ZLK9tJ370YdNxkxGRz_vu5GhyWfUHr"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        768,
+        -176
+      ],
+      "id": "8a7b88be-13b3-4ddd-aafb-fa06eecb07bf",
+      "name": "Upload file1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1cR9O0_NqhcSz-m5qja9CdAZtbjbx4JhmgceuZ8ybxFc",
+          "mode": "list",
+          "cachedResultName": "實驗室模板",
+          "cachedResultUrl": "https://docs.google.com/document/d/1cR9O0_NqhcSz-m5qja9CdAZtbjbx4JhmgceuZ8ybxFc/edit?usp=drivesdk"
+        },
+        "name": "={{ $json['填寫人'] }}-{{ $json['採樣日期'] }}-{{ $json['基質'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        320,
+        -80
+      ],
+      "id": "46ca01f7-ea19-472d-b916-bfcc00064ccc",
+      "name": "Copy file1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{填寫人}}",
+              "replaceText": "={{ $('Get row(s) in sheet').item.json['填寫人'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{基質}}",
+              "replaceText": "={{ $('Get row(s) in sheet').item.json['基質'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": " {{採樣日期_格式化}}",
+              "replaceText": "={{ $('Get row(s) in sheet').item.json['採樣日期'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{時間戳記_格式化}}",
+              "replaceText": "={{ $('Get row(s) in sheet').item.json['時間戳記'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{電子郵件地址}}",
+              "replaceText": "={{ $('Get row(s) in sheet').item.json['電子郵件地址'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -80
+      ],
+      "id": "af0c2e62-8f91-41b2-9791-144688ec0c94",
+      "name": "模板1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('讀取無報告日期').item.json.WordID }}",
+        "simple": false,
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{待簽收}}",
+              "replaceText": "={{ $('更新收樣日&預計報告日').item.json[\"簽收人\"] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{待簽收時間}}",
+              "replaceText": "={{ $('轉換格式').item.json[\"採樣日期\"] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -944
+      ],
+      "id": "a81db315-e7df-4384-984a-1d4e0c614d3d",
+      "name": "模板2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $('讀取無報告日期').item.json.WordID }}",
+        "simple": false
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -944
+      ],
+      "id": "1ffb9976-0268-43f5-b5f4-982782583227",
+      "name": "Get a document",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -720,
+        -1232
+      ],
+      "id": "76d5fe6e-9b71-446b-86d8-2b134b85f309",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        -1168
+      ],
+      "id": "086148b9-aa64-49e0-9a3e-74de90f2d103"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "49888d82-a08a-4144-abde-1e25790f2521",
+              "leftValue": "={{ $json.WordID }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -1168
+      ],
+      "id": "7a01854b-aa86-436f-ab2a-8312bb055edc",
+      "name": "如果 wordID 是空的"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "填寫人",
+              "lookupValue": "={{ $('是否有報告編號').item.json['填寫人'] }}"
+            },
+            {
+              "lookupColumn": "基質",
+              "lookupValue": "={{ $('是否有報告編號').item.json['基質'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        -1168
+      ],
+      "id": "9123aa7d-1108-4eb7-9c4b-8a823ce60a39",
+      "name": "讀取填寫人 基質",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Number": "={{ $('確認是否有報價').item.json.row_number }}",
+            "是否已回簽報價單": "已寄信給業助 待提供報價單",
+            "填寫人": "={{ $('確認是否有報價').item.json['填寫人'] }}",
+            "基質": "={{ $('確認是否有報價').item.json['基質'] }}"
+          },
+          "matchingColumns": [
+            "Number"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        -1456
+      ],
+      "id": "88acb783-03db-4f24-a732-43d4441d350b",
+      "name": "更正報價單通知",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Number": "={{ $json.Number }}",
+            "Status": "處理中(尚未給專編)",
+            "時間戳記": "={{ $json['時間戳記'] }}",
+            "採樣日期": "={{ $json['採樣日期'] }}"
+          },
+          "matchingColumns": [
+            "Number"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -944,
+        -1232
+      ],
+      "id": "b83ef2a1-7415-4fdb-b04d-c750a8f4dc07",
+      "name": "更新 Status(未給專編)",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {}
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        -1968
+      ],
+      "id": "af58eb08-d2d1-4262-8318-576e3f657292",
+      "name": "Google Sheets Trigger1",
+      "retryOnFail": true,
+      "executeOnce": false,
+      "credentials": "[REMOVED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Google Sheets 的日期起始點是 1899-12-30\nconst EXCEL_EPOCH = new Date(1899, 11, 30);\nconst TAIWAN_OFFSET_MS = 8 * 60 * 60 * 1000;\n\n// 轉換序列數字為日期的函數\nfunction serialToDate(serial) {\n  if (!serial || typeof serial !== 'number') {\n    return serial; // 如果不是數字，直接返回原值\n  }\n  \n  // 計算天數和時間\n  const days = Math.floor(serial);\n  const timeFraction = serial - days;\n  \n  // 計算毫秒數\n  const milliseconds = (days * 24 * 60 * 60 * 1000 + timeFraction * 24 * 60 * 60 * 1000) - TAIWAN_OFFSET_MS;\n  \n  // 創建日期物件\n  const date = new Date(EXCEL_EPOCH.getTime() + milliseconds);\n  \n  return date.toISOString();\n}\n\n// 格式化為台灣時間字串\nfunction formatToTaiwanTime(isoString) {\n  const date = new Date(isoString);\n  \n  // 轉為台北時區 (UTC+8)\n  const options = {\n    timeZone: 'Asia/Taipei',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit',\n    hour12: false\n  };\n  \n  return new Intl.DateTimeFormat('zh-TW', options).format(date);\n}\n\n// 格式化為只有日期\nfunction formatDateOnly(isoString) {\n  const date = new Date(isoString);\n  \n  const options = {\n    timeZone: 'Asia/Taipei',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit'\n  };\n  \n  return new Intl.DateTimeFormat('zh-TW', options).format(date);\n}\n\n// 處理所有輸入項目\nfor (const item of $input.all()) {\n  // 轉換時間戳記\n  if (item.json.時間戳記) {\n    const timestampISO = serialToDate(item.json.時間戳記);\n    item.json.時間戳記_ISO = timestampISO;\n    item.json.時間戳記_格式化 = formatToTaiwanTime(timestampISO);\n  }\n  \n  // 轉換採樣日期\n  if (item.json.採樣日期) {\n    const samplingDateISO = serialToDate(item.json.採樣日期);\n    item.json.採樣日期_ISO = samplingDateISO;\n    item.json.採樣日期_格式化 = formatDateOnly(samplingDateISO);\n  }\n  \n  // 如果收樣日期也是數字格式，也轉換它\n  if (item.json.收樣日期 && typeof item.json.收樣日期 === 'number') {\n    const receiveDateISO = serialToDate(item.json.收樣日期);\n    item.json.收樣日期_ISO = receiveDateISO;\n    item.json.收樣日期_格式化 = formatDateOnly(receiveDateISO);\n  }\n  \n  // 如果預計報告日期也是數字格式，也轉換它\n  if (item.json.預計報告日期 && typeof item.json.預計報告日期 === 'number') {\n    const reportDateISO = serialToDate(item.json.預計報告日期);\n    item.json.預計報告日期_ISO = reportDateISO;\n    item.json.預計報告日期_格式化 = formatDateOnly(reportDateISO);\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        -1968
+      ],
+      "id": "42503b99-414e-48bf-968a-612984b0425a",
+      "name": "轉換日期格式1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "{{請填入自己的 Line User ID }}",
+        "messages": {
+          "values": [
+            {
+              "text": "=自送樣通知 連結如下：{{ $json['檔案連結'] }}\n\nSHEET 序號為:{{ $json.Number }}\n\n填寫人：{{ $('Google Sheets Trigger1').item.json['填寫人'] }}\n基質：{{ $('Google Sheets Trigger1').item.json['基質'] }}\n採樣日期：{{ $('轉換日期格式1').item.json['採樣日期_格式化'] }}\n請輸入專編：\n(例如:7-A01-1 or 13-L12-17)"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -1968
+      ],
+      "id": "f4f6dd45-6765-4e4c-a26a-9a2767ef05cb",
+      "name": "傳送通知1",
+      "executeOnce": false,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.postback.data }}",
+                    "rightValue": "V",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "00d652cb-ef91-4585-8f76-e4420652dbf5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "樣品已到"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fc9ddbab-e821-44ef-ba3f-9dfe2fb0b2fa",
+                    "leftValue": "={{ $json.postback.data }}",
+                    "rightValue": "X",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "樣品未到"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "eccc03e0-d8b6-4773-9a1e-dc6a17ec2e3e",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "^\\s*\\d+-[A-Z]\\d{2}-\\d+\\s*$   ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex",
+                      "name": "filter.operator.regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "提供專編"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a7d121c4-67a9-4283-b977-44266495c00d",
+                    "leftValue": "={{ $json['專案編號'] }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "收到報告"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "aa0e5b1b-f185-475b-8479-78b1b0525dcf",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "樣品已到",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "XX專編樣品已到"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3b7e8589-97c6-4763-b28f-9bbffaebe7dd",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -944,
+        -336
+      ],
+      "id": "27216663-e07d-41d1-b1a5-3782df41a44b",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "getProfile",
+        "userId": "={{ $('Line Messaging Trigger').item.json.source.userId }}"
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -848
+      ],
+      "id": "adc428a3-c073-4c50-bcff-8e22ad7c7d03",
+      "name": "讀取個人檔案",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "49888d82-a08a-4144-abde-1e25790f2521",
+              "leftValue": "={{ $json.WordID }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        -1456
+      ],
+      "id": "8a94c982-ac7e-41ee-970b-340fdbaeed6e",
+      "name": "如果 wordID 是空的1"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Google Sheets Trigger').item.json['填寫人'] }}-{{ $('Google Sheets Trigger').item.json['採樣日期'] }}.pdf",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1Y2PamF9yKXWaK8agYgGyt8rZ9A57PTls",
+          "mode": "list",
+          "cachedResultName": "未開專編",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Y2PamF9yKXWaK8agYgGyt8rZ9A57PTls"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1520,
+        -1520
+      ],
+      "id": "965285f3-4c80-4d38-9617-0f86f72d7cb8",
+      "name": "Upload file3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1cR9O0_NqhcSz-m5qja9CdAZtbjbx4JhmgceuZ8ybxFc",
+          "mode": "list",
+          "cachedResultName": "實驗室模板",
+          "cachedResultUrl": "https://docs.google.com/document/d/1cR9O0_NqhcSz-m5qja9CdAZtbjbx4JhmgceuZ8ybxFc/edit?usp=drivesdk"
+        },
+        "name": "={{ $json['填寫人'] }}-{{ $json['採樣日期'] }}-{{ $json['基質'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        848,
+        -1520
+      ],
+      "id": "4673e237-3c0f-425d-b8e5-1b5ab9ac3ebe",
+      "name": "Copy file2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf",
+              "drawingsToFormat": "application/pdf",
+              "slidesToFormat": "application/pdf",
+              "sheetsToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1296,
+        -1520
+      ],
+      "id": "f180effe-823f-44b9-9499-d06fbeb868c1",
+      "name": "把檔案轉成PDF3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "填寫人": "={{ $('Google Sheets Trigger').item.json['填寫人'] }}",
+            "檔案連結": "={{ $json.webViewLink }}",
+            "檔案id": "={{ $json.id }}",
+            "WordID": "={{ $('模板3').item.json.documentId }}",
+            "Number": "={{ $('Loop Over Items').item.json.Number }}"
+          },
+          "matchingColumns": [
+            "Number"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "填寫人",
+              "displayName": "填寫人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "基質",
+              "displayName": "基質",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "採樣日期",
+              "displayName": "採樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "是否已回簽報價單",
+              "displayName": "是否已回簽報價單",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電子郵件地址",
+              "displayName": "電子郵件地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "收樣日期",
+              "displayName": "收樣日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "預計報告日期",
+              "displayName": "預計報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "專案編號",
+              "displayName": "專案編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "實際收到報告日期",
+              "displayName": "實際收到報告日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "檔案連結",
+              "displayName": "檔案連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "檔案id",
+              "displayName": "檔案id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "WordID",
+              "displayName": "WordID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "客戶信",
+              "displayName": "客戶信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收時間",
+              "displayName": "簽收時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "簽收人",
+              "displayName": "簽收人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1744,
+        -1520
+      ],
+      "id": "4ab4776b-1bb2-4abd-8e6e-c936ac619021",
+      "name": "把檔案連結 ID 更新上去1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{填寫人}}",
+              "replaceText": "={{ $('讀取填寫人 基質1').item.json['填寫人'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{基質}}",
+              "replaceText": "={{ $('讀取填寫人 基質1').item.json['基質'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{採樣日期_格式化}}",
+              "replaceText": "={{ $('轉換日期格式').item.json['採樣日期_格式化'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{時間戳記_格式化}}",
+              "replaceText": "={{ $('確認是否有報價').item.json['時間戳記_格式化'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{電子郵件地址}}",
+              "replaceText": "={{ $('讀取填寫人 基質1').item.json['電子郵件地址'] }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{最終簽收人}}",
+              "replaceText": "{{待簽收}}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{最終簽收時間}}",
+              "replaceText": "{{待簽收時間}}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{專案編號}}",
+              "replaceText": "{{待提供}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -1520
+      ],
+      "id": "4e00bbcc-dbff-4825-ad21-8c516cb78737",
+      "name": "模板3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "messages": {
+          "values": [
+            {
+              "text": "=自送樣通知 連結如下：{{ $json['檔案連結'] }}\n\nSHEET 序號為:{{ $json.Number }}\n\n填寫人：{{ $('讀取填寫人 基質1').item.json['填寫人'] }}\n基質：{{ $('讀取填寫人 基質1').item.json['基質'] }}\n採樣日期：{{ $('轉換日期格式').item.json['採樣日期_格式化'] }}\n請輸入序號+專編：\n(例如:7-A01-1 or 13-L12-17)"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        -1456
+      ],
+      "id": "c9d822e5-3c77-4df0-b99c-1ed6faaf6db4",
+      "name": "傳送通知2",
+      "executeOnce": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('讀取最新無專編樣品').item.json.WordID }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{待提供}}",
+              "replaceText": "={{ $('更新專編上去').item.json['專案編號'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -464
+      ],
+      "id": "74510338-c82d-4b02-befd-60939d1f5476",
+      "name": "模板4",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $('讀取最新無專編樣品').item.json.WordID }}",
+        "simple": false
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -464
+      ],
+      "id": "d3388709-b9f2-4cb3-86dc-e16184cd2c97",
+      "name": "Get a document1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "填寫人",
+              "lookupValue": "={{ $('是否有報告編號').item.json['填寫人'] }}"
+            },
+            {
+              "lookupColumn": "基質",
+              "lookupValue": "={{ $('是否有報告編號').item.json['基質'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        -1456
+      ],
+      "id": "112825fe-0b58-44e1-a083-57c8f7ed0ff3",
+      "name": "讀取填寫人 基質1",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+          "mode": "list",
+          "cachedResultName": "自送樣表單 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 867169557,
+          "mode": "list",
+          "cachedResultName": "表單回應 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4/edit#gid=867169557"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "專案編號",
+              "lookupValue": "={{ $json.projectCode }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        32
+      ],
+      "id": "33fb3e87-5c9c-4579-b4f8-367cd3878c6c",
+      "name": "Get row(s) in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "145ZLK9tJ370YdNxkxGRz_vu5GhyWfUHr",
+          "mode": "list",
+          "cachedResultName": "已開專編",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/145ZLK9tJ370YdNxkxGRz_vu5GhyWfUHr"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        768,
+        -656
+      ],
+      "id": "96ef7f77-e525-43f1-be48-34e98e5d702a",
+      "name": "Upload file2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "content": "偵測尚未提供專邊的資料",
+        "height": 304,
+        "width": 1168,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1600,
+        -2112
+      ],
+      "typeVersion": 1,
+      "id": "b5aea0d5-b39a-45a6-baa2-4d21ddc7448f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "報告快到了&逾期 會跳提醒",
+        "height": 224,
+        "width": 1440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1504,
+        592
+      ],
+      "typeVersion": 1,
+      "id": "572ca8c8-211e-4ee9-82e8-ba458bd0f3ca",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b2a73ff3-50a3-4160-a346-986ffad11c00",
+              "leftValue": "={{ $('Google Sheets Trigger1').item.json['專案編號'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f27f7e61-5d1b-41fb-a816-7757fd6bcfa1",
+              "leftValue": "={{ $json['填寫人'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "eb39d06d-a7cb-4741-a420-67908158448f",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "處理中(尚未給專編)",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1168,
+        -1968
+      ],
+      "id": "a71d9c0b-70e0-4248-b2e9-16f520bc8551",
+      "name": "是否已提供專編(報告編號)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b2a73ff3-50a3-4160-a346-986ffad11c00",
+              "leftValue": "={{ $('Google Sheets Trigger').item.json['專案編號'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f27f7e61-5d1b-41fb-a816-7757fd6bcfa1",
+              "leftValue": "={{ $json['填寫人'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "eb39d06d-a7cb-4741-a420-67908158448f",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1168,
+        -1232
+      ],
+      "id": "e8f52759-2440-4b9a-8313-03afd3ae217f",
+      "name": "是否有報告編號"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "myselfsemple",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1392,
+        -1376
+      ],
+      "id": "decb9970-3fdc-47eb-a6a4-2a5c7f7d2ee3",
+      "name": "有人提交表單時",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "content": "n8n 的 email 驗證\n可以點選此連結學習\nhttps://docs.n8n.io/integrations/builtin/credentials/sendemail/?utm_source=chatgpt.com#using-smtp-account\n\n要串接 gmail 的話 需要雙重驗證\n(不然就是 只能用 gmail trigger (不能傳附件檔案))",
+        "height": 240,
+        "width": 800,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        -1920
+      ],
+      "typeVersion": 1,
+      "id": "e66cd1d8-2392-40e2-8ffc-2f938fcf9dde",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "exportGoogleDoc",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "exportFormat": "application/pdf",
+        "outputOptions": {}
+      },
+      "type": "n8n-nodes-md-to-docs.markdownToGoogleDocs",
+      "typeVersion": 1,
+      "position": [
+        992,
+        -944
+      ],
+      "id": "e5923d63-77d5-4acc-9950-ce86ffbc2b9a",
+      "name": "Markdown to Google Docs1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "exportGoogleDoc",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "exportFormat": "application/pdf",
+        "outputOptions": {}
+      },
+      "type": "n8n-nodes-md-to-docs.markdownToGoogleDocs",
+      "typeVersion": 1,
+      "position": [
+        768,
+        -368
+      ],
+      "id": "505caf3a-2369-41e2-93a8-7397d1bd8dbe",
+      "name": "Markdown to Google Docs2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "exportGoogleDoc",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.documentId }}",
+          "mode": "id"
+        },
+        "exportFormat": "application/pdf",
+        "outputOptions": {}
+      },
+      "type": "n8n-nodes-md-to-docs.markdownToGoogleDocs",
+      "typeVersion": 1,
+      "position": [
+        768,
+        32
+      ],
+      "id": "ff1b19cb-292d-45ac-848e-5c3516a012fb",
+      "name": "Markdown to Google Docs3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "content": "新社區節點：Maekdown to Google Docs\n\n就是 元魁 分享時所新增的\n\n",
+        "height": 128,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        944,
+        -752
+      ],
+      "typeVersion": 1,
+      "id": "b6a10827-a80d-45e9-915e-06aaa7040f49",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "=U461d14f07d42db51fff5f1c68bf792ad",
+        "messages": {
+          "values": [
+            {}
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        208,
+        720
+      ],
+      "id": "6cf804d6-e32e-48e6-9214-d55c29bdf25c",
+      "name": "Line Messaging7",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "是否有報告編號",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "把檔案連結 ID 更新上去",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging Trigger": {
+      "main": [
+        [
+          {
+            "node": "動畫",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取最新無專編樣品": {
+      "main": [
+        [
+          {
+            "node": "更新專編上去",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "擷取 專編": {
+      "main": [
+        [
+          {
+            "node": "讀取最新無專編樣品",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新專編上去": {
+      "main": [
+        [
+          {
+            "node": "Get a document1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉換格式": {
+      "main": [
+        [
+          {
+            "node": "讀取個人檔案",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉換日期格式": {
+      "main": [
+        [
+          {
+            "node": "確認是否有報價",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file": {
+      "main": [
+        [
+          {
+            "node": "模板",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging3": {
+      "main": [
+        []
+      ]
+    },
+    "把檔案轉成PDF": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "把檔案連結 ID 更新上去": {
+      "main": [
+        [
+          {
+            "node": "傳送通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "確認是否有報價": {
+      "main": [
+        [
+          {
+            "node": "沒有的話 寄信通知給業助",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "讀取填寫人 基質",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "收到報告 更新報告日": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "樣品已到 擷取專編": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新收樣日 預計報告日": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Copy file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "沒有的話 寄信通知給業助": {
+      "main": [
+        [
+          {
+            "node": "更正報價單通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寄給公司主管": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet3": {
+      "main": [
+        [
+          {
+            "node": "快過期」和「已過期",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "組合成訊息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "模板": {
+      "main": [
+        [
+          {
+            "node": "把檔案轉成PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "快過期」和「已過期": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "組合成訊息": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寄給客戶1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取無報告日期": {
+      "main": [
+        [
+          {
+            "node": "轉換格式",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新收樣日&預計報告日": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寄給客戶": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file1": {
+      "main": [
+        [
+          {
+            "node": "模板1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "模板1": {
+      "main": [
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Markdown to Google Docs3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file1": {
+      "main": [
+        []
+      ]
+    },
+    "模板2": {
+      "main": [
+        [
+          {
+            "node": "Markdown to Google Docs1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document": {
+      "main": [
+        [
+          {
+            "node": "模板2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "轉換日期格式",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "傳送通知": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "如果 wordID 是空的": {
+      "main": [
+        [
+          {
+            "node": "Copy file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "傳送通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取填寫人 基質": {
+      "main": [
+        [
+          {
+            "node": "如果 wordID 是空的",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更正報價單通知": {
+      "main": [
+        [
+          {
+            "node": "讀取填寫人 基質1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新 Status(未給專編)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger1": {
+      "main": [
+        [
+          {
+            "node": "是否已提供專編(報告編號)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉換日期格式1": {
+      "main": [
+        [
+          {
+            "node": "傳送通知1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "讀取無報告日期",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "擷取 專編",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "收到報告 更新報告日",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "樣品已到 擷取專編",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取個人檔案": {
+      "main": [
+        [
+          {
+            "node": "更新收樣日&預計報告日",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "如果 wordID 是空的1": {
+      "main": [
+        [
+          {
+            "node": "Copy file2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "傳送通知2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file3": {
+      "main": [
+        [
+          {
+            "node": "把檔案連結 ID 更新上去1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file2": {
+      "main": [
+        [
+          {
+            "node": "模板3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "把檔案轉成PDF3": {
+      "main": [
+        [
+          {
+            "node": "Upload file3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "模板3": {
+      "main": [
+        [
+          {
+            "node": "把檔案轉成PDF3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "傳送通知2": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "把檔案連結 ID 更新上去1": {
+      "main": [
+        [
+          {
+            "node": "傳送通知2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "模板4": {
+      "main": [
+        [
+          {
+            "node": "Markdown to Google Docs2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload file2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document1": {
+      "main": [
+        [
+          {
+            "node": "模板4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取填寫人 基質1": {
+      "main": [
+        [
+          {
+            "node": "如果 wordID 是空的1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "更新收樣日 預計報告日",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file2": {
+      "main": [
+        []
+      ]
+    },
+    "是否已提供專編(報告編號)": {
+      "main": [
+        [
+          {
+            "node": "轉換日期格式1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "是否有報告編號": {
+      "main": [
+        [
+          {
+            "node": "更新 Status(未給專編)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Markdown to Google Docs1": {
+      "main": [
+        [
+          {
+            "node": "寄給客戶1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown to Google Docs2": {
+      "main": [
+        [
+          {
+            "node": "寄給公司主管",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown to Google Docs3": {
+      "main": [
+        [
+          {
+            "node": "寄給客戶",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Google Sheets Trigger": {
+      "documentId": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+      "sheetId": 867169557,
+      "lastRevision": 624,
+      "lastRevisionLink": "https://docs.google.com/spreadsheets/export?id=1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4&revision=624&exportFormat=xlsx"
+    },
+    "node:Google Sheets Trigger1": {
+      "documentId": "1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4",
+      "sheetId": 867169557,
+      "lastRevision": 625,
+      "lastRevisionLink": "https://docs.google.com/spreadsheets/export?id=1858eFw4h2aLK2FYOY_tyxYd3N_r6QPOmJumb4INQLm4&revision=625&exportFormat=xlsx"
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "af4d78c5-711a-4c34-be8d-34ea6b9a5e77",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-11-26T15:44:55.296Z",
+      "createdAt": "2025-11-26T15:44:55.296Z",
+      "role": "workflow:owner",
+      "workflowId": "xQt3uUGSV7asRZmc",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-26T15:44:53.730Z",
+      "createdAt": "2025-11-26T15:44:53.730Z",
+      "id": "2euOtEGydkJo44Ap",
+      "name": "範本"
+    }
+  ]
+}
