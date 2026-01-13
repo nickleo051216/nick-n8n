@@ -3,10 +3,10 @@
 > **AI 自動化顧問 & n8n 講師**
 > 專注於工作流自動化、LINE OA 機器人開發、API 整合
 
-[![n8n Version](https://img.shields.io/badge/n8n-1.115.3--1.119.1-orange)](https://n8n.io/)
+[![n8n Version](https://img.shields.io/badge/n8n-2.2.5-orange)](https://n8n.io/)
 [![Platform](https://img.shields.io/badge/Hosting-Zeabur-blue)](https://zeabur.com/)
 [![Students](https://img.shields.io/badge/Students-4000%2B-green)]()
-[![Projects](https://img.shields.io/badge/Projects-29-brightgreen)]()
+[![Projects](https://img.shields.io/badge/Projects-33-brightgreen)]()
 
 ---
 
@@ -161,7 +161,7 @@
 ## 🛠️ 常用技術棧
 
 ### 核心工具
-- **n8n** (v1.115.3-1.119.1) - 主要自動化平台
+- **n8n** (v2.2.5) - 主要自動化平台
 - **Zeabur** - 雲端託管平台
 
 ### API 整合
@@ -199,7 +199,7 @@
 
 ```bash
 # 需要的工具
-- n8n (v1.115.3 或以上)
+- n8n (v2.2.5 或以上)
 - Node.js 18+
 - Git
 ```
