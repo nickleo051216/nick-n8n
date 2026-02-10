@@ -12,6 +12,14 @@ const experiencePhotos = {
         { src: 'images/teaching-1220-1.jpg', alt: '首場自辦 n8n 工作坊' },
         { src: 'images/teaching-1220-2.jpg', alt: '首場自辦 n8n 工作坊 合照' },
     ],
+    "2025-11/22": [
+        { src: 'images/forum-1122-group.jpg', alt: 'n8n 台北企業應用論壇 大合照' },
+    ],
+    "2025-09/26": [
+        { src: 'images/meetup-0926-talk.jpg', alt: 'Taiwan n8n User Group 演講現場' },
+        { src: 'images/meetup-0926-banner.jpg', alt: 'n8n Taipei Meetup 活動看板' },
+        { src: 'images/meetup-0926-vip.jpg', alt: 'n8n VIP 識別證 — 知名 n8n AI 作家 Nick 老師' },
+    ],
 };
 
 const Experience = () => {
@@ -127,7 +135,11 @@ const Experience = () => {
                                 ? 'images/cert-n8n-level2.png'
                                 : cert.title.includes('Level 1')
                                     ? 'images/cert-n8n-level1.png'
-                                    : null;
+                                    : cert.title.includes('生成式 AI')
+                                        ? 'images/cert-iii-genai.png'
+                                        : cert.title.includes('嘉惠學子')
+                                            ? 'images/cert-soochow.png'
+                                            : null;
                             return (
                                 <div key={i} className="flex gap-4 relative">
                                     <div className="flex-shrink-0 mt-1">
