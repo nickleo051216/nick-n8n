@@ -1,0 +1,2883 @@
+{
+  "updatedAt": "2025-09-18T14:37:02.371Z",
+  "createdAt": "2025-09-06T07:48:09.108Z",
+  "id": "iEnosGi2fBAjpBwE",
+  "name": "movie new",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 10
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk",
+          "mode": "list",
+          "cachedResultName": "movie",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "be2eb2bb-8069-4240-a5ea-ffbe535fdf5d",
+      "name": "Google Drive Trigger",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -432
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "7a635aa5-3bed-4228-a3d0-835e659cfaba",
+      "name": "Download Video",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -432
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "command": "=# 檢查 FFmpeg 是否存在，不存在就安裝\nif [ ! -f \"/root/.n8n/tools/ffmpeg\" ]; then\n  mkdir -p /root/.n8n/tools && wget -qO- https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar -xJ --strip-components=1 -C /root/.n8n/tools && chmod +x /root/.n8n/tools/ffmpeg\nfi\n\n# 執行音檔轉換\n/root/.n8n/tools/ffmpeg -i \"/tmp/video.mp4\" -vn -acodec libmp3lame -ab 64k \"/tmp/audio.mp3\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        -432
+      ],
+      "id": "66fcb33a-6735-4bed-8a52-25c23d96af59",
+      "name": "轉音檔"
+    },
+    {
+      "parameters": {
+        "command": "=# 安裝字體套件\napk add --no-cache fontconfig ttf-dejavu font-noto-cjk\n\necho '{{ $json.data }}' > /tmp/subtitles.srt\n\n/root/.n8n/tools/ffmpeg -hide_banner -loglevel error -i \"/tmp/video.mp4\" -vf \"subtitles=/tmp/subtitles.srt:force_style='FontName=Noto Sans CJK TC,FontSize=24'\" -c:a copy \"/tmp/video_with_subtitles.mp4\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1952,
+        -336
+      ],
+      "id": "7d37e90d-e97b-44a6-9429-d0991a1e6fed",
+      "name": "燒回影片"
+    },
+    {
+      "parameters": {
+        "command": "rm -f /tmp/video.mp4 /tmp/audio.mp3 /tmp/subtitles.srt /tmp/video_with_subtitles.mp4"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2624,
+        -336
+      ],
+      "id": "ad61fde9-a6b6-4200-b9fd-4d7067904ca3",
+      "name": "清除1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/tmp/video_with_subtitles.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        -336
+      ],
+      "id": "cde6b15d-90ab-4d43-b14f-77425182b537",
+      "name": "轉回檔案"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "binaryData": true,
+        "name": "={{ $('Google Drive Trigger').first().json.name.replace('.mp4', '_subtitles.mp4') }}",
+        "parents": [
+          "1QAs4ucGqfc3cMyGcveGP31qPDItVBpF3"
+        ],
+        "options": {}
+      },
+      "id": "da84d15e-1556-4037-9fec-3aaa8c852c4f",
+      "name": "上傳雲端",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        -336
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/tmp/video.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -432
+      ],
+      "id": "3e59fa30-7da1-42b5-ad34-56f92ca7183e",
+      "name": "寫進n8n"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/tmp/audio.mp3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        -432
+      ],
+      "id": "17219757-8dba-4150-ab32-5e6d30a84f02",
+      "name": "讀取該n8n 影片檔"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-1"
+            },
+            {
+              "name": "response_format",
+              "value": "srt"
+            },
+            {
+              "name": "language",
+              "value": "zh"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1728,
+        -432
+      ],
+      "id": "8998d3eb-60b6-4936-9aad-8506a828f9af",
+      "name": "AI 擷取音檔"
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "={{ $json.data }}",
+        "name": "={{ $today.format('yyyy-MM-dd')}}_{{ $('讀取該n8n 影片檔').item.json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1jjVHQl1ev95zFMYSm_stqbrWJ7_eN6Zc",
+          "mode": "list",
+          "cachedResultName": "音檔轉文字",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1jjVHQl1ev95zFMYSm_stqbrWJ7_eN6Zc"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1952,
+        -528
+      ],
+      "id": "a833132d-cc8b-43e8-9fe1-b5f3be74be90",
+      "name": "將音檔文字檔存起來",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Google Drive Trigger').first().json.id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1e7IrHoXQDG3Z7jIZZ8fcN7VPcYgYWbYf",
+          "mode": "list",
+          "cachedResultName": "處理完的影片",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1e7IrHoXQDG3Z7jIZZ8fcN7VPcYgYWbYf"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2848,
+        -336
+      ],
+      "id": "31222b85-7b5c-478c-8417-509800d21641",
+      "name": "移動到已處理影片",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "command": "=# 將大檔案寫入磁碟\necho \"{{ $binary.data }}\" | base64 -d > /tmp/original_video.mp4\n\n# 壓縮影片\n/root/.n8n/tools/ffmpeg -i \"/tmp/original_video.mp4\" -vcodec libx264 -crf 28 -preset fast -vf \"scale=720:-2\" \"/tmp/video.mp4\"\n\n# 清理原檔案\nrm -f /tmp/original_video.mp4"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -512
+      ],
+      "id": "9afe68c9-7d95-41aa-99e9-ad10f90544e4",
+      "name": "壓縮"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/tmp/video.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        832,
+        -512
+      ],
+      "id": "cf3a65cb-d8b2-4995-b9c6-f0783bc2b640",
+      "name": "壓縮後要轉檔"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "44df57cb-0ed9-4165-92db-44fa7e737c91",
+              "leftValue": "={{ $json.size.toNumber() }}",
+              "rightValue": 50000000,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        -432
+      ],
+      "id": "9cce0a1a-be92-4c2e-a190-4e1ed7f5b0e2",
+      "name": "If  如果大於50 MB"
+    },
+    {
+      "parameters": {
+        "content": "再把自己的 GPT API \n貼上去\n位置在 \nBearer \"API....\"",
+        "height": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2704,
+        1328
+      ],
+      "typeVersion": 1,
+      "id": "59b77cab-e0e3-4dae-9b89-4e06ee2880fc",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "command": "rm -f /tmp/video.mp4 /tmp/audio.mp3 /tmp/subtitles.srt /tmp/video_with_subtitles.mp4"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        1696
+      ],
+      "id": "a9228810-0436-4d7c-81b9-1c746a44f685",
+      "name": "清除暫存"
+    },
+    {
+      "parameters": {
+        "content": "這邊上傳之後\n\n就可以接 各大社群平台發布\n(FB IG threads 等)",
+        "height": 336,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3376,
+        1520
+      ],
+      "typeVersion": 1,
+      "id": "3f08f302-a7fa-4521-a740-f6ba571d326b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "整體請換成自己的\nGoogle Drive \nGPT API\n\n其他幾乎都不用動"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1312,
+        1184
+      ],
+      "typeVersion": 1,
+      "id": "6351541f-8ff4-467d-b7f5-23d3c6cd136c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 這是我的社群：\n## [ZN AI 樂園](https://line.me/ti/g2/m9R6Fd9CF2SiMIA2wheULFoBZUtsoFV7ckW8MA?utm_source=invitation&utm_medium=link_copy&utm_campaign=default/)\n歡迎點擊 ZN AI 樂園\n\n一起加入分享討論 n8n AI \n\nNick Chang｜nickleo051216@gmail.com｜\n\n0932-684-051\n\n個人網站：[ZN Studio](https://portaly.cc/zn.studio)\n\nThreads： ZN Studio\n[@nickai216](https://www.threads.com/@nickai216)\n\nLine ： [客服](https://lin.ee/Faz0doj)",
+        "height": 640,
+        "width": 288,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1280,
+        752
+      ],
+      "typeVersion": 1,
+      "id": "a061f3a5-10bd-4bb6-9947-3b7459ead19e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "name": "={{ $today.format('yyyy-MM-dd')}}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk",
+          "mode": "list",
+          "cachedResultName": "movie",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1424,
+        1504
+      ],
+      "id": "6c8bee63-c3d7-4945-a477-4982fa69f3e5",
+      "name": "Upload file",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "movie",
+        "options": {}
+      },
+      "id": "e38a52d9-f028-4c5c-bdb7-d2a0875bc6af",
+      "name": "Line Webhook 接收",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        752,
+        1408
+      ],
+      "webhookId": "[REMOVED]",
+      "notes": "接收 Line 的影片訊息\n建議設定： /webhook/line-video"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "video-check",
+              "leftValue": "={{ $json.body.events[0].message.type }}",
+              "rightValue": "video",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        1520
+      ],
+      "id": "468d9b16-8d30-45b2-8739-fa106fef8496",
+      "name": "檢查是否為影片訊息"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        1504
+      ],
+      "id": "c7b487dd-c880-403f-9d3d-9b8fbc20e986",
+      "name": "下載 Line 影片",
+      "notes": "需要設定你的 Line Channel Access Token"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"收到影片！正在處理中...\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        976,
+        1312
+      ],
+      "id": "de527db4-cbaf-498e-b7ae-d7e2f40bcd3b",
+      "name": "回覆 Line 訊息",
+      "notes": "告知用戶已收到影片並開始處理"
+    },
+    {
+      "parameters": {
+        "content": "📝 設定說明：\n\n1. Line Channel Access Token\n   - 到 Line Developers Console 取得\n   - 設定在「下載 Line 影片」和「回覆 Line 訊息」節點\n\n2. Webhook URL\n   - 設定為：你的 n8n 網址/webhook/line-video\n   - 在 Line Developers Console 設定此網址\n\n3. Google Drive 資料夾 ID\n   - 設定為你要監控的資料夾\n",
+        "height": 496,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        1072
+      ],
+      "typeVersion": 1,
+      "id": "e301f8d0-f2b9-4150-be43-9660b023c41b",
+      "name": "設定說明"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Line Webhook 接收').item.json.body.events[0].source.userId }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"該次影片已處理好，請至  https://drive.google.com/file/d/{{ $('上傳雲端1').item.json.id }}/view?usp=drivesdk 查看\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4112,
+        1696
+      ],
+      "id": "61b0b107-b320-4ada-a643-e3925c83a1db",
+      "name": "回覆 Line 訊息通知",
+      "notes": "告知用戶已收到影片並開始處理"
+    },
+    {
+      "parameters": {
+        "content": "📝 設定說明：\n\n1. Line Channel Access Token\n   - 到 Line Developers Console 取得\n   - 設定在「下載 Line 影片」和「回覆 Line 訊息」節點\n\n\n",
+        "height": 496,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4048,
+        1360
+      ],
+      "typeVersion": 1,
+      "id": "a8400e93-d990-4ff6-819b-aa246d6339f1",
+      "name": "設定說明1"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 10
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk",
+          "mode": "list",
+          "cachedResultName": "movie",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "559d166e-0c83-4d86-8a7a-8ad6ef510fd8",
+      "name": "Google Drive Trigger1",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        1696
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "f59d5847-f7aa-4b7d-87fe-8bf89632c50b",
+      "name": "Download Video1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        1600
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "command": "=# 檢查 FFmpeg 是否存在，不存在就安裝\nif [ ! -f \"/root/.n8n/tools/ffmpeg\" ]; then\n  mkdir -p /root/.n8n/tools && wget -qO- https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar -xJ --strip-components=1 -C /root/.n8n/tools && chmod +x /root/.n8n/tools/ffmpeg\nfi\n\n# 執行音檔轉換\n/root/.n8n/tools/ffmpeg -i \"/tmp/video.mp4\" -vn -acodec libmp3lame -ab 64k \"/tmp/audio.mp3\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        1600
+      ],
+      "id": "36344126-b4e5-4438-bd83-1191747a4153",
+      "name": "轉音檔1"
+    },
+    {
+      "parameters": {
+        "command": "=# 安裝字體套件\napk add --no-cache fontconfig ttf-dejavu font-noto-cjk\n\necho '{{ $json.data }}' > /tmp/subtitles.srt\n\n/root/.n8n/tools/ffmpeg -hide_banner -loglevel error -i \"/tmp/video.mp4\" -vf \"subtitles=/tmp/subtitles.srt:force_style='FontName=Noto Sans CJK TC,FontSize=24'\" -c:a copy \"/tmp/video_with_subtitles.mp4\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        1696
+      ],
+      "id": "46bb0e32-330a-46bc-b772-c4fbc5b5e677",
+      "name": "燒回影片1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/tmp/video_with_subtitles.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        3216,
+        1696
+      ],
+      "id": "8393d997-1612-40ea-bed7-c31468070673",
+      "name": "轉回檔案1"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "binaryData": true,
+        "name": "=Line UPload ({{ $('Download Video1').item.json.name }})",
+        "parents": [
+          "1QAs4ucGqfc3cMyGcveGP31qPDItVBpF3"
+        ],
+        "options": {}
+      },
+      "id": "814710da-8530-49d9-a0ba-7de60844b8e6",
+      "name": "上傳雲端1",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        3440,
+        1696
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/tmp/video.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        1696
+      ],
+      "id": "fc79445c-b885-42bd-bdec-ddea96bbe3a1",
+      "name": "寫進n8n1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/tmp/audio.mp3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2544,
+        1600
+      ],
+      "id": "e91635dc-fd30-4963-8af8-6c2c61064807",
+      "name": "讀取該n8n 影片檔1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-1"
+            },
+            {
+              "name": "response_format",
+              "value": "srt"
+            },
+            {
+              "name": "language",
+              "value": "zh"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2768,
+        1600
+      ],
+      "id": "61fa3003-3a11-4de9-9ec9-de2f7c013bb2",
+      "name": "AI 擷取音檔1"
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "={{ $json.data }}",
+        "name": "={{ $today.format('yyyy-MM-dd')}}_{{ $('讀取該n8n 影片檔1').item.json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1jjVHQl1ev95zFMYSm_stqbrWJ7_eN6Zc",
+          "mode": "list",
+          "cachedResultName": "音檔轉文字",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1jjVHQl1ev95zFMYSm_stqbrWJ7_eN6Zc"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2992,
+        1504
+      ],
+      "id": "0470ea4b-5bae-4a03-8471-533542eda3a1",
+      "name": "將音檔文字檔存起來1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Upload file').item.json.id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1e7IrHoXQDG3Z7jIZZ8fcN7VPcYgYWbYf",
+          "mode": "list",
+          "cachedResultName": "處理完的影片",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1e7IrHoXQDG3Z7jIZZ8fcN7VPcYgYWbYf"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3888,
+        1696
+      ],
+      "id": "dc46f053-3512-4042-a2f6-5705a5787bbc",
+      "name": "移動到已處理影片1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "command": "=# 將大檔案寫入磁碟\necho \"{{ $binary.data }}\" | base64 -d > /tmp/original_video.mp4\n\n# 壓縮影片\n/root/.n8n/tools/ffmpeg -i \"/tmp/original_video.mp4\" -vcodec libx264 -crf 28 -preset fast -vf \"scale=720:-2\" \"/tmp/video.mp4\"\n\n# 清理原檔案\nrm -f /tmp/original_video.mp4"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        1504
+      ],
+      "id": "755589f4-7933-4e6e-83e7-a0df14008780",
+      "name": "壓縮1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "44df57cb-0ed9-4165-92db-44fa7e737c91",
+              "leftValue": "={{ $json.size.toNumber() }}",
+              "rightValue": 50000000,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1872,
+        1600
+      ],
+      "id": "f6964084-04e0-4be1-be6f-d52fce1d6b4e",
+      "name": "If  如果大於50 MB1"
+    },
+    {
+      "parameters": {
+        "content": "再把自己的 GPT API \n貼上去\n位置在 \nBearer \"API....\"",
+        "height": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2976,
+        3424
+      ],
+      "typeVersion": 1,
+      "id": "8caf8478-b6ce-46ba-8575-e23ba6b10195",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "command": "rm -f /tmp/video.mp4 /tmp/audio.mp3 /tmp/subtitles.srt /tmp/video_with_subtitles.mp4"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3936,
+        3792
+      ],
+      "id": "5a70bcc5-694a-4f4b-b42d-64aa5c13c21e",
+      "name": "清除暫存1"
+    },
+    {
+      "parameters": {
+        "content": "這邊上傳之後\n\n就可以接 各大社群平台發布\n(FB IG threads 等)",
+        "height": 336,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3648,
+        3616
+      ],
+      "typeVersion": 1,
+      "id": "ebd69b42-1dcd-4bf1-a70e-674f7ed7ad59",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "整體請換成自己的\nGoogle Drive \nGPT API\n\n其他幾乎都不用動"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1584,
+        3280
+      ],
+      "typeVersion": 1,
+      "id": "d9b9561a-ad3f-4ac7-bb78-7fa2026367fa",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "name": "={{ $today.format('yyyy-MM-dd')}}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk",
+          "mode": "list",
+          "cachedResultName": "movie",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1696,
+        3712
+      ],
+      "id": "80254c22-8e84-4fbc-bcd5-44b5eda4aeb1",
+      "name": "Upload file1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "movie",
+        "options": {}
+      },
+      "id": "09c357a6-b27c-46d3-9d32-6ab196fe0f76",
+      "name": "Line Webhook 接收1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        368,
+        3648
+      ],
+      "webhookId": "[REMOVED]",
+      "notes": "接收 Line 的影片訊息\n建議設定： /webhook/line-video"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "video-check",
+              "leftValue": "={{ $json.body.events[0].message.type }}",
+              "rightValue": "video",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        3744
+      ],
+      "id": "a8e44c15-be87-410b-9ca4-750179293803",
+      "name": "檢查是否為影片訊息1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer /uiyigGndco4VEBA/zGwpPEljrT+MkAfnEagwQc48AshgaZDoxLy4bg7qiiyGLDQKckz4ayPZ0QZ2AGCl0rxgv9wTqnqpQuhHcGVc/UatTRPfW3V6IU11LbFXTz7wNAaHVW/2/XzhwRzQLuNjkbiVAdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        3488
+      ],
+      "id": "118b1388-86d9-411e-84b5-d8ebcfa5025f",
+      "name": "下載 Line 影片1",
+      "notes": "需要設定你的 Line Channel Access Token"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer /uiyigGndco4VEBA/zGwpPEljrT+MkAfnEagwQc48AshgaZDoxLy4bg7qiiyGLDQKckz4ayPZ0QZ2AGCl0rxgv9wTqnqpQuhHcGVc/UatTRPfW3V6IU11LbFXTz7wNAaHVW/2/XzhwRzQLuNjkbiVAdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"收到影片！正在處理中...\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        928,
+        3520
+      ],
+      "id": "cd90f3ef-f234-46de-b887-92dd7373e715",
+      "name": "回覆 Line 訊息1",
+      "notes": "告知用戶已收到影片並開始處理"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer /uiyigGndco4VEBA/zGwpPEljrT+MkAfnEagwQc48AshgaZDoxLy4bg7qiiyGLDQKckz4ayPZ0QZ2AGCl0rxgv9wTqnqpQuhHcGVc/UatTRPfW3V6IU11LbFXTz7wNAaHVW/2/XzhwRzQLuNjkbiVAdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Line Webhook 接收1').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"該次影片已處理好，請至  https://drive.google.com/file/d/{{ $('上傳雲端2').item.json.id }}/view?usp=drivesdk 查看\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4384,
+        3792
+      ],
+      "id": "51aea8da-99e3-44eb-a039-4a024a41a89e",
+      "name": "回覆 Line 訊息通知1",
+      "notes": "告知用戶已收到影片並開始處理"
+    },
+    {
+      "parameters": {
+        "content": "📝 設定說明：\n\n1. Line Channel Access Token\n   - 到 Line Developers Console 取得\n   - 設定在「下載 Line 影片」和「回覆 Line 訊息」節點\n\n\n",
+        "height": 496,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4320,
+        3456
+      ],
+      "typeVersion": 1,
+      "id": "f09541a8-24ea-4b76-8b66-9176c358128a",
+      "name": "設定說明3"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "hour": 10
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk",
+          "mode": "list",
+          "cachedResultName": "movie",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "id": "e5a16626-272b-4788-8562-f9365516f014",
+      "name": "Google Drive Trigger2",
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        4048
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "904153cb-cd2b-406a-ab4d-78e277622de1",
+      "name": "Download Video2",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        3696
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "command": "=# 檢查 FFmpeg 是否存在，不存在就安裝\nif [ ! -f \"/root/.n8n/tools/ffmpeg\" ]; then\n  mkdir -p /root/.n8n/tools && wget -qO- https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar -xJ --strip-components=1 -C /root/.n8n/tools && chmod +x /root/.n8n/tools/ffmpeg\nfi\n\n# 執行音檔轉換\n/root/.n8n/tools/ffmpeg -i \"/tmp/video.mp4\" -vn -acodec libmp3lame -ab 64k \"/tmp/audio.mp3\"\n\n\n\n\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2592,
+        3696
+      ],
+      "id": "de2eff41-97ab-4da8-b994-ef8c43d95337",
+      "name": "轉音檔2"
+    },
+    {
+      "parameters": {
+        "command": "=# 安裝字體套件\napk add --no-cache fontconfig ttf-dejavu font-noto-cjk\n\necho '{{ $json.data }}' > /tmp/subtitles.srt\n\n/root/.n8n/tools/ffmpeg -hide_banner -loglevel error -i \"/tmp/video.mp4\" -vf \"subtitles=/tmp/subtitles.srt:force_style='FontName=Noto Sans CJK TC,FontSize=24'\" -c:a copy \"/tmp/video_with_subtitles.mp4\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3264,
+        3792
+      ],
+      "id": "3d4d6f7f-e9d5-4e21-8da2-d4862e158172",
+      "name": "燒回影片2"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/tmp/video_with_subtitles.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        3488,
+        3792
+      ],
+      "id": "08c07baa-081c-4d5a-83d4-515518b37313",
+      "name": "轉回檔案2"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "binaryData": true,
+        "name": "=Line UPload ({{ $('Download Video2').item.json.name }})",
+        "parents": [
+          "1QAs4ucGqfc3cMyGcveGP31qPDItVBpF3"
+        ],
+        "options": {}
+      },
+      "id": "2e58acb4-0af3-49f5-b79a-53909719c08c",
+      "name": "上傳雲端2",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        3712,
+        3792
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "/tmp/video.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2368,
+        3792
+      ],
+      "id": "cf6ea0d2-b1e3-4a52-b0ac-a8e213a5007f",
+      "name": "寫進n8n2"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=/tmp/audio.mp3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        2816,
+        3696
+      ],
+      "id": "dc3ac766-2297-4657-a8e6-012fab394ebb",
+      "name": "讀取該n8n 影片檔2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REMOVED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-1"
+            },
+            {
+              "name": "response_format",
+              "value": "srt"
+            },
+            {
+              "name": "language",
+              "value": "zh"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3040,
+        3696
+      ],
+      "id": "93c2c0bb-6f42-4b30-a04c-1a5ccc589282",
+      "name": "AI 擷取音檔2"
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "={{ $json.data }}",
+        "name": "={{ $today.format('yyyy-MM-dd')}}_{{ $('讀取該n8n 影片檔2').item.json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1jjVHQl1ev95zFMYSm_stqbrWJ7_eN6Zc",
+          "mode": "list",
+          "cachedResultName": "音檔轉文字",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1jjVHQl1ev95zFMYSm_stqbrWJ7_eN6Zc"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3264,
+        3600
+      ],
+      "id": "21ff4567-3fc8-4e19-86c8-c2a5d8c24c8e",
+      "name": "將音檔文字檔存起來2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Upload file1').item.json.id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1e7IrHoXQDG3Z7jIZZ8fcN7VPcYgYWbYf",
+          "mode": "list",
+          "cachedResultName": "處理完的影片",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1e7IrHoXQDG3Z7jIZZ8fcN7VPcYgYWbYf"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        4160,
+        3792
+      ],
+      "id": "0b87f214-cd11-4134-b459-be861b4fde4c",
+      "name": "移動到已處理影片2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "command": "=# 將大檔案寫入磁碟\necho \"{{ $binary.data }}\" | base64 -d > /tmp/original_video.mp4\n\n# 壓縮影片\n/root/.n8n/tools/ffmpeg -i \"/tmp/original_video.mp4\" -vcodec libx264 -crf 28 -preset fast -vf \"scale=720:-2\" \"/tmp/video.mp4\"\n\n# 清理原檔案\nrm -f /tmp/original_video.mp4"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2368,
+        3600
+      ],
+      "id": "9d2b224b-e15a-4ceb-94d5-1eb89e625a66",
+      "name": "壓縮2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "44df57cb-0ed9-4165-92db-44fa7e737c91",
+              "leftValue": "={{ $json.size.toNumber() }}",
+              "rightValue": 50000000,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        3696
+      ],
+      "id": "80700c95-a338-4290-ae4c-e79099a46481",
+      "name": "If  如果大於50 MB2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "message-type-check",
+              "leftValue": "={{ $json.body.events[0].message.type }}",
+              "rightValue": "video",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        4864
+      ],
+      "id": "861f4817-a7fa-4ac2-b75c-aad5557a0ef8",
+      "name": "檢查訊息類型"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.y2mate.com/mates/analyzeV2/ajax",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "k_query",
+              "value": "={{ $json.chatInput }}"
+            },
+            {
+              "name": "k_page",
+              "value": "home"
+            },
+            {
+              "name": "hl",
+              "value": "zh"
+            },
+            {
+              "name": "q_auto",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "71a60efd-1196-4dc5-ba3c-c786128874be",
+      "name": "分析 YouTube 連結",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1456,
+        5024
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1696,
+        5024
+      ],
+      "id": "7f01aebe-d4fc-42f1-9ee8-d29ab409ce9d",
+      "name": "檢查分析結果"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.y2mate.com/mates/convertV2/index",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "vid",
+              "value": "={{ $json.vid }}"
+            },
+            {
+              "name": "k",
+              "value": "={{ Object.keys($json.links.mp4)[0] }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "b56350ce-0d7f-4fcf-be4a-a5caedfc00af",
+      "name": "下載 YouTube 影片",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1904,
+        5008
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "name": "={{ $today.format('yyyy-MM-dd-HHmmss') }}_{{ $('分析 YouTube 連結').item.json.title || 'youtube_video' }}.mp4",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk",
+          "mode": "list",
+          "cachedResultName": "movie",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2160,
+        4864
+      ],
+      "id": "25815bf1-6d68-41b2-bb69-2bbede470389",
+      "name": "上傳到 Google Drive",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer /uiyigGndco4VEBA/zGwpPEljrT+MkAfnEagwQc48AshgaZDoxLy4bg7qiiyGLDQKckz4ayPZ0QZ2AGCl0rxgv9wTqnqpQuhHcGVc/UatTRPfW3V6IU11LbFXTz7wNAaHVW/2/XzhwRzQLuNjkbiVAdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Line Webhook 接收2').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"✅ 影片處理完成！\\n\\n📹 {{ $('分析 YouTube 連結').item.json.title }}\\n📁 已上傳到 Google Drive\\n🔗 連結: {{ $json.webViewLink }}\\n\\n🏷️ 檔案大小: {{ ($json.size / 1048576).toFixed(2) }} MB\\n⏱️ 處理時間: {{ $today.format('HH:mm:ss') }}\\n\\n📱 由 ZN Studio 自動處理\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        4864
+      ],
+      "id": "868a71bd-1a42-464c-bfa1-5e28804dc35a",
+      "name": "Line OA 成功回覆"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer /uiyigGndco4VEBA/zGwpPEljrT+MkAfnEagwQc48AshgaZDoxLy4bg7qiiyGLDQKckz4ayPZ0QZ2AGCl0rxgv9wTqnqpQuhHcGVc/UatTRPfW3V6IU11LbFXTz7wNAaHVW/2/XzhwRzQLuNjkbiVAdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Line Webhook 接收2').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"❌ YouTube 影片處理失敗\\n\\n可能原因：\\n• 影片連結無效\\n• 影片受保護或私人\\n• 服務暫時無法使用\\n\\n💡 建議：\\n• 確認連結正確\\n• 嘗試其他影片\\n• 直接上傳影片檔案\\n\\n📧 技術支援: nickleo051216@gmail.com\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1936,
+        5184
+      ],
+      "id": "ad8a030d-3771-462a-8e35-712f3d3357b4",
+      "name": "YouTube 錯誤回覆"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "movie",
+        "options": {}
+      },
+      "id": "75e7c11d-aa5d-453c-842a-8429d95c2f20",
+      "name": "Line Webhook 接收2",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        704,
+        4832
+      ],
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer /uiyigGndco4VEBA/zGwpPEljrT+MkAfnEagwQc48AshgaZDoxLy4bg7qiiyGLDQKckz4ayPZ0QZ2AGCl0rxgv9wTqnqpQuhHcGVc/UatTRPfW3V6IU11LbFXTz7wNAaHVW/2/XzhwRzQLuNjkbiVAdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        4720
+      ],
+      "id": "47bd4399-f2fd-42f6-83c9-05430c5b9caa",
+      "name": "下載 Line 影片2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        7040
+      ],
+      "id": "b46b2aed-6b4f-498f-842c-28b8ce2722be",
+      "name": "When chat message received",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "command": "=#!/bin/bash\n\n# --- 腳本設定 ---\n# 發生任何錯誤時立即停止\nset -e\n\n# --- 1. 環境與路徑準備 ---\n# 定義一個持久化的工具安裝目錄\nTOOLS_DIR=\"/home/node/.n8n/tools\"\n# 建立目錄 (如果不存在)\nmkdir -p \"$TOOLS_DIR\"\n\n# 定義工具的完整路徑\nFFMPEG_PATH=\"$TOOLS_DIR/ffmpeg\"\nPYTHON_INSTALL_DIR=\"$TOOLS_DIR/python\"\nPYTHON_PATH=\"$PYTHON_INSTALL_DIR/bin/python3\"\nYTDLP_PATH=\"$TOOLS_DIR/yt-dlp\"\n\necho \"INFO: 工具將被安裝在 $TOOLS_DIR (aarch64 ARM 架構)\"\n\n# --- 2. 檢查並安裝 FFmpeg (aarch64 版) ---\nif [ ! -f \"$FFMPEG_PATH\" ]; then\n  echo \"INFO: FFmpeg (aarch64) 不存在，開始下載並安裝...\"\n  # !! 修正點 !! 下載 arm64 (aarch64) 版本的 FFmpeg\n  wget -qO- \"https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-arm64-static.tar.xz\" | tar -xJ --strip-components=1 -C \"$TOOLS_DIR\"\n  chmod +x \"$FFMPEG_PATH\"\n  echo \"INFO: FFmpeg (aarch64) 安裝完成。\"\nelse\n  echo \"INFO: FFmpeg 已存在，跳過安裝。\"\nfi\n\n# --- 3. 檢查並安裝 Python (aarch64/musl 版) ---\nif [ ! -f \"$PYTHON_PATH\" ]; then\n  echo \"INFO: Python (aarch64/musl) 不存在，開始下載並安裝...\"\n  # !! 修正點 !! 下載 aarch64/musl 版本的 Python\n  wget -qO- \"https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-aarch64-unknown-linux-musl-install_only.tar.gz\" | tar -xz -C \"$TOOLS_DIR\"\n  echo \"INFO: Python (aarch64/musl) 安裝完成。\"\nelse\n  echo \"INFO: Python 已存在，跳過安裝。\"\nfi\n\n# --- 4. 檢查並安裝 yt-dlp (通用) ---\nif [ ! -f \"$YTDLP_PATH\" ]; then\n  echo \"INFO: yt-dlp 不存在，開始下載並安裝...\"\n  wget -q \"https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp\" -O \"$YTDLP_PATH\"\n  echo \"INFO: yt-dlp 安裝完成。\"\nelse\n  echo \"INFO: yt-dlp 已存在，跳過安裝。\"\nfi\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        976,
+        3824
+      ],
+      "id": "2b838d1b-fac6-43ef-b38f-52684c12f8b7",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "command": "=/home/node/.n8n/tools/yt-dlp --write-auto-sub --sub-lang zh-TW,en --skip-download \"{{ $('When chat message received').item.json.chatInput }}\""
+      },
+      "name": "下載影片",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        1648,
+        6304
+      ],
+      "id": "057b1971-bad2-474f-8bb0-9f646e6f72a5",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "command": "ls -la /home/node/downloads/"
+      },
+      "name": "列出檔案",
+      "type": "n8n-nodes-base.executeCommand",
+      "position": [
+        2016,
+        5904
+      ],
+      "id": "9a1412ef-7263-42a1-b3c6-de1724733fe6",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "command": "=# 檢查 yt-dlp 是否存在，不存在就安裝\nif [ ! -f \"/root/.n8n/tools/yt-dlp\" ]; then\n  mkdir -p /root/.n8n/tools\n  wget -O /root/.n8n/tools/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp\n  chmod +x /root/.n8n/tools/yt-dlp\nfi\n\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        5872
+      ],
+      "id": "ddeb929d-eacd-4530-ba88-fb422eec4f59",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "youtubeId": "https://www.youtube.com/watch?v=OMVkypYRxNc"
+      },
+      "type": "n8n-nodes-youtube-transcript.youtubeTranscriptNode",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        6176
+      ],
+      "id": "c1cdc98f-143a-47a6-a8f9-593fb5d2ca70",
+      "name": "Youtube Transcript"
+    },
+    {
+      "parameters": {
+        "youtubeId": "https://www.youtube.com/watch?v=OMVkypYRxNc"
+      },
+      "type": "n8n-nodes-youtube-transcript.youtubeTranscriptNode",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        5808
+      ],
+      "id": "e7151269-81df-4428-af1f-c9898a191c56",
+      "name": "Youtube Transcript1"
+    },
+    {
+      "parameters": {
+        "command": "=# 更新套件清單並安裝 Chromium\napt-get update && apt-get install -y chromium chromium-driver fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0 libatk1.0-0 libcups2 libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libxcomposite1 libxdamage1 libxrandr2 xdg-utils\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        6000
+      ],
+      "id": "7efa1eab-dc60-488d-8f5e-da89d03350e8",
+      "name": "Execute Command2"
+    },
+    {
+      "parameters": {
+        "command": "=\n\n# --- 3. 檢查並安裝 Python (aarch64/musl 版) ---\nif [ ! -f \"$PYTHON_PATH\" ]; then\n  echo \"INFO: Python (aarch64/musl) 不存在，開始下載並安裝...\"\n  # !! 修正點 !! 下載 aarch64/musl 版本的 Python\n  wget -qO- \"https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-aarch64-unknown-linux-musl-install_only.tar.gz\" | tar -xz -C \"$TOOLS_DIR\"\n  echo \"INFO: Python (aarch64/musl) 安裝完成。\"\nelse\n  echo \"INFO: Python 已存在，跳過安裝。\"\nfi\n\n# --- 4. 檢查並安裝 yt-dlp (通用) ---\nif [ ! -f \"$YTDLP_PATH\" ]; then\n  echo \"INFO: yt-dlp 不存在，開始下載並安裝...\"\n  wget -q \"https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp\" -O \"$YTDLP_PATH\"\n  echo \"INFO: yt-dlp 安裝完成。\"\nelse\n  echo \"INFO: yt-dlp 已存在，跳過安裝。\"\nfi"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        5840
+      ],
+      "id": "816c07b5-37de-47fb-8a9e-28434e7b9f69",
+      "name": "Execute Command3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "youtube",
+        "options": {}
+      },
+      "id": "3cf6bea3-5e75-4bb2-8b73-a04e26194493",
+      "name": "YouTube Webhook 接收",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        672,
+        7136
+      ],
+      "webhookId": "[REMOVED]",
+      "notes": "接收 YouTube 連結\n格式: {\"youtube_url\": \"https://www.youtube.com/watch?v=VIDEO_ID\"}"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "youtube-url-check",
+              "leftValue": "={{ $json.chatInput }}",
+              "rightValue": "youtube.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        7056
+      ],
+      "id": "150cf743-9e23-4a9b-a344-3c9aa03f56c1",
+      "name": "檢查是否為 YouTube 連結"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/tmp/youtube_video.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1856,
+        7024
+      ],
+      "id": "bc378170-7022-457a-bc24-831170131f1f",
+      "name": "讀取 YouTube 影片檔"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "binaryData": true,
+        "name": "=YouTube_{{ $today.format('yyyy-MM-dd_HH-mm') }}.mp4",
+        "parents": [
+          "1hS-iRtRZvoIdzgbKM2r19Jg03ZXoLNTk"
+        ],
+        "options": {}
+      },
+      "id": "6d620edc-a29c-44a6-8b97-fdc9fd5cace3",
+      "name": "上傳 YouTube 影片到雲端",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        2032,
+        7056
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer /uiyigGndco4VEBA/zGwpPEljrT+MkAfnEagwQc48AshgaZDoxLy4bg7qiiyGLDQKckz4ayPZ0QZ2AGCl0rxgv9wTqnqpQuhHcGVc/UatTRPfW3V6IU11LbFXTz7wNAaHVW/2/XzhwRzQLuNjkbiVAdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json.body.user_id || 'YOUR_USER_ID' }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"YouTube 影片已開始處理，完成後會通知您！\\n\\n影片連結: {{ $json.body.youtube_url }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1488,
+        6848
+      ],
+      "id": "0373bf3a-c79b-416c-8d21-4b9168884dfc",
+      "name": "通知開始處理 YouTube"
+    },
+    {
+      "parameters": {
+        "command": "=# 清理 YouTube 下載的暫存檔案\n# 作者: Nick Chang | nickleo051216@gmail.com | 0932-684-051\n\necho \"INFO: 清理 YouTube 暫存檔案...\"\nrm -f /tmp/youtube_video.*\necho \"INFO: 清理完成\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2304,
+        7056
+      ],
+      "id": "7c314d40-7e02-4d52-be62-266c0157e10d",
+      "name": "清理 YouTube 暫存檔"
+    },
+    {
+      "parameters": {
+        "command": "=\n\n# 設定路徑\nYTDLP_PATH=\"/home/node/.n8n/tools/yt-dlp\"\nCOOKIES_FILE=\"/tmp/youtube_cookies.txt\"\n\n# 方法一：嘗試從系統提取現有cookies\necho \"方法一：檢查系統中的瀏覽器 cookies...\"\n\n# 檢查是否有瀏覽器安裝\nif command -v firefox >/dev/null 2>&1; then\n    echo \"找到 Firefox，嘗試提取 cookies...\"\n    \"$YTDLP_PATH\" --cookies-from-browser firefox --print-json \"https://www.youtube.com\" --no-download > /tmp/firefox_test.json 2>/dev/null\n    if [ -s /tmp/firefox_test.json ]; then\n        echo \"Firefox cookies 可用\"\n        BROWSER_COOKIES=\"firefox\"\n    fi\nelif command -v chrome >/dev/null 2>&1; then\n    echo \"找到 Chrome，嘗試提取 cookies...\"\n    \"$YTDLP_PATH\" --cookies-from-browser chrome --print-json \"https://www.youtube.com\" --no-download > /tmp/chrome_test.json 2>/dev/null\n    if [ -s /tmp/chrome_test.json ]; then\n        echo \"Chrome cookies 可用\"\n        BROWSER_COOKIES=\"chrome\"\n    fi\nelse\n    echo \"未找到瀏覽器，無法提取現有 cookies\"\nfi\n\n# 方法二：生成基本的 session cookies\necho \"\"\necho \"方法二：生成基本的 YouTube session cookies...\"\n\n# 創建基本的 cookies 檔案\ncat > \"$COOKIES_FILE\" << 'EOF'\n# Netscape HTTP Cookie File\n.youtube.com\tTRUE\t/\tTRUE\t1735689600\tCONSENT\tYES+cb\n.youtube.com\tTRUE\t/\tFALSE\t1735689600\tVISITOR_INFO1_LIVE\trandom_visitor_id\n.youtube.com\tTRUE\t/\tFALSE\t1735689600\tYSC\trandom_session_id\nwww.youtube.com\tFALSE\t/\tFALSE\t1735689600\tGPS\t1\nEOF\n\necho \"基本 cookies 檔案已生成: $COOKIES_FILE\"\n\n# 方法三：嘗試無 cookies 但使用更好的 headers\necho \"\"\necho \"方法三：測試不同的方法...\"\n\n# 取得測試 URL\nYOUTUBE_URL=\"\"\nif [ -z \"$YOUTUBE_URL\" ] || [ \"$YOUTUBE_URL\" = \"{{ $('When chat message received').item.json.chatInput }}\" ]; then\n    YOUTUBE_URL=\"https://www.youtube.com/watch?v=OMVkypYRxNc\"\nfi\n\nCLEAN_URL=$(echo \"$YOUTUBE_URL\" | tr -d '\\n\\r' | sed 's/^[ \\t]*//;s/[ \\t]*$//')\necho \"測試 URL: $CLEAN_URL\"\n\n# 清理舊檔案\nrm -f /tmp/youtube_video.*\n\n# 測試順序：瀏覽器cookies -> 檔案cookies -> 無cookies高級參數\nSUCCESS=\"false\"\n\nif [ -n \"$BROWSER_COOKIES\" ]; then\n    echo \"測試瀏覽器 cookies...\"\n    if \"$YTDLP_PATH\" \\\n        --cookies-from-browser \"$BROWSER_COOKIES\" \\\n        --format \"best[height<=480]/worst\" \\\n        --output \"/tmp/youtube_video.%(ext)s\" \\\n        --no-playlist \\\n        \"$CLEAN_URL\" 2>/dev/null; then\n        SUCCESS=\"true\"\n        echo \"瀏覽器 cookies 方法成功\"\n    fi\nfi\n\nif [ \"$SUCCESS\" = \"false\" ]; then\n    echo \"測試檔案 cookies...\"\n    if \"$YTDLP_PATH\" \\\n        --cookies \"$COOKIES_FILE\" \\\n        --format \"best[height<=480]/worst\" \\\n        --output \"/tmp/youtube_video.%(ext)s\" \\\n        --no-playlist \\\n        --user-agent \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36\" \\\n        \"$CLEAN_URL\" 2>/dev/null; then\n        SUCCESS=\"true\"\n        echo \"檔案 cookies 方法成功\"\n    fi\nfi\n\nif [ \"$SUCCESS\" = \"false\" ]; then\n    echo \"測試進階無 cookies 方法...\"\n    \"$YTDLP_PATH\" \\\n        --format \"worst[height<=360]/worst\" \\\n        --output \"/tmp/youtube_video.%(ext)s\" \\\n        --no-playlist \\\n        --user-agent \"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)\" \\\n        --add-header \"Accept-Language:en-US,en;q=0.9\" \\\n        --extractor-args \"youtube:player_client=web,android_music\" \\\n        --sleep-interval 3 \\\n        --max-sleep-interval 6 \\\n        \"$CLEAN_URL\" 2>/dev/null\n    \n    if ls /tmp/youtube_video.* >/dev/null 2>&1; then\n        SUCCESS=\"true\"\n        echo \"進階方法成功\"\n    fi\nfi\n\n# 檢查最終結果\necho \"\"\necho \"=========================================\"\necho \"結果檢查\"\necho \"=========================================\"\n\nif ls /tmp/youtube_video.* >/dev/null 2>&1; then\n    FINAL_FILE=$(ls /tmp/youtube_video.* | head -1)\n    echo \"下載成功: $FINAL_FILE\"\n    \n    # 檢查檔案大小\n    FILE_SIZE=$(stat -c%s \"$FINAL_FILE\")\n    FILE_SIZE_KB=$((FILE_SIZE / 1024))\n    \n    echo \"檔案大小: ${FILE_SIZE_KB}KB\"\n    ls -lh \"$FINAL_FILE\"\n    \n    if [ \"$FILE_SIZE\" -gt 1000 ]; then\n        # 重新命名為標準格式\n        mv \"$FINAL_FILE\" \"/tmp/youtube_video.mp4\"\n        echo \"檔案已重新命名為: /tmp/youtube_video.mp4\"\n        echo \"\"\n        echo \"YouTube 下載成功！\"\n        echo \"檔案已準備好進入影片處理流程\"\n    else\n        echo \"檔案太小，可能下載不完整\"\n    fi\nelse\n    echo \"所有方法都失敗了\"\n    echo \"\"\n    echo \"替代建議：\"\n    echo \"1. 手動在電腦上下載 YouTube 影片，然後透過 Line 上傳\"\n    echo \"2. 使用其他影片來源（直接 MP4 連結）\"\n    echo \"3. 嘗試不同的 YouTube 影片 URL\"\nfi\n\necho \"\"\necho \"=========================================\"\necho \"Cookies 生成測試完成\"\necho \"=========================================\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        7184
+      ],
+      "id": "c8c34545-9b3d-4a64-b1a1-2827397aba8b",
+      "name": "下載 YouTube 影片1"
+    },
+    {
+      "parameters": {
+        "command": "=#!/bin/bash\n\n# --- 腳本設定 ---\n# 發生任何錯誤時立即停止\nset -e\n\n# --- 1. 環境與路徑準備 ---\n# 定義一個持久化的工具安裝目錄\nTOOLS_DIR=\"/home/node/.n8n/tools\"\n# 建立目錄 (如果不存在)\nmkdir -p \"$TOOLS_DIR\"\n\n# 定義工具的完整路徑\nFFMPEG_PATH=\"$TOOLS_DIR/ffmpeg\"\nPYTHON_INSTALL_DIR=\"$TOOLS_DIR/python\"\nPYTHON_PATH=\"$PYTHON_INSTALL_DIR/bin/python3\"\nYTDLP_PATH=\"$TOOLS_DIR/yt-dlp\"\n\necho \"INFO: 工具將被安裝在 $TOOLS_DIR (aarch64 ARM 架構)\"\n\n# --- 2. 檢查並安裝 FFmpeg (aarch64 版) ---\nif [ ! -f \"$FFMPEG_PATH\" ]; then\n  echo \"INFO: FFmpeg (aarch64) 不存在，開始下載並安裝...\"\n  # !! 修正點 !! 下載 arm64 (aarch64) 版本的 FFmpeg\n  wget -qO- \"https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-arm64-static.tar.xz\" | tar -xJ --strip-components=1 -C \"$TOOLS_DIR\"\n  chmod +x \"$FFMPEG_PATH\"\n  echo \"INFO: FFmpeg (aarch64) 安裝完成。\"\nelse\n  echo \"INFO: FFmpeg 已存在，跳過安裝。\"\nfi\n\n# --- 3. 檢查並安裝 Python (aarch64/musl 版) ---\nif [ ! -f \"$PYTHON_PATH\" ]; then\n  echo \"INFO: Python (aarch64/musl) 不存在，開始下載並安裝...\"\n  # !! 修正點 !! 下載 aarch64/musl 版本的 Python\n  wget -qO- \"https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-aarch64-unknown-linux-musl-install_only.tar.gz\" | tar -xz -C \"$TOOLS_DIR\"\n  echo \"INFO: Python (aarch64/musl) 安裝完成。\"\nelse\n  echo \"INFO: Python 已存在，跳過安裝。\"\nfi\n\n# --- 4. 檢查並安裝 yt-dlp (通用) ---\nif [ ! -f \"$YTDLP_PATH\" ]; then\n  echo \"INFO: yt-dlp 不存在，開始下載並安裝...\"\n  wget -q \"https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp\" -O \"$YTDLP_PATH\"\n  echo \"INFO: yt-dlp 安裝完成。\"\nelse\n  echo \"INFO: yt-dlp 已存在，跳過安裝。\"\nfi\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        7072
+      ],
+      "id": "6d6475e3-515f-456b-96f2-0ecae89e6f3b",
+      "name": "Execute Command4"
+    },
+    {
+      "parameters": {
+        "youtubeId": "={{ $('檢查是否為 YouTube 連結').item.json.chatInput }}"
+      },
+      "type": "n8n-nodes-youtube-transcript.youtubeTranscriptNode",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        7008
+      ],
+      "id": "5f313564-0f9c-4368-8b4b-04fbb761ea5a",
+      "name": "Youtube Transcript2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "youtube-url-check",
+              "leftValue": "={{ $json.chatInput }}",
+              "rightValue": "youtube.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        560,
+        4480
+      ],
+      "id": "a4c3d64b-946d-4f87-8c0c-7a1eee1cb12b",
+      "name": "檢查是否為 YouTube 連結1"
+    },
+    {
+      "parameters": {
+        "command": "=#!/bin/bash\n\n# --- 腳本設定 ---\n# 發生任何錯誤時立即停止\nset -e\n\n# --- 1. 環境與路徑準備 ---\n# 定義一個持久化的工具安裝目錄\nTOOLS_DIR=\"/home/node/.n8n/tools\"\n# 建立目錄 (如果不存在)\nmkdir -p \"$TOOLS_DIR\"\n\n# 定義工具的完整路徑\nFFMPEG_PATH=\"$TOOLS_DIR/ffmpeg\"\nPYTHON_INSTALL_DIR=\"$TOOLS_DIR/python\"\nPYTHON_PATH=\"$PYTHON_INSTALL_DIR/bin/python3\"\nYTDLP_PATH=\"$TOOLS_DIR/yt-dlp\"\n\necho \"INFO: 工具將被安裝在 $TOOLS_DIR (aarch64 ARM 架構)\"\n\n# --- 2. 檢查並安裝 FFmpeg (aarch64 版) ---\nif [ ! -f \"$FFMPEG_PATH\" ]; then\n  echo \"INFO: FFmpeg (aarch64) 不存在，開始下載並安裝...\"\n  # !! 修正點 !! 下載 arm64 (aarch64) 版本的 FFmpeg\n  wget -qO- \"https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-arm64-static.tar.xz\" | tar -xJ --strip-components=1 -C \"$TOOLS_DIR\"\n  chmod +x \"$FFMPEG_PATH\"\n  echo \"INFO: FFmpeg (aarch64) 安裝完成。\"\nelse\n  echo \"INFO: FFmpeg 已存在，跳過安裝。\"\nfi\n\n# --- 3. 檢查並安裝 Python (aarch64/musl 版) ---\nif [ ! -f \"$PYTHON_PATH\" ]; then\n  echo \"INFO: Python (aarch64/musl) 不存在，開始下載並安裝...\"\n  # !! 修正點 !! 下載 aarch64/musl 版本的 Python\n  wget -qO- \"https://github.com/indygreg/python-build-standalone/releases/download/20240415/cpython-3.11.9+20240415-aarch64-unknown-linux-musl-install_only.tar.gz\" | tar -xz -C \"$TOOLS_DIR\"\n  echo \"INFO: Python (aarch64/musl) 安裝完成。\"\nelse\n  echo \"INFO: Python 已存在，跳過安裝。\"\nfi\n\n# --- 4. 檢查並安裝 yt-dlp (通用) ---\nif [ ! -f \"$YTDLP_PATH\" ]; then\n  echo \"INFO: yt-dlp 不存在，開始下載並安裝...\"\n  wget -q \"https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp\" -O \"$YTDLP_PATH\"\n  echo \"INFO: yt-dlp 安裝完成。\"\nelse\n  echo \"INFO: yt-dlp 已存在，跳過安裝。\"\nfi\n"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        832,
+        4464
+      ],
+      "id": "438bd8be-956e-490c-b028-3743a57c5b3e",
+      "name": "Execute Command5"
+    },
+    {
+      "parameters": {
+        "command": "=#!/bin/bash\nset -e\n\nYOUTUBE_URL=\"{{ $('Line Webhook 接收1').item.json.body.events[0].message.text }}\"\nTOOLS_DIR=\"/home/node/.n8n/tools\"\nYTDLP_PATH=\"$TOOLS_DIR/yt-dlp\"\n\n# 更簡單的下載方式\n$YTDLP_PATH \\\n  --format \"18/22/best[height<=360]\" \\\n  --output \"/tmp/video.%(ext)s\" \\\n  --no-warnings \\\n  \"$YOUTUBE_URL\"\n\n# 檢查並重新命名\nif ls /tmp/video.* 1> /dev/null 2>&1; then\n    mv /tmp/video.* /tmp/video.mp4\nelse\n    echo \"ERROR: 下載失敗\"\n    exit 1\nfi"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        4112
+      ],
+      "id": "62aa2b25-5b49-424b-ad95-f6e5a547e749",
+      "name": "Execute Command6"
+    },
+    {
+      "parameters": {
+        "command": "=#!/bin/bash\nset -e\n\n# === 定義路徑變數 ===\nTOOLS_DIR=\"/home/node/.n8n/tools\"\nYTDLP_PATH=\"$TOOLS_DIR/yt-dlp\"\n\n# === 取得 YouTube 連結 ===\nYOUTUBE_URL=\"{{ $('Line Webhook 接收1').item.json.body.events[0].message.text }}\"\necho \"目標網址: $YOUTUBE_URL\"\n\n# === 方法1: 使用最簡單的格式 ===\necho \"嘗試方法1: 最簡單下載...\"\n\"$YTDLP_PATH\" \\\n  --format \"18\" \\\n  --output \"/tmp/video.mp4\" \\\n  --no-warnings \\\n  --ignore-errors \\\n  --sleep-interval 1 \\\n  --max-sleep-interval 3 \\\n  \"$YOUTUBE_URL\" && {\n    echo \"✅ 方法1 成功！\"\n    exit 0\n}\n\necho \"方法1 失敗，嘗試方法2...\"\n\n# === 方法2: 使用 --cookies-from-browser ===\necho \"嘗試方法2: 模擬瀏覽器...\"\n\"$YTDLP_PATH\" \\\n  --user-agent \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36\" \\\n  --add-header \"Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\" \\\n  --add-header \"Accept-Language:en-us,en;q=0.5\" \\\n  --add-header \"Sec-Fetch-Mode:navigate\" \\\n  --format \"worst[height<=480]\" \\\n  --output \"/tmp/video.mp4\" \\\n  --no-warnings \\\n  --sleep-interval 2 \\\n  --max-sleep-interval 5 \\\n  \"$YOUTUBE_URL\" && {\n    echo \"✅ 方法2 成功！\"\n    exit 0\n}\n\necho \"方法2 失敗，嘗試方法3...\"\n\n# === 方法3: 使用 --geo-bypass ===\necho \"嘗試方法3: 地理位置繞過...\"\n\"$YTDLP_PATH\" \\\n  --geo-bypass \\\n  --geo-bypass-country US \\\n  --format \"worst\" \\\n  --output \"/tmp/video.mp4\" \\\n  --no-warnings \\\n  --sleep-interval 3 \\\n  --max-sleep-interval 7 \\\n  \"$YOUTUBE_URL\" && {\n    echo \"✅ 方法3 成功！\"\n    exit 0\n}\n\necho \"❌ 所有方法都失敗了，YouTube 可能暫時封鎖了此 IP\"\necho \"建議: 1. 等待1-2小時後再試 2. 換一個測試影片\"\nexit 1"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        3936
+      ],
+      "id": "7fe04e5f-6423-4a9b-8538-9a8298654204",
+      "name": "Execute Command7"
+    }
+  ],
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "Download Video": {
+      "main": [
+        [
+          {
+            "node": "If  如果大於50 MB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉音檔": {
+      "main": [
+        [
+          {
+            "node": "讀取該n8n 影片檔",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "燒回影片": {
+      "main": [
+        [
+          {
+            "node": "轉回檔案",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉回檔案": {
+      "main": [
+        [
+          {
+            "node": "上傳雲端",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "上傳雲端": {
+      "main": [
+        [
+          {
+            "node": "清除1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清除1": {
+      "main": [
+        [
+          {
+            "node": "移動到已處理影片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫進n8n": {
+      "main": [
+        [
+          {
+            "node": "轉音檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取該n8n 影片檔": {
+      "main": [
+        [
+          {
+            "node": "AI 擷取音檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI 擷取音檔": {
+      "main": [
+        [
+          {
+            "node": "將音檔文字檔存起來",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "燒回影片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "壓縮": {
+      "main": [
+        [
+          {
+            "node": "壓縮後要轉檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "壓縮後要轉檔": {
+      "main": [
+        [
+          {
+            "node": "寫進n8n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If  如果大於50 MB": {
+      "main": [
+        [
+          {
+            "node": "壓縮",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "寫進n8n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清除暫存": {
+      "main": [
+        [
+          {
+            "node": "移動到已處理影片1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Download Video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Webhook 接收": {
+      "main": [
+        [
+          {
+            "node": "回覆 Line 訊息",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "檢查是否為影片訊息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "檢查是否為影片訊息": {
+      "main": [
+        [
+          {
+            "node": "下載 Line 影片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下載 Line 影片": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Download Video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video1": {
+      "main": [
+        [
+          {
+            "node": "If  如果大於50 MB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉音檔1": {
+      "main": [
+        [
+          {
+            "node": "讀取該n8n 影片檔1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "燒回影片1": {
+      "main": [
+        [
+          {
+            "node": "轉回檔案1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉回檔案1": {
+      "main": [
+        [
+          {
+            "node": "上傳雲端1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "上傳雲端1": {
+      "main": [
+        [
+          {
+            "node": "清除暫存",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫進n8n1": {
+      "main": [
+        [
+          {
+            "node": "轉音檔1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取該n8n 影片檔1": {
+      "main": [
+        [
+          {
+            "node": "AI 擷取音檔1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI 擷取音檔1": {
+      "main": [
+        [
+          {
+            "node": "將音檔文字檔存起來1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "燒回影片1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "移動到已處理影片1": {
+      "main": [
+        [
+          {
+            "node": "回覆 Line 訊息通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "壓縮1": {
+      "main": [
+        [
+          {
+            "node": "轉音檔1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If  如果大於50 MB1": {
+      "main": [
+        [
+          {
+            "node": "壓縮1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "寫進n8n1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清除暫存1": {
+      "main": [
+        [
+          {
+            "node": "移動到已處理影片2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file1": {
+      "main": [
+        [
+          {
+            "node": "Download Video2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Webhook 接收1": {
+      "main": [
+        [
+          {
+            "node": "回覆 Line 訊息1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "檢查是否為影片訊息1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "檢查是否為影片訊息1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下載 Line 影片1": {
+      "main": [
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Download Video2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video2": {
+      "main": [
+        [
+          {
+            "node": "If  如果大於50 MB2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉音檔2": {
+      "main": [
+        [
+          {
+            "node": "讀取該n8n 影片檔2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "燒回影片2": {
+      "main": [
+        [
+          {
+            "node": "轉回檔案2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "轉回檔案2": {
+      "main": [
+        [
+          {
+            "node": "上傳雲端2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "上傳雲端2": {
+      "main": [
+        [
+          {
+            "node": "清除暫存1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫進n8n2": {
+      "main": [
+        [
+          {
+            "node": "轉音檔2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取該n8n 影片檔2": {
+      "main": [
+        [
+          {
+            "node": "AI 擷取音檔2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI 擷取音檔2": {
+      "main": [
+        [
+          {
+            "node": "將音檔文字檔存起來2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "燒回影片2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "移動到已處理影片2": {
+      "main": [
+        [
+          {
+            "node": "回覆 Line 訊息通知1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "壓縮2": {
+      "main": [
+        [
+          {
+            "node": "轉音檔2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If  如果大於50 MB2": {
+      "main": [
+        [
+          {
+            "node": "壓縮2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "寫進n8n2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "檢查訊息類型": {
+      "main": [
+        [
+          {
+            "node": "下載 Line 影片2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "分析 YouTube 連結",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分析 YouTube 連結": {
+      "main": [
+        [
+          {
+            "node": "檢查分析結果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "檢查分析結果": {
+      "main": [
+        [
+          {
+            "node": "下載 YouTube 影片",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YouTube 錯誤回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下載 YouTube 影片": {
+      "main": [
+        []
+      ]
+    },
+    "上傳到 Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Line OA 成功回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Webhook 接收2": {
+      "main": [
+        []
+      ]
+    },
+    "下載 Line 影片2": {
+      "main": [
+        [
+          {
+            "node": "上傳到 Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "檢查是否為 YouTube 連結",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下載影片": {
+      "main": [
+        []
+      ]
+    },
+    "列出檔案": {
+      "main": [
+        []
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        []
+      ]
+    },
+    "Execute Command2": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command3": {
+      "main": [
+        []
+      ]
+    },
+    "YouTube Webhook 接收": {
+      "main": [
+        []
+      ]
+    },
+    "檢查是否為 YouTube 連結": {
+      "main": [
+        [
+          {
+            "node": "Execute Command4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取 YouTube 影片檔": {
+      "main": [
+        []
+      ]
+    },
+    "上傳 YouTube 影片到雲端": {
+      "main": [
+        [
+          {
+            "node": "清理 YouTube 暫存檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下載 YouTube 影片1": {
+      "main": [
+        [
+          {
+            "node": "讀取 YouTube 影片檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command4": {
+      "main": [
+        []
+      ]
+    },
+    "檢查是否為 YouTube 連結1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Execute Command7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command7": {
+      "main": [
+        [
+          {
+            "node": "Execute Command6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Google Drive Trigger": {
+      "lastTimeChecked": "2025-11-27T03:54:04Z"
+    },
+    "node:Google Drive Trigger1": {
+      "lastTimeChecked": "2025-11-27T03:54:05Z"
+    },
+    "node:Google Drive Trigger2": {
+      "lastTimeChecked": "2025-11-27T03:54:05Z"
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "1cfc2f83-f6ce-49a7-b957-f74e5b59c8be",
+  "triggerCount": 8,
+  "shared": [
+    {
+      "updatedAt": "2025-09-06T07:48:09.108Z",
+      "createdAt": "2025-09-06T07:48:09.108Z",
+      "role": "workflow:owner",
+      "workflowId": "iEnosGi2fBAjpBwE",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

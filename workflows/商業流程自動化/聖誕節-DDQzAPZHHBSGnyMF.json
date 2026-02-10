@@ -1,0 +1,484 @@
+{
+  "updatedAt": "2025-12-24T05:00:02.118Z",
+  "createdAt": "2025-12-14T16:09:49.908Z",
+  "id": "DDQzAPZHHBSGnyMF",
+  "name": "聖誕節",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "11171d0c-9708-42a0-a2cc-0a61a052181e",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "=挑戰開始",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "挑戰開始"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.postback.data }}",
+                    "rightValue": "level_1_pass",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "73e2d4be-e2fe-42f5-94d5-830e27e3dc34"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "第2關"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "aeffe581-cea8-4fd4-9dff-2e80b46e2b31",
+                    "leftValue": "={{ $json.postback.data }}",
+                    "rightValue": "level_2_pass",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "第3關"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "29fde3d2-2e07-4cce-b450-68bf7539db46",
+                    "leftValue": "={{ $json.postback.data }}",
+                    "rightValue": "level_3_pass",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "第4關"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "df5fbdb8-df79-4cc9-9b6f-9bf1206a070d",
+                    "leftValue": "={{ $json.postback.data }}",
+                    "rightValue": "level_4_pass",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "第5關"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "81d8aa0b-cab3-47a8-9fb6-988b1d23397d",
+                    "leftValue": "={{ $json.postback.data }}",
+                    "rightValue": "error",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "error"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -288,
+        208
+      ],
+      "id": "1859309a-34ff-4ce2-b38d-fa219a9b3eb3",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "showLoadingAnimation",
+        "chatId": "={{ $json.source.userId }}"
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        0
+      ],
+      "id": "03e14f99-cadd-493d-8fc9-119f841ee67e",
+      "name": "Line Messaging",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "🎄 Level 1 - 聖誕快樂",
+              "flexJson": "{\n  \"type\": \"bubble\",\n  \"size\": \"mega\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"🎄 Level 1 - 聖誕快樂\",\n        \"weight\": \"bold\",\n        \"color\": \"#d42e2e\",\n        \"size\": \"xl\"\n      }\n    ],\n    \"backgroundColor\": \"#fff5f5\",\n    \"paddingAll\": \"20px\"\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n     {\n  \"type\": \"text\",\n  \"text\": \"親愛的，歡迎來到 Nick 的聖誕節挑戰 ✨\",\n  \"weight\": \"bold\",\n  \"size\": \"md\",\n  \"color\": \"#111111\",\n  \"wrap\": true\n},\n      {\n        \"type\": \"text\",\n        \"text\": \"請問～今天是什麼特別的日子？\",\n        \"margin\": \"md\",\n        \"size\": \"md\",\n        \"color\": \"#555555\",\n        \"wrap\": true\n      },\n      {\n        \"type\": \"separator\",\n        \"margin\": \"xl\",\n        \"color\": \"#eeeeee\"\n      }\n    ],\n    \"paddingAll\": \"20px\"\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"sm\",\n    \"contents\": [\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": {\n          \"type\": \"postback\",\n          \"label\": \"聖誕節 🎅\",\n          \"data\": \"level_1_pass\",\n          \"displayText\": \"聖誕節\"\n        },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"secondary\",\n        \"height\": \"sm\",\n        \"action\": {\n          \"type\": \"postback\",\n          \"label\": \"行憲紀念日 📜\",\n          \"data\": \"error\",\n          \"displayText\": \"行憲紀念日\"\n        },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": { \n        \"type\": \"postback\",\n        \"label\": \"西洋情人節 🍫\", \n        \"data\": \"error:情人節:聖誕節\",\n        \"displayText\": \"西洋情人節 🍫\"\n      },\n        \"color\": \"#d42e2e\"\n      }\n    ],\n    \"paddingAll\": \"20px\"\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -112
+      ],
+      "id": "b8ce0193-7047-42b9-84ab-4a25f4e47926",
+      "name": "Line Messaging1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "events": [
+          "*"
+        ]
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessagingTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        272
+      ],
+      "id": "aa3bb3bf-7e15-49b4-922a-5e8a2ed69090",
+      "name": "Line Messaging Trigger",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "👑 Final Level - 妳是唯一",
+              "flexJson": "{\n  \"type\": \"bubble\",\n  \"size\": \"mega\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      { \"type\": \"text\", \"text\": \"👑 Final Level - 妳是唯一\", \"weight\": \"bold\", \"color\": \"#d42e2e\", \"size\": \"lg\" }\n    ],\n    \"backgroundColor\": \"#fff5f5\",\n    \"paddingAll\": \"20px\"\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      { \"type\": \"text\", \"text\": \"最後一題，也是我想對妳說的話...\", \"weight\": \"bold\", \"size\": \"md\", \"color\": \"#d42e2e\" },\n      { \"type\": \"text\", \"text\": \"我的寶貝怡杏王子最喜歡哪一首歌？\", \"margin\": \"md\", \"size\": \"lg\", \"color\": \"#111111\", \"wrap\": true, \"weight\": \"bold\" },\n      { \"type\": \"separator\", \"margin\": \"xl\", \"color\": \"#eeeeee\" }\n    ],\n    \"paddingAll\": \"20px\"\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"sm\",\n    \"contents\": [\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": { \"type\": \"postback\", \"label\": \"離開地球表面 🚀\", \"data\": \"error:離開地球表面:讓我照顧你\" },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": { \"type\": \"postback\", \"label\": \"戀愛ING ❤️\", \"data\": \"error:戀愛ING:讓我照顧你\" },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": {\n          \"type\": \"uri\",\n          \"label\": \"讓我照顧妳 ☀️\",\n          \"uri\": \"https://nickleo9.github.io/Xmax2025/\"\n        },\n        \"color\": \"#d42e2e\"\n      }\n    ],\n    \"paddingAll\": \"20px\"\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        528,
+        496
+      ],
+      "id": "94f133a4-acc8-4edb-8487-e0f99cb4de4f",
+      "name": "Line Messaging5",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Line Messaging Trigger').item.json.postback.data }}",
+        "options": {
+          "systemMessage": "=你是一個有趣的 幽默的聖誕闖關機器人，正在協助「Nick」測試他的女友Verna\n現在女友在闖關遊戲中選了一個「錯誤的選項」，請你根據她選的錯誤答案，給她一個幽默、帶點撒嬌或吐槽的回應。\n\n**規則：**\n1. 語氣要像男朋友（Nick）在跟她說話，也可以撒嬌。\n2. 內容要簡短（50字以內）。\n3. 最後一定要鼓勵她「再猜一次」或「再選選看」。\n4. 絕對不要直接公佈正確答案！只能給暗示。\n\n**目前的狀況：**\n她選的錯誤答案是：{{ $('Line Messaging Trigger').item.json.postback.data }}\n這一題的正確方向其實是：{{ $('Line Messaging Trigger').item.json.postback.data }} \":\"後面的正確答案\n\n**請生成回應：**"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -64,
+        544
+      ],
+      "id": "a02cb89a-5b75-4855-b752-05220d074bb7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        752
+      ],
+      "id": "136401b5-a3ce-42f9-bf0b-9a3caef8bddc",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        512,
+        656
+      ],
+      "id": "88c8458c-3b41-4ecc-81ca-2bd15b16d1f6",
+      "name": "Line Messaging7",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "📅 Level 2 - 刻在心底的日子",
+              "flexJson": "{\n  \"type\": \"bubble\",\n  \"size\": \"mega\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📅 Level 2 - 刻在心底的日子\",\n        \"weight\": \"bold\",\n        \"color\": \"#1DB446\",\n        \"size\": \"lg\"\n      }\n    ],\n    \"backgroundColor\": \"#f0fff4\",\n    \"paddingAll\": \"20px\"\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"恭喜答對！那~這題不能錯喔！\",\n        \"weight\": \"bold\",\n        \"size\": \"md\",\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"我們的「第一天」是幾月幾號？\",\n        \"margin\": \"md\",\n        \"size\": \"lg\",\n        \"color\": \"#111111\",\n        \"wrap\": true,\n        \"weight\": \"bold\"\n      },\n      {\n        \"type\": \"separator\",\n        \"margin\": \"xl\",\n        \"color\": \"#eeeeee\"\n      }\n    ],\n    \"paddingAll\": \"20px\"\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"sm\",\n    \"contents\": [\n      {\n        \"type\": \"button\",\n        \"style\": \"secondary\",\n        \"height\": \"sm\",\n        \"action\": {\n          \"type\": \"postback\",\n          \"label\": \"2023/6/22❤️\",\n          \"data\": \"error\",\n          \"displayText\": \"2023/6/22❤️\"\n        },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": {\n          \"type\": \"postback\",\n          \"label\": \"2023/7/12❤️\",\n          \"data\": \"level_2_pass\",\n          \"displayText\": \"2023/7/12❤️\"\n        },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"secondary\",\n        \"height\": \"sm\",\n        \"action\": {\n          \"type\": \"postback\",\n          \"label\": \"2023/5/12❤️\",\n          \"displayText\": \"2023/5/12❤️\",\n          \"data\": \"error\"\n        },\n        \"color\": \"#d42e2e\"\n      }\n    ],\n    \"paddingAll\": \"20px\"\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        528,
+        48
+      ],
+      "id": "95094035-7c87-4b9b-9f04-2916ecc8a35a",
+      "name": "level 2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "🚂 Level 3 - 第一次的悸動",
+              "flexJson": "{\n  \"type\": \"bubble\",\n  \"size\": \"mega\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"🚂 Level 3 - 第一次的悸動\",\n        \"weight\": \"bold\",\n        \"color\": \"#0277bd\",\n        \"size\": \"lg\"\n      }\n    ],\n    \"backgroundColor\": \"#e3f2fd\",\n    \"paddingAll\": \"20px\"\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"還記得嗎？🤔\",\n        \"weight\": \"bold\",\n        \"size\": \"md\",\n        \"color\": \"#0277bd\"\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"我們「第一次約會」的地點在哪裡？\",\n        \"margin\": \"md\",\n        \"size\": \"lg\",\n        \"color\": \"#111111\",\n        \"wrap\": true,\n        \"weight\": \"bold\"\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"(提示：新北市、很多人的地方)\",\n        \"margin\": \"sm\",\n        \"size\": \"sm\",\n        \"color\": \"#888888\",\n        \"wrap\": true\n      },\n      {\n        \"type\": \"separator\",\n        \"margin\": \"xl\",\n        \"color\": \"#eeeeee\"\n      }\n    ],\n    \"paddingAll\": \"20px\"\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"sm\",\n    \"contents\": [\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": {\n          \"type\": \"postback\",\n          \"label\": \"板橋火車站 🏙️\",\n          \"data\": \"level_3_pass\",\n          \"displayText\": \"板橋火車站 🏙️\"\n        },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"secondary\",\n        \"height\": \"sm\",\n        \"action\": {\n          \"type\": \"postback\",\n          \"label\": \"台北火車站 🚂\",\n          \"data\": \"error\",\n           \"displayText\": \"台北火車站 🚂\"\n        },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"secondary\",\n        \"height\": \"sm\",\n        \"action\": {\n          \"type\": \"postback\",\n          \"label\": \"西門町 🎬\",\n          \"data\": \"error\",\n          \"displayText\": \"西門町 🎬\"\n        },\n        \"color\": \"#d42e2e\"\n      }\n    ],\n    \"paddingAll\": \"20px\"\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        528,
+        192
+      ],
+      "id": "e8816a4c-feae-4b06-888b-ce318f7a7c37",
+      "name": "level3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $json.source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "💼 Level 4 - 故事的開始",
+              "flexJson": "{\n  \"type\": \"bubble\",\n  \"size\": \"mega\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      { \"type\": \"text\", \"text\": \"💼 Level 4 - 故事的開始\", \"weight\": \"bold\", \"color\": \"#d42e2e\", \"size\": \"lg\" }\n    ],\n    \"backgroundColor\": \"#fff5f5\",\n    \"paddingAll\": \"20px\"\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      { \"type\": \"text\", \"text\": \"這題是送分題嗎~\", \"weight\": \"bold\", \"size\": \"md\", \"color\": \"#d42e2e\" },\n      { \"type\": \"text\", \"text\": \"我們這輩子「第一次約會看的電影」是哪一部呢？\", \"margin\": \"md\", \"size\": \"lg\", \"color\": \"#111111\", \"wrap\": true, \"weight\": \"bold\" },\n      { \"type\": \"separator\", \"margin\": \"xl\", \"color\": \"#eeeeee\" }\n    ],\n    \"paddingAll\": \"20px\"\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"sm\",\n    \"contents\": [\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": { \"type\": \"postback\", \n        \"label\": \"犯罪都市 4 🍻\", \n        \"data\": \"error:犯罪都市 4 🍻:星際異功隊 3 🏫\",\n        \"displayText\": \"犯罪都市 4 🍻\"\n        },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": { \"type\": \"postback\",\n        \"label\": \"異能 5 🎤\", \n        \"data\": \"error:異能 5 🎤:星際異功隊 3 🏫\",\n        \"displayText\": \"異能 5 🎤\"\n      },\n        \"color\": \"#d42e2e\"\n      },\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"action\": { \"type\": \"postback\",\n        \"label\": \"星際異功隊 3 🏫\", \n        \"data\": \"level_4_pass\" ,\n        \"displayText\": \"星際異功隊 3 🏫\"\n      },\n        \"color\": \"#d42e2e\"\n      }\n    ],\n    \"paddingAll\": \"20px\"\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        528,
+        352
+      ],
+      "id": "331d9803-e54d-429b-9705-c4c431d85ec7",
+      "name": "level4",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "level 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "level3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "level4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Line Messaging5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "e04659ef-1ef1-4ef9-a9b8-98033b5ef485",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-14T16:09:49.908Z",
+      "createdAt": "2025-12-14T16:09:49.908Z",
+      "role": "workflow:owner",
+      "workflowId": "DDQzAPZHHBSGnyMF",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

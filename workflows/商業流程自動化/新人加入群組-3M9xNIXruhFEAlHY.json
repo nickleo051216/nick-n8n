@@ -1,0 +1,114 @@
+{
+  "updatedAt": "2025-08-04T05:15:01.471Z",
+  "createdAt": "2025-07-19T15:50:18.923Z",
+  "id": "3M9xNIXruhFEAlHY",
+  "name": "新人加入群組",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-welcome",
+        "options": {}
+      },
+      "id": "a4cffc1d-2af3-4019-99fd-ac3eec86e2fd",
+      "name": "LINE Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -192
+      ],
+      "webhookDescription": {
+        "httpMethod": "POST",
+        "path": "line-welcome"
+      },
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.events[0].type }}",
+              "value2": "memberJoined"
+            }
+          ]
+        }
+      },
+      "id": "8937b27c-5bd8-4ec5-b3ae-10d08b559d2a",
+      "name": "Check if Join Event1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "requestMethod": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"replyToken\": \"{{ $json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"🎉 歡迎新朋友加入群組！請自我介紹一下吧 😊\"\n    }\n  ]\n}\n",
+        "headerParametersJson": "{\n  \"Content-Type\": \"application/json\",\n  \"Authorization\": \"Bearer Ez09/r2eyHiuYXm4lDs7RHXqivSb2Ox08yb70fzWw43aJF5js+DvhRWHWJzwAreX9wNB/Bx1yMXTIF7ZdPpJt+og29eFU0AbxsKFotxrCSDfSzc8sbk+fHMPnoNjFFYxTKnZyKyNAHMsxQikRWg5QQdB04t89/1O/w1cDnyilFU=\"\n}"
+      },
+      "id": "501e08e8-3b52-47b5-b0c6-1801ce38d2ce",
+      "name": "Send Welcome Message1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -208
+      ],
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "LINE Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Check if Join Event1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Join Event1": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "0f519d17-ade5-4650-a567-711cdec7d5ed",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-07-19T15:50:18.923Z",
+      "createdAt": "2025-07-19T15:50:18.923Z",
+      "role": "workflow:owner",
+      "workflowId": "3M9xNIXruhFEAlHY",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

@@ -1,0 +1,2519 @@
+{
+  "updatedAt": "2026-01-02T17:39:21.773Z",
+  "createdAt": "2025-10-02T05:11:58.384Z",
+  "id": "JsBZeDAkcXgYiLYF",
+  "name": "IPAS 登入系統",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "check-member-status",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -928,
+        -1584
+      ],
+      "id": "c6065b50-c58d-4e5c-af52-31c2508dbe2f",
+      "name": "Webhook1",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得要查詢的 Line User ID\nconst requestData = $input.first().json;\nconst userIdToCheck = $input.first().json.body.userId;\n\nif (!userIdToCheck) {\n  return [{\n    json: {\n      status: 'error',\n      message: '缺少 userId'\n    }\n  }];\n}\n\n// 準備查詢條件\nreturn [{\n  json: {\n    searchUserId: userIdToCheck\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -1584
+      ],
+      "id": "dd3a82cd-ddde-4b82-94b4-b802b0fc2784",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g",
+          "mode": "list",
+          "cachedResultName": "社群iPAS 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 513684577,
+          "mode": "list",
+          "cachedResultName": "會員資料",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=513684577"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "line_user_id",
+              "lookupValue": "={{ $json.searchUserId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        -1584
+      ],
+      "id": "29b824cc-37f7-465f-8a0e-fd200e4442ba",
+      "name": "Get row(s) in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sheetResults = $input.first().json;\n\n// --- 修正開始 ---\n// 1. 檢查 sheetResults 是否為 null/undefined\n// 2. 檢查 sheetResults 是否為空陣列\nif (!sheetResults || (Array.isArray(sheetResults) && sheetResults.length === 0)) {\n  return [{\n    json: {\n      status: 'not_found',\n      memberLevel: '免費會員', // 這裡應為 '免費會員' 而不是 '會員'\n      isPaid: false\n    }\n  }];\n}\n\n// 確保 userData 總是從陣列中取得第一個有效的物件\nconst userData = Array.isArray(sheetResults) ? sheetResults[0] : sheetResults;\n\n// 由於 Google Sheets 節點通常回傳陣列，但以防萬一，我們也檢查 userData 是否為 undefined\nif (!userData) {\n    return [{\n        json: {\n            status: 'error_data',\n            memberLevel: '免費會員',\n            isPaid: false\n        }\n    }];\n}\n// --- 修正結束 ---\n\n\nconst isPaid = userData.member_level === '會員' || userData.member_level === '付費會員'; // 這裡可能需要根據您的 Sheets 欄位調整\n\nreturn [{\n  json: {\n    status: 'found',\n    memberLevel: userData.member_level,\n    isPaid: isPaid,\n    userId: userData.line_user_id,\n    displayName: userData.display_name\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -1584
+      ],
+      "id": "2d597ae8-f835-4faf-85eb-bab253050199",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"{{ $('Code in JavaScript1').first().json.status }}\",\n  \"memberLevel\": \"{{ $('Code in JavaScript1').first().json.memberLevel }}\",\n  \"isPaid\": \"{{ $('Code in JavaScript1').first().json.isPaid }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        -1584
+      ],
+      "id": "9cd718a5-0286-433a-94e6-af4e7ba3c5bb",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-login",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -928,
+        -1264
+      ],
+      "id": "1f3da55d-8b04-42b4-b82c-f44e1afd3665",
+      "name": "接收 Webhook",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-options",
+              "leftValue": "={{ $json.method }}",
+              "rightValue": "OPTIONS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -704,
+        -1264
+      ],
+      "id": "b43764f0-6aba-4195-8caf-7e59f3508364",
+      "name": "檢查是否為 OPTIONS"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -480,
+        -1360
+      ],
+      "id": "ecf49f5c-f692-4b1d-b862-f13c35f839de",
+      "name": "回應 OPTIONS (CORS Preflight)"
+    },
+    {
+      "parameters": {
+        "url": "https://api.line.me/v2/profile",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -256,
+        -1168
+      ],
+      "id": "065f7ece-025f-40a0-8c06-9670c4cf811e",
+      "name": "取得用戶資料"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 從 Line Login 取得用戶資料\nconst userData = $input.first().json;\n\n// 檢查必要欄位\nif (!userData.userId) {\n  throw new Error('缺少 Line User ID');\n}\n\n// 準備會員資料\nconst memberData = {\n  line_user_id: userData.userId,\n  displayName: userData.displayName || '未知用戶',\n  email: userData.email || '',\n  member_level: '會員',\n  paid_until: '',\n  register_date: new Date().toISOString().split('T')[0],\n  pictureUrl: userData.pictureUrl || ''\n};\n\n// 記錄製作者資訊\nconsole.log('Workflow by Nick Chang | nickleo051216@gmail.com');\n\nreturn [{\n  json: memberData\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        -1168
+      ],
+      "id": "442ec6ea-1544-4081-bd11-0fd855750f87",
+      "name": "處理用戶資料"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g",
+          "mode": "list",
+          "cachedResultName": "社群iPAS 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 513684577,
+          "mode": "list",
+          "cachedResultName": "會員資料",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=513684577"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "line_user_id": "={{ $json.line_user_id }}",
+            "member_level": "={{ $json.member_level }}",
+            "paid_until": "={{ $json.paid_until }}",
+            "register_date": "={{ $json.register_date }}",
+            "displayName": "={{ $json.displayName }}",
+            "pictureUrl": "={{ $json.pictureUrl }}",
+            "last_login": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "line_user_id"
+          ],
+          "schema": [
+            {
+              "id": "line_user_id",
+              "displayName": "line_user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "displayName",
+              "displayName": "displayName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "member_level",
+              "displayName": "member_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "paid_until",
+              "displayName": "paid_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pictureUrl",
+              "displayName": "pictureUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "register_date",
+              "displayName": "register_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_login",
+              "displayName": "last_login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        -1072
+      ],
+      "id": "c256fdbf-e12f-4334-afec-b0be14ffdd9e",
+      "name": "儲存到 Google Sheets",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-member-level",
+              "leftValue": "={{ $('處理用戶資料').first().json.member_level }}",
+              "rightValue": "付費會員",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        -1072
+      ],
+      "id": "25ec2319-df10-4a9d-9028-a78573028cd0",
+      "name": "檢查會員等級"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"會員登入成功\",\n  \"needPayment\": false,\n  \"user\": {\n    \"userId\": \"{{ $('處理用戶資料').first().json.line_user_id }}\",\n    \"displayName\": \"{{ $('處理用戶資料').first().json.displayName }}\",\n    \"memberLevel\": \"{{ $('處理用戶資料').first().json.member_level }}\",\n    \"pictureUrl\": \"{{ $('處理用戶資料').first().json.pictureUrl }}\"\n  },\n  \"creator\": {\n    \"name\": \"Nick Chang\",\n    \"email\": \"nickleo051216@gmail.com\",\n    \"phone\": \"0932-684-051\",\n    \"website\": \"https://portaly.cc/zn.studio\"\n  }\n}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        640,
+        -1120
+      ],
+      "id": "bf38fd25-a677-4d8b-b390-8e2ebe4b2732",
+      "name": "回應：付費會員"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"會員註冊成功，請升級為付費會員\",\n  \"needPayment\": true,\n  \"paymentUrl\": \"https://portaly.cc/zn.studio\",\n  \"user\": {\n    \"userId\": \"{{ $('處理用戶資料').first().json.line_user_id }}\",\n    \"displayName\": \"{{ $('處理用戶資料').first().json.displayName }}\",\n    \"memberLevel\": \"{{ $('處理用戶資料').first().json.member_level }}\",\n    \"pictureUrl\": \"{{ $('處理用戶資料').first().json.pictureUrl }}\"\n  },\n  \"creator\": {\n    \"name\": \"Nick Chang\",\n    \"email\": \"nickleo051216@gmail.com\",\n    \"phone\": \"0932-684-051\",\n    \"website\": \"https://portaly.cc/zn.studio\"\n  }\n}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        640,
+        -976
+      ],
+      "id": "262e31e5-00f1-4b77-9ba8-0873119d967b",
+      "name": "回應：一般會員（需付費）"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/oauth2/v2.1/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "authorization_code"
+            },
+            {
+              "name": "code",
+              "value": "={{ $json.body.code }}"
+            },
+            {
+              "name": "redirect_uri",
+              "value": "https://nickleo9.github.io/GenAI/login-callback.html"
+            },
+            {
+              "name": "client_id",
+              "value": "2008218944"
+            },
+            {
+              "name": "client_secret",
+              "value": "7b1c0a3d05b2acfd91cc77329bbf9f15"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        -1168
+      ],
+      "id": "4d925c19-891c-4efb-bd8d-4234b2a18cbe",
+      "name": "兌換 Access Token1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "save-practice-record",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "545b897e-ced4-4013-b138-7e7fbae1ffdc",
+      "name": "接收前端請求",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        -656
+      ],
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 製作者: Nick Chang | nickleo051216@gmail.com\n// 功能: 處理前端送來的練習記錄資料\n\nconst inputData = $input.first().json.body;\n\n// 檢查必要欄位\nif (!inputData.userId) {\n  throw new Error('缺少 userId');\n}\n\nif (!inputData.databaseType) {\n  throw new Error('缺少 databaseType');\n}\n\n// 計算正確率\nconst accuracy = inputData.questionCount > 0 \n  ? (inputData.score / inputData.questionCount * 100).toFixed(2)\n  : 0;\n\n// 準備要儲存的資料\nconst practiceRecord = {\n  user_id: inputData.userId,\n  database_type: inputData.databaseType,\n  question_count: inputData.questionCount || 0,\n  start_time: inputData.startTime || new Date().toISOString(),\n  end_time: inputData.endTime || new Date().toISOString(),\n  score: inputData.score || 0,\n  accuracy: parseFloat(accuracy),\n  // 核心：直接將前端傳來的 answers 陣列儲存到 JSONB 欄位\n  answers: inputData.answers || [], \n  marked_questions: inputData.markedQuestions || []\n};\n\nconsole.log('✅ 練習記錄資料已準備:', practiceRecord);\n\nreturn [{\n  json: practiceRecord\n}];"
+      },
+      "id": "5f63f2ca-2de2-4d75-982e-c7123d50f227",
+      "name": "處理資料",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -656
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "practice_records",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.user_id }}"
+            },
+            {
+              "fieldId": "score",
+              "fieldValue": "={{ $json.score }}"
+            },
+            {
+              "fieldId": "database_type",
+              "fieldValue": "={{ $json.database_type }}"
+            },
+            {
+              "fieldId": "accuracy",
+              "fieldValue": "={{ $json.accuracy }}"
+            },
+            {
+              "fieldId": "end_time",
+              "fieldValue": "={{ $json.end_time }}"
+            },
+            {
+              "fieldId": "start_time",
+              "fieldValue": "={{ $json.start_time }}"
+            },
+            {
+              "fieldId": "question_count",
+              "fieldValue": "={{ $json.question_count }}"
+            },
+            {
+              "fieldId": "answers",
+              "fieldValue": "={{ $json.answers }}"
+            }
+          ]
+        }
+      },
+      "id": "5585d4d7-d681-488c-8498-e0b007772b9f",
+      "name": "儲存到 practice_records",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -656
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 製作者: Nick Chang | nickleo051216@gmail.com\n// 功能: 準備更新每日使用量資料\n\nconst practiceData = $input.first().json;\nconst userId = practiceData.user_id;\nconst today = new Date().toISOString().split('T')[0];\n\n// 準備查詢條件\nconst queryData = {\n  user_id: userId,\n  usage_date: today\n};\n\nconsole.log('🔍 查詢今日使用量:', queryData);\n\nreturn [{\n  json: queryData\n}];"
+      },
+      "id": "709b0bee-ffd5-4e68-beb4-3934d20f810c",
+      "name": "準備查詢條件",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -656
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "daily_usage",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "c68baed4-b33a-467d-8ad2-b631ab98e17c",
+      "name": "查詢今日使用量",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -656
+      ],
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-exists",
+              "leftValue": "={{ $json.user_id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3fc5ad71-2146-45e8-bec4-4933d00a93a5",
+      "name": "判斷是否有記錄",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 製作者: Nick Chang | nickleo051216@gmail.com\n// 功能: 更新現有的每日使用量記錄\n\nconst existingRecord = $input.first().json[0];\nconst practiceData = $('儲存到 practice_records').first().json;\n\n// 增加練習次數和答題總數\nconst updatedData = {\n  usage_id: $input.first().json.usage_id,\n  practice_count: ($input.first().json.practice_count || 0) + 1,\n  total_questions_answered: ($input.first().json.total_questions_answered || 0) + $input.first().json.question_count\n};\n\nconsole.log('📝 更新每日使用量:', updatedData);\n\nreturn [{\n  json: updatedData\n}];"
+      },
+      "id": "593a628e-4bc8-4c27-82fb-fc2a1c60d864",
+      "name": "準備更新資料",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -752
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "daily_usage",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "usage_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.usage_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "practice_count",
+              "fieldValue": "={{ $json.practice_count }}"
+            }
+          ]
+        }
+      },
+      "id": "fb80e80d-0465-4937-a16e-6d18bb8d992d",
+      "name": "更新每日使用量",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -752
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 製作者: Nick Chang | nickleo051216@gmail.com\n// 功能: 建立新的每日使用量記錄\n\nconst queryData = $('準備查詢條件').first().json;\nconst practiceData = $('儲存到 practice_records').first().json;\n\nconst newUsageRecord = {\n  user_id: queryData.user_id,\n  usage_date: queryData.usage_date,\n  practice_count: 1,\n  exam_count: 0,\n  review_count: 0,\n  total_questions_answered: practiceData.question_count\n};\n\nconsole.log('✨ 建立新的每日使用量記錄:', newUsageRecord);\n\nreturn [{\n  json: newUsageRecord\n}];"
+      },
+      "id": "a5376872-cc72-46eb-a8b0-b5d42f2b8f1f",
+      "name": "準備新增資料",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "daily_usage",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "8f28782e-972c-43c3-be5e-ef15e9c27bb3",
+      "name": "新增每日使用量",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -560
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"練習記錄已儲存\",\n  \"data\": {\n    \"recordId\": \"{{ $('儲存到 practice_records').first().json.record_id }}\",\n    \"userId\": \"{{ $('儲存到 practice_records').first().json.user_id }}\",\n    \"score\": \"{{ $('儲存到 practice_records').first().json.score }}\",\n    \"accuracy\": \"{{ $('儲存到 practice_records').first().json.accuracy }}\",\n    \"savedAt\": \"{{ $now.toISO() }}\"\n  },\n  \"creator\": \"Nick Chang | nickleo051216@gmail.com\"\n}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "ebf0cf94-f65f-4e04-93bd-4e9a0eca221c",
+      "name": "回傳成功訊息",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        864,
+        -656
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.line_user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -1360
+      ],
+      "id": "bd40f96d-0fe6-4d20-a02f-f02d7edc5633",
+      "name": "Get a row",
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "27a00b99-1f0f-4e7d-9389-c1f20d77a7c9",
+              "leftValue": "={{ $items(\"Get a row\").length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        -1360
+      ],
+      "id": "405cab77-e8cd-460f-919d-ed92a323ef17",
+      "name": "If",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "content": "題目同步雲端",
+        "height": 560,
+        "width": 2176
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1184,
+        -912
+      ],
+      "typeVersion": 1,
+      "id": "91c0a79c-6cfc-4a46-8f48-abad96018e49",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 功能：處理答題記錄，精準找出答錯的題目 (兼容 Object/Array)\nconst inputData = $input.first().json.body;\nconst answers = inputData.answers;\nconst questions = inputData.questions;\nconst wrongQuestions = [];\n\n// 統一處理 Object 或 Array\nconst keys = Object.keys(answers);\n\nkeys.forEach(index => {\n  const answer = answers[index];\n  const question = questions[index];\n  \n  if (question) {\n    // 優先使用前端傳來的 isCorrect 標記，若無則比對 originalIndex\n    // 這樣可以避免因為選項打亂導致後端判斷錯誤\n    const isUserCorrect = (answer.isCorrect !== undefined) \n      ? answer.isCorrect \n      : (answer.originalIndex === question.correct_answer_index);\n\n    if (!isUserCorrect) {\n      wrongQuestions.push({\n        user_id: inputData.userId,\n        question_id: question.question_id || `Q${parseInt(index) + 1}`,\n        database_type: inputData.databaseType || 'ipas',\n        topic: question.topic || '未分類',\n        subtopic: question.subtopic || '未分類',\n        question_text: question.question,\n        correct_answer: question.correct_answer_letter, // 這裡會是打亂後正確的字母\n        user_answer: answer.answer,\n        answered_at: answer.timestamp || new Date().toISOString()\n      });\n    }\n  }\n});\n\nreturn wrongQuestions.map(q => ({ json: q }));"
+      },
+      "id": "fe8dd915-6593-4188-ad30-0112c78d02ed",
+      "name": "找出答錯的題目",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-no-wrong",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": "={{ 0 }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "122f6ee1-ab60-49c5-81db-68b6c55dd1a4",
+      "name": "判斷: 是否有錯題?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -480,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"全部答對,沒有錯題需要記錄 🎉\",\n  \"data\": {\n    \"userId\": \"{{ $json.userId }}\",\n    \"wrongCount\": 0\n  }",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "e899a043-129f-4dac-8df1-ac00be6183ce",
+      "name": "回應: 沒有錯題",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        -384
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "wrong_questions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.user_id }}"
+            },
+            {
+              "keyName": "question_id",
+              "keyValue": "={{ $json.question_id }}"
+            }
+          ]
+        }
+      },
+      "id": "45b6cc7d-ddfb-4e2c-8105-8b912198d8f0",
+      "name": "查詢該錯題是否已存在",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -224
+      ],
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-array-length",
+              "leftValue": "={{ $json.wrong_id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0330b53e-d549-474f-965c-e68d577a3f8c",
+      "name": "判斷: 錯題是否已存在?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "wrong_questions",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wrong_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.wrong_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "wrong_count",
+              "fieldValue": "={{ $json.wrong_count }}"
+            },
+            {
+              "fieldId": "last_wrong_date",
+              "fieldValue": "={{ $json.last_wrong_date }}"
+            },
+            {
+              "fieldId": "user_answers",
+              "fieldValue": "={{ JSON.stringify($json.user_answers) }}"
+            },
+            {
+              "fieldId": "is_reviewed",
+              "fieldValue": "={{ $json.is_reviewed }}"
+            }
+          ]
+        }
+      },
+      "id": "93eef7e6-9288-4ad4-a3cc-5d2bcbeff0f6",
+      "name": "更新現有錯題",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -64
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "tableId": "wrong_questions",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "question_id",
+              "fieldValue": "={{ $('Loop Over Items').item.json.question_id }}"
+            },
+            {
+              "fieldId": "database_type",
+              "fieldValue": "={{ $('Loop Over Items').item.json.database_type }}"
+            },
+            {
+              "fieldId": "topic",
+              "fieldValue": "={{ $('Loop Over Items').item.json.topic }}"
+            },
+            {
+              "fieldId": "subtopic",
+              "fieldValue": "={{ $('Loop Over Items').item.json.subtopic }}"
+            },
+            {
+              "fieldId": "wrong_count",
+              "fieldValue": "={{ $json.wrong_count }}"
+            },
+            {
+              "fieldId": "first_wrong_date",
+              "fieldValue": "={{ $json.first_wrong_date }}"
+            },
+            {
+              "fieldId": "last_wrong_date",
+              "fieldValue": "={{ $json.last_wrong_date }}"
+            },
+            {
+              "fieldId": "is_reviewed",
+              "fieldValue": "={{ $json.is_reviewed }}"
+            },
+            {
+              "fieldId": "user_answers",
+              "fieldValue": "={{ $('Loop Over Items').item.json.user_answer }}"
+            },
+            {
+              "fieldId": "question",
+              "fieldValue": "={{ $('Loop Over Items').item.json.question_text }}"
+            },
+            {
+              "fieldId": "correct_answer",
+              "fieldValue": "={{ $('Loop Over Items').item.json.correct_answer }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Loop Over Items').item.json.user_id }}"
+            }
+          ]
+        }
+      },
+      "id": "e7eb1e59-a53d-4b70-aec4-efd7aaf7ff79",
+      "name": "新增錯題記錄",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -272
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 功能：準備更新現有錯題，並確保 ID 存在\nconst wrongQuestionData = $json;\nlet existingRecord = $('查詢該錯題是否已存在').first().json;\n\n// 處理 Supabase 回傳陣列的情況\nif (Array.isArray(existingRecord)) {\n    existingRecord = existingRecord[0];\n}\n\n// 關鍵防呆：如果真的抓不到 ID，就回傳空\nif (!existingRecord || !existingRecord.wrong_id) {\n    return [];\n}\n\n// 🔥 修正：處理舊的答案紀錄 (確保一定是陣列)\nlet userAnswers = [];\ntry {\n  if (existingRecord.user_answers) {\n    const parsed = typeof existingRecord.user_answers === 'string' \n      ? JSON.parse(existingRecord.user_answers) \n      : existingRecord.user_answers;\n    \n    // 關鍵修正：確保一定是陣列\n    if (Array.isArray(parsed)) {\n      userAnswers = parsed;\n    } else if (typeof parsed === 'object' && parsed !== null) {\n      // 如果是物件，轉換成陣列\n      userAnswers = Object.values(parsed);\n    }\n  }\n} catch (e) {\n  userAnswers = [];\n}\n\n// 加入本次新的錯誤答案\nuserAnswers.push({\n  answer: wrongQuestionData.user_answer,\n  timestamp: wrongQuestionData.answered_at\n});\n\nreturn [{\n  json: {\n    wrong_id: existingRecord.wrong_id,\n    wrong_count: (existingRecord.wrong_count || 0) + 1,\n    last_wrong_date: new Date().toISOString(),\n    user_answers: JSON.stringify(userAnswers),\n    is_reviewed: false\n  }\n}];"
+      },
+      "id": "37f0a1fb-4981-4bea-906b-f85f427969fe",
+      "name": "準備更新資料1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 功能：準備新增「第一次答錯」的資料\n// 抓取當前 Loop 正在處理的題目資料\n// 注意：請確保你的 Loop 節點名稱真的是 'Loop Over Items'，如果不是請修改下面這行\nconst wrongQuestionData = $('Loop Over Items').item.json;\n\n// 1. 初始化 user_answers 陣列，放入這一次的錯誤答案\nconst userAnswers = [{\n  answer: wrongQuestionData.user_answer,\n  timestamp: wrongQuestionData.answered_at || new Date().toISOString()\n}];\n\n// 2. 準備要寫入資料庫的新資料\n// 這裡不需要指定 wrong_id，因為寫入 Supabase 時會自動產生\nreturn [{\n  json: {\n    wrong_count: 1,\n    first_wrong_date: new Date().toISOString(),\n    last_wrong_date: new Date().toISOString(),\n    user_answers: userAnswers, // 傳送陣列，讓後面的 Supabase 節點存成 JSONB\n    is_reviewed: false\n  }\n}];"
+      },
+      "id": "13634f30-e4b2-4271-b8e1-64baea60a65e",
+      "name": "準備新增資料1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -272
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"錯題記錄已更新\",\n  \"data\": {\n    \"userId\": \"{{ $('接收前端請求錯誤題').first().json.body.userId }}\",\n    \"processedCount\": {{ $('找出答錯的題目').all().length }},\n    \"timestamp\": \"{{ $now.toISO() }}\"\n  },\n  \"creator\": \"Nick Chang | nickleo051216@gmail.com\"\n}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "8af028c4-65dd-406f-8a67-f6ca1a66e820",
+      "name": "回傳成功訊息1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -416
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "update-wrong-questions",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "6799bf11-575c-4434-bd3c-c077ebf07b5e",
+      "name": "接收前端請求錯誤題",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        -288
+      ],
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "content": "GOOGLE\n",
+        "height": 464,
+        "width": 2384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -960,
+        288
+      ],
+      "typeVersion": 1,
+      "id": "db64d522-1473-4a79-ba2a-78a7ca40cd39",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "錯題同步\n\n",
+        "height": 464,
+        "width": 1792
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1104,
+        -352
+      ],
+      "typeVersion": 1,
+      "id": "f0be780f-1ea6-425d-8e64-21a72c8b59be",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Line 登入系統\n",
+        "height": 496,
+        "width": 2208
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1216,
+        -1408
+      ],
+      "typeVersion": 1,
+      "id": "3bfe66da-4d68-489d-8497-d70f874c5b93",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "google-login",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -928,
+        448
+      ],
+      "id": "65842644-2242-43fd-9791-37321e0d63a6",
+      "name": "Webhook",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "url": "https://naftwmajxuoauokuwpaz.supabase.co/auth/v1/user",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.body.access_token }}"
+            },
+            {
+              "name": "apiKey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hZnR3bWFqeHVvYXVva3V3cGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA5OTgxNTgsImV4cCI6MjA3NjU3NDE1OH0.zf-eKQVC5PCFFC_ZucGNbFsc8n4627rRxZQ2A0S4FM4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -704,
+        448
+      ],
+      "id": "6e4ba17c-7808-4a28-bdfd-fc682af62488",
+      "name": "Supabase Fetch User"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Google 登入成功\",\n  \"Google_user_id\": \"{{ $json.Google_user_id }}\",\n  \"displayName\": \"{{ $json.displayName }}\",\n  \"email\": \"{{ $json.email }}\",\n  \"pictureUrl\": \"{{ $json.pictureUrl }}\",\n  \"member_level\": \"{{ $json.member_level }}\",\n  \"paid_until\": \"{{ $json.paid_until }}\",\n  \"register_date\": \"{{ $json.register_date }}\",\n  \"last_login\": \"{{ $json.last_login }}\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1984,
+        448
+      ],
+      "id": "27f5879c-f91f-480f-81df-951ea92df697",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得上一步 (Supabase Fetch User) 返回的用戶資料物件\nconst userResponse = $input.item.json;\n\n// 取得第一步 (Webhook) 傳入的 Token 資料\n// 注意：在 n8n 中，您可能需要透過 $node 語法來存取初始 Webhook 的資料\n// 這裡假設我們可以直接從上一個節點的原始輸入取得 tokens\nconst initialData = $input.item.json; \n// 為了簡化，我們假設 Supabase Fetch User 的輸出已經包含了原始的 tokens\n// 但在實際 n8n 中，您可能需要用 $node[\"Webhook\"].json 取得\n\n// 檢查是否成功取得用戶資訊\nif (!userResponse || !userResponse.id) {\n    // 雖然理論上 Webhook Response 應該會處理失敗，但這裡提供一個失敗防護\n    return [{ json: { status: 'error', message: '無法從 Supabase 取得用戶資料' } }];\n}\n\n// 格式化要儲存到 Google Sheets 的資料\nconst formattedData = {\n  // 從 Supabase 的回應中取出核心資料\n  google_id: userResponse.id,\n  email: userResponse.email,\n  // 優先使用 Supabase metadata 中的 name，否則使用 email\n  name: userResponse.user_metadata?.full_name || userResponse.email,\n  avatar_url: userResponse.user_metadata?.avatar_url || '',\n  \n  // 設定預設會員等級 (待 Google Sheets 節點更新或新增)\n  member_level: '免費會員', \n\n  // 記錄時間與 token\n  login_time: new Date().toISOString(),\n  access_token: initialData.access_token, // 假設 token 被帶過來\n  refresh_token: initialData.refresh_token, // 假設 token 被帶過來\n  created_at: new Date().toISOString()\n};\n\nreturn [{ json: formattedData }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        448
+      ],
+      "id": "795b19e4-0532-4c96-a376-417f754fd8ab",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 確保此節點的輸入是來自 Google Sheets (Update or Append) 的輸出\n\nconst sheetOutput = $input.item.json;\n\n// 提取第一個成功的結果\nconst finalUser = sheetOutput[0] || sheetOutput; \n\n// 檢查是否成功取得會員資料\nif (!finalUser || !finalUser.google_id) {\n  // 如果 Google Sheets 處理失敗，返回錯誤訊息\n  return [{ \n    json: { \n      status: 'error', \n      message: '會員資料存取失敗，請檢查 Google Sheets 節點設置。',\n      user_data: {}\n    } \n  }];\n}\n\n// 組裝最終回傳給前端 (google-callback.html) 的 JSON 結構\nconst response = {\n  status: \"success\",\n  message: \"Google 登入與資料同步成功！\",\n  // 注意：這裡假設非付費會員需要付費通知，實際邏輯請在檢查會員等級節點中實現\n  needPayment: finalUser.member_level === '付費會員' ? false : true, \n  paymentUrl: \"https://portaly.cc/zn.studio\", \n  \n  // 這是前端 <script> 區塊中 data.user_data 預期接收的結構\n  user_data: { \n    google_id: finalUser.google_id,\n    email: finalUser.email,\n    // 【修正點 1】使用 Google Sheets 輸出的 \"full_name\"\n    name: finalUser.full_name || finalUser.email, \n    avatar: finalUser.picture || '',  // 確保這裡有值\n    pictureUrl: finalUser.picture || '',  // 同時提供 pictureUrl 以兼容\n    member_level: finalUser.member_level || '免費會員',\n    login_type: \"google\" // 即使是 Line 記錄被合併，本次登入方式仍為 Google\n  }\n};\n\nreturn [{ json: response }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        448
+      ],
+      "id": "f8ef24c6-9586-4123-a58a-58a8d6bef937",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g",
+          "mode": "list",
+          "cachedResultName": "社群iPAS 題庫",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1350648105,
+          "mode": "list",
+          "cachedResultName": "「會員資料」(GOOGLE)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FvOxZb46ek8N2kSH4QvVsS21IGKCqk-wr7WBljBve8g/edit#gid=1350648105"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "google_id": "={{ $json.google_id }}",
+            "full_name": "={{ $json.name }}",
+            "member_level": "={{ $json.member_level }}",
+            "email": "={{ $json.email }}",
+            "picture": "={{ $json.avatar_url }}",
+            "register_date": "={{ $today.format('yyyy-MM-dd') }}",
+            "last_sign_in_at": "={{ $json.login_time }}"
+          },
+          "matchingColumns": [
+            "google_id"
+          ],
+          "schema": [
+            {
+              "id": "google_id",
+              "displayName": "google_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "member_level",
+              "displayName": "member_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "paid_until",
+              "displayName": "paid_until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "picture",
+              "displayName": "picture",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "register_date",
+              "displayName": "register_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_sign_in_at",
+              "displayName": "last_sign_in_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -256,
+        448
+      ],
+      "id": "a90a4d94-0e91-4d13-964a-9cb509cdcf7e",
+      "name": "Append or update row in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.user_data.avatar }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        368
+      ],
+      "id": "78bb1461-3950-48bb-8433-140f11f9d2af",
+      "name": "HTTP Request",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://naftwmajxuoauokuwpaz.supabase.co/storage/v1/object/ipas/google/{{ $json.user_data.google_id }}.jpeg",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hZnR3bWFqeHVvYXVva3V3cGF6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5ODE1OCwiZXhwIjoyMDc2NTc0MTU4fQ.IQTvWiOuWuozhHLeXQ4M7K4rxNWFzVNl-dnTDdiJnQE"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        304
+      ],
+      "id": "12bc9f6b-162e-4bbe-adca-e6bcae0b50f6",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 在 Code in JavaScript4 節點 (將此代碼完整貼入)\n\n// ----------------------------------------------------------------------\n// 💡 確保這些值與您的 Supabase 設定一致\nconst PROJECT_ID = 'naftwmajxuoauokuwpaz'; \nconst BUCKET_NAME = 'ipas'; \n// ----------------------------------------------------------------------\n\n\n// 🎯 修正點 1：安全地獲取原始回應結構 (Code in JavaScript3)\n// 確保您流程中的節點名稱是 'Code in JavaScript3'\n// 這是包含 status, message, needPayment, user_data 的完整結構\nconst originalResponse = $('Code in JavaScript3').first().json.user_data; \nconst originalUserData = $('Code in JavaScript3').first().json.user_data; \n\n\n// 🎯 修正點 2：安全地獲取上傳 Key（來自 HTTP Request2）\n// 確保您流程中的節點名稱是 'HTTP Request2'\nconst uploadResponse = $input.first().json.Key; \n\n// 上傳成功的回應 Key (ipas/google/Studio ZN.jpeg)\nconst uploadResponseKey = $input.first().json.Key; \n\nif (!originalUserData) {\n    throw new Error('流程錯誤：原始回應中缺少 user_data 結構。');\n}\nif (!uploadResponseKey) {\n    throw new Error('上傳 Key 獲取失敗。請檢查 HTTP Request2 節點輸出。');\n}\n\n\n// 3. 組裝公開網址 (Public URL)\n// 網址格式: https://[PROJECT_ID].supabase.co/storage/v1/object/public/[BUCKET_NAME]/[FILE_PATH]\nconst publicUrl = `https://${PROJECT_ID}.supabase.co/storage/v1/object/public/${uploadResponseKey}`;\n\n\n// 4. 更新 user_data 結構 (問題行數已修正！)\noriginalUserData.avatar = publicUrl;\noriginalUserData.pictureUrl = publicUrl;\n\n\n// 5. 返回更新後的完整資料結構\nreturn [{ \n    json: { \n        ...originalResponse, // 保留所有 status, message, paymentUrl 等頂層屬性\n        user_data: originalUserData // 替換為包含新網址的 user_data\n    } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        304
+      ],
+      "id": "23797410-daec-420f-a5c2-501f621a2f89",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "google_user",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Google_user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.google_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "pictureUrl",
+              "fieldValue": "={{ $json.pictureUrl }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -928,
+        816
+      ],
+      "id": "62ed6180-3b40-4eb7-99f3-a3743980c5e1",
+      "name": "Update a row",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "google_user",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "displayName",
+              "keyValue": "={{ $json.user_data.name }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        448
+      ],
+      "id": "df8eda13-ba4d-49f9-bbf9-73cea1ad9184",
+      "name": "Get a row1",
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f1075cf2-04c2-4f77-8d5d-4205c4141e43",
+              "leftValue": "={{ $json.displayName }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1312,
+        448
+      ],
+      "id": "8d2aa74c-938f-4f7c-a88c-6e9d183ffedc",
+      "name": "有沒有登入過(沒有的話)"
+    },
+    {
+      "parameters": {
+        "content": "✅ 判斷用戶是否為付費會員\n✅ 控制功能顯示/隱藏\n✅ 決定何時顯示升級按鈕",
+        "height": 320,
+        "width": 1248
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1056,
+        -1744
+      ],
+      "typeVersion": 1,
+      "id": "05e91d5f-e359-4de4-aab8-85b09c207c18",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -240,
+        -240
+      ],
+      "id": "069549d8-d575-4d3f-acdd-3e61b049e3a8",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "tableId": "users",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.google_id }}"
+            },
+            {
+              "fieldId": "displayName",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.full_name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.email }}"
+            },
+            {
+              "fieldId": "pictureUrl",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.picture }}"
+            },
+            {
+              "fieldId": "member_level",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.member_level }}"
+            },
+            {
+              "fieldId": "register_date",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.register_date }}"
+            },
+            {
+              "fieldId": "last_login",
+              "fieldValue": "={{$now}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        352
+      ],
+      "id": "25677ad3-38bf-45f7-b462-cfd78167632a",
+      "name": "新增到 User",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "tableId": "google_user",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Google_user_id",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.google_id }}"
+            },
+            {
+              "fieldId": "displayName",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.full_name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.email }}"
+            },
+            {
+              "fieldId": "member_level",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.member_level }}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.register_date }}"
+            },
+            {
+              "fieldId": "last_login",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.last_sign_in_at }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        352
+      ],
+      "id": "01cb7073-5d94-4d2e-967a-8b4d4df0c88e",
+      "name": "新增到 google User",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "80771c95-b84b-4e0c-8f1d-5c55b6c6f2ea",
+              "leftValue": "={{ $json.user_data.avatar }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        448
+      ],
+      "id": "f901dab7-66d7-4cc0-8b0d-42e508049905",
+      "name": "有放大頭貼"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得 Code in JavaScript3 輸出的資料\nconst userData = $input.item.json;\n\n// 🎯 設定 pictureUrl 為空字串\n// 這樣它就會向下傳遞空字串給 Supabase 更新節點\nuserData.pictureUrl = \"\"; \nuserData.user_data.pictureUrl = \"\"; // 更新 user_data 結構中的 pictureUrl\n\n// 保持 user_data.avatar 也為空，雖然這個欄位可能已經是空的\nuserData.user_data.avatar = \"\"; \n\n// 返回更新後的資料，將其傳遞給 Supabase 更新資料庫的節點\nreturn [{ json: userData }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        592
+      ],
+      "id": "16bdf0e8-39ab-4ad3-9773-7895cdda7254",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "google_user",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Google_user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.Google_user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Google_user_id",
+              "fieldValue": "={{ $json.google_id }}"
+            },
+            {
+              "fieldId": "displayName",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.full_name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.email }}"
+            },
+            {
+              "fieldId": "member_level",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.member_level }}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.register_date }}"
+            },
+            {
+              "fieldId": "last_login",
+              "fieldValue": "={{ $('Append or update row in sheet').item.json.last_sign_in_at }}"
+            },
+            {
+              "fieldId": "pictureUrl",
+              "fieldValue": "={{ $json.user_data.pictureUrl }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        544
+      ],
+      "id": "834774f4-1852-43b7-8e49-c6c683908681",
+      "name": "更新 google User",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('處理用戶資料').item.json.line_user_id }}"
+            },
+            {
+              "fieldId": "displayName",
+              "fieldValue": "={{ $('處理用戶資料').item.json.displayName }}"
+            },
+            {
+              "fieldId": "member_level",
+              "fieldValue": "={{ $('處理用戶資料').item.json.member_level }}"
+            },
+            {
+              "fieldId": "pictureUrl",
+              "fieldValue": "={{ $('處理用戶資料').item.json.pictureUrl }}"
+            },
+            {
+              "fieldId": "register_date",
+              "fieldValue": "={{ $('處理用戶資料').item.json.register_date }}"
+            },
+            {
+              "fieldId": "last_login",
+              "fieldValue": "={{ $now }}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ $json.created_at }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -1296
+      ],
+      "id": "1b12e669-ed1d-4eea-bef2-a2b2675060b7",
+      "name": "更新舊會員資料",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "tableId": "users",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('處理用戶資料').item.json.line_user_id }}"
+            },
+            {
+              "fieldId": "displayName",
+              "fieldValue": "={{ $('處理用戶資料').item.json.displayName }}"
+            },
+            {
+              "fieldId": "member_level",
+              "fieldValue": "={{ $('處理用戶資料').item.json.member_level }}"
+            },
+            {
+              "fieldId": "pictureUrl",
+              "fieldValue": "={{ $('處理用戶資料').item.json.pictureUrl }}"
+            },
+            {
+              "fieldId": "register_date",
+              "fieldValue": "={{ $('處理用戶資料').item.json.register_date }}"
+            },
+            {
+              "fieldId": "last_login",
+              "fieldValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -1440
+      ],
+      "id": "d0172dd7-06cd-4727-a04d-69391a83249c",
+      "name": "新增新會員",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "接收 Webhook": {
+      "main": [
+        [
+          {
+            "node": "檢查是否為 OPTIONS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "檢查是否為 OPTIONS": {
+      "main": [
+        [
+          {
+            "node": "回應 OPTIONS (CORS Preflight)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "兌換 Access Token1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得用戶資料": {
+      "main": [
+        [
+          {
+            "node": "處理用戶資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理用戶資料": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "儲存到 Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "儲存到 Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "檢查會員等級",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "檢查會員等級": {
+      "main": [
+        [
+          {
+            "node": "回應：付費會員",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "回應：一般會員（需付費）",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "兌換 Access Token1": {
+      "main": [
+        [
+          {
+            "node": "取得用戶資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "接收前端請求": {
+      "main": [
+        [
+          {
+            "node": "處理資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理資料": {
+      "main": [
+        [
+          {
+            "node": "儲存到 practice_records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "儲存到 practice_records": {
+      "main": [
+        [
+          {
+            "node": "準備查詢條件",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備查詢條件": {
+      "main": [
+        [
+          {
+            "node": "查詢今日使用量",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢今日使用量": {
+      "main": [
+        [
+          {
+            "node": "判斷是否有記錄",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "判斷是否有記錄": {
+      "main": [
+        [
+          {
+            "node": "準備更新資料",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "準備新增資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備更新資料": {
+      "main": [
+        [
+          {
+            "node": "更新每日使用量",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新每日使用量": {
+      "main": [
+        [
+          {
+            "node": "回傳成功訊息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備新增資料": {
+      "main": [
+        [
+          {
+            "node": "新增每日使用量",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增每日使用量": {
+      "main": [
+        [
+          {
+            "node": "回傳成功訊息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "新增新會員",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "更新舊會員資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "找出答錯的題目": {
+      "main": [
+        [
+          {
+            "node": "判斷: 是否有錯題?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "判斷: 是否有錯題?": {
+      "main": [
+        [
+          {
+            "node": "回應: 沒有錯題",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢該錯題是否已存在": {
+      "main": [
+        [
+          {
+            "node": "判斷: 錯題是否已存在?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "判斷: 錯題是否已存在?": {
+      "main": [
+        [
+          {
+            "node": "準備新增資料1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "準備更新資料1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新現有錯題": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增錯題記錄": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備更新資料1": {
+      "main": [
+        [
+          {
+            "node": "更新現有錯題",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備新增資料1": {
+      "main": [
+        [
+          {
+            "node": "新增錯題記錄",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "接收前端請求錯誤題": {
+      "main": [
+        [
+          {
+            "node": "找出答錯的題目",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Supabase Fetch User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Fetch User": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "有放大頭貼",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        []
+      ]
+    },
+    "Get a row1": {
+      "main": [
+        [
+          {
+            "node": "有沒有登入過(沒有的話)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "有沒有登入過(沒有的話)": {
+      "main": [
+        [
+          {
+            "node": "新增到 google User",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "更新 google User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "回傳成功訊息1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "查詢該錯題是否已存在",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增到 google User": {
+      "main": [
+        [
+          {
+            "node": "新增到 User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增到 User": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "有放大頭貼": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新 google User": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "nickleo9.zeabur.app",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36",
+            "content-length": "1369",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+            "content-type": "application/json",
+            "origin": "https://nickleo9.github.io",
+            "priority": "u=1, i",
+            "referer": "https://nickleo9.github.io/",
+            "sec-ch-ua": "\"Chromium\";v=\"142\", \"Google Chrome\";v=\"142\", \"Not_A Brand\";v=\"99\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "61.70.198.205, 61.70.198.205",
+            "x-forwarded-host": "nickleo9.zeabur.app",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-real-ip": "61.70.198.205",
+            "x-zeabur-container-port": "5678",
+            "x-zeabur-ip-country": "TW",
+            "x-zeabur-request-id": "hnd1::55ccd9c2-6973-4525-aa08-77a334fe8cb1"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6IlUxQXN3L0FtUW4vRXFrajEiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL25hZnR3bWFqeHVvYXVva3V3cGF6LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIyNmViMjE2OS1jMGQ2LTQxYzQtYmM4Zi0zMmFiYTBlZDg3OGMiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYzNTE1OTcwLCJpYXQiOjE3NjM1MTIzNzAsImVtYWlsIjoibmlja2xlbzNAZ21haWwuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJnb29nbGUiLCJwcm92aWRlcnMiOlsiZ29vZ2xlIl19LCJ1c2VyX21ldGFkYXRhIjp7ImF2YXRhcl91cmwiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NKck01M0VYNFFWV1BHM0hSWTNUdmxMVnFtaEFmUFVkUGZkcFVjUmJQY0oxMmxlRDZZd0ZnPXM5Ni1jIiwiZW1haWwiOiJuaWNrbGVvM0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoi5by15oOf6I2PIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6IuW8teaDn-iNjyIsInBob25lX3ZlcmlmaWVkIjpmYWxzZSwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0pyTTUzRVg0UVZXUEczSFJZM1R2bExWcW1oQWZQVWRQZmRwVWNSYlBjSjEybGVENll3Rmc9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMTYzMTM5Mzg1MDI1MjA3MDQxOSIsInN1YiI6IjEwMTYzMTM5Mzg1MDI1MjA3MDQxOSJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6Im9hdXRoIiwidGltZXN0YW1wIjoxNzYzNTEyMzcwfV0sInNlc3Npb25faWQiOiI2ZWFhYWRhOC03MjQyLTQ2YWYtOGRhMi1mYWMzNTFkZmQwNmUiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.X0jlAEg9SAHu43aYHW0Hz_zl2veEe-ndYUJhmx3fgIg",
+            "refresh_token": "t32rz6uglviy",
+            "login_type": "google"
+          },
+          "webhookUrl": "https://nickleo9.zeabur.app/webhook/google-login",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "223f2c0b-2788-46e1-a95a-4851faed9f98",
+  "triggerCount": 5,
+  "shared": [
+    {
+      "updatedAt": "2025-10-02T05:11:58.384Z",
+      "createdAt": "2025-10-02T05:11:58.384Z",
+      "role": "workflow:owner",
+      "workflowId": "JsBZeDAkcXgYiLYF",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

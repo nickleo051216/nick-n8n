@@ -1,0 +1,574 @@
+{
+  "updatedAt": "2025-11-30T05:27:16.145Z",
+  "createdAt": "2025-11-27T17:43:12.755Z",
+  "id": "uORVL2vaL4pcsH2n",
+  "name": "1128 發信",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "survey",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        32
+      ],
+      "id": "da1770a0-122a-4e31-9bb9-42f60e2f13ed",
+      "name": "Webhook",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1iARwA8-8582qS9HuISBJ8_rbuAOssew6",
+          "mode": "list",
+          "cachedResultName": "(更新) n8n 部屬 Zeabur .pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/1iARwA8-8582qS9HuISBJ8_rbuAOssew6/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        912,
+        -48
+      ],
+      "id": "c653106c-66d3-4b5b-b678-e978f28025e4",
+      "name": "Download file",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        16,
+        -128
+      ],
+      "id": "de69ef3e-9edb-4dc6-8b26-2f0573b6f31a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fromEmail": "nickleo051216@gmail.com",
+        "toEmail": "={{ $('Get row(s) in sheet').item.json['6. 請留下 Email，系統會自動寄送今天的「直播回放&講義」給你（必填）'] }}",
+        "subject": "11/28 ZN Studio 線上 n8n 分享講義",
+        "emailFormat": "text",
+        "text": "感謝您的參與！\n此封信為 n8n 自動寄出\n附上 該次線上分享會的  n8n 部屬指南\n\n\n錄影回放 \n會另外傳至社群  歡迎加入我的社群領取\n\n講義簡報\n已經傳至 該會議 之聊天室 \n請確認聊天室窗\n\n或是點選以下連結領取：\nhttps://drive.google.com/drive/folders/1IXs8LUMxoPOMqyR_zilk4clnN0YOgqRY?usp=sharing\n\n很期待一起加入自動化的世界！\n\n如想知道更多資訊及優惠，歡迎加入：\nZN AI 樂園 (n8n AI 自動化)\nhttps://reurl.cc/1OZNAY🚀\n\n📞 電話：0932-684-051\n個人網站： znstudio216.com\nThreads： ZN Studio (@nickai216)\nLINE 個人： @879chwgq",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1136,
+        -48
+      ],
+      "id": "e41f1104-471c-4009-8a76-26bde28b7697",
+      "name": "Send email",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1dK3C7k0duUMRrIqSi06H4u5rS7TJE7C-z2Q0nmbK9s4",
+          "mode": "list",
+          "cachedResultName": "📝 n8n 線上分享會 - 課後回饋 & 回放領取 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dK3C7k0duUMRrIqSi06H4u5rS7TJE7C-z2Q0nmbK9s4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1801968623,
+          "mode": "list",
+          "cachedResultName": "表單回應 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dK3C7k0duUMRrIqSi06H4u5rS7TJE7C-z2Q0nmbK9s4/edit#gid=1801968623"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        240,
+        32
+      ],
+      "id": "15b7c937-cbc7-4061-98e0-8aa983b971ef",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": false,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "9qzICchg8uOypNlX",
+          "mode": "list",
+          "cachedResultName": "1128 回饋",
+          "cachedResultUrl": "/projects/4W71QCd0cKKsiKSS/datatables/9qzICchg8uOypNlX"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "time": "={{ $json['時間戳記'] }}",
+            "knowme": "={{ $json['從哪知道我的？'] }}",
+            "known8n": "={{ $json['在上課之前，是否已經知道 n8n ？'] }}",
+            "confuse": "={{ $json['2. 在你目前的工作/生活中，最讓你感到「煩躁、重複、浪費時間」的事情是什麼？'] }}",
+            "adjtoday": "={{ $json['1. 用一句話形容今天的分享會：'] }}",
+            "if1220": "={{ $json['3. 如果 12/20（六）下午，我能手把手教你做一個機器人，自動解決上述問題，你會有興趣嗎？'] }}",
+            "addone": "={{ $json['4. 關於 12/20 的實體工作坊（台北場(台北車站)，費用約 $2,500-$3,000）'] }}",
+            "wish": "={{ $json['5. 如果要你對未來的課程許願，你最想帶走哪一種機器人？'] }}",
+            "email": "={{ $json['6. 請留下 Email，系統會自動寄送今天的「直播回放&講義」給你（必填）'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "knowme",
+              "displayName": "knowme",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "known8n",
+              "displayName": "known8n",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "adjtoday",
+              "displayName": "adjtoday",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "confuse",
+              "displayName": "confuse",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "if1220",
+              "displayName": "if1220",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "addone",
+              "displayName": "addone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "wish",
+              "displayName": "wish",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -48
+      ],
+      "id": "e10af61c-2c0c-4cc9-b6ae-83ed50c16a83",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        464,
+        32
+      ],
+      "id": "825e52ef-6f85-4199-b84c-1d3c3cadc9c8",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        112
+      ],
+      "id": "94d38712-63ba-4fe4-8d9b-293de6379c67"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1dK3C7k0duUMRrIqSi06H4u5rS7TJE7C-z2Q0nmbK9s4",
+          "mode": "list",
+          "cachedResultName": "📝 n8n 線上分享會 - 課後回饋 & 回放領取 (回覆)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dK3C7k0duUMRrIqSi06H4u5rS7TJE7C-z2Q0nmbK9s4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1801968623,
+          "mode": "list",
+          "cachedResultName": "表單回應 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dK3C7k0duUMRrIqSi06H4u5rS7TJE7C-z2Q0nmbK9s4/edit#gid=1801968623"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "6. 請留下 Email，系統會自動寄送今天的「直播回放&講義」給你（必填）": "={{ $json.envelope.to }}",
+            "Status": "done"
+          },
+          "matchingColumns": [
+            "6. 請留下 Email，系統會自動寄送今天的「直播回放&講義」給你（必填）"
+          ],
+          "schema": [
+            {
+              "id": "時間戳記",
+              "displayName": "時間戳記",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "從哪知道我的？",
+              "displayName": "從哪知道我的？",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "在上課之前，是否已經知道 n8n ？",
+              "displayName": "在上課之前，是否已經知道 n8n ？",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "1. 用一句話形容今天的分享會：",
+              "displayName": "1. 用一句話形容今天的分享會：",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "2. 在你目前的工作/生活中，最讓你感到「煩躁、重複、浪費時間」的事情是什麼？",
+              "displayName": "2. 在你目前的工作/生活中，最讓你感到「煩躁、重複、浪費時間」的事情是什麼？",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "3. 如果 12/20（六）下午，我能手把手教你做一個機器人，自動解決上述問題，你會有興趣嗎？",
+              "displayName": "3. 如果 12/20（六）下午，我能手把手教你做一個機器人，自動解決上述問題，你會有興趣嗎？",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "4. 關於 12/20 的實體工作坊（台北場(台北車站)，費用約 $2,500-$3,000）",
+              "displayName": "4. 關於 12/20 的實體工作坊（台北場(台北車站)，費用約 $2,500-$3,000）",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "5. 如果要你對未來的課程許願，你最想帶走哪一種機器人？",
+              "displayName": "5. 如果要你對未來的課程許願，你最想帶走哪一種機器人？",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "6. 請留下 Email，系統會自動寄送今天的「直播回放&講義」給你（必填）",
+              "displayName": "6. 請留下 Email，系統會自動寄送今天的「直播回放&講義」給你（必填）",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1840,
+        -16
+      ],
+      "id": "8396ecfa-830a-46d4-984f-7efa1b23759b",
+      "name": "Update row in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        -48
+      ],
+      "id": "18de6621-b407-4bbf-9892-1b4c9e38b217",
+      "name": "Wait",
+      "webhookId": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "a46f292f-31ee-4898-8ca6-74b31247f12a",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-11-27T17:43:12.755Z",
+      "createdAt": "2025-11-27T17:43:12.755Z",
+      "role": "workflow:owner",
+      "workflowId": "uORVL2vaL4pcsH2n",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-11-26T15:44:53.730Z",
+      "createdAt": "2025-11-26T15:44:53.730Z",
+      "id": "2euOtEGydkJo44Ap",
+      "name": "範本"
+    }
+  ]
+}

@@ -1,0 +1,2107 @@
+{
+  "updatedAt": "2025-12-14T05:33:06.200Z",
+  "createdAt": "2025-05-06T16:45:09.836Z",
+  "id": "AoYTHhbcInrgNN0M",
+  "name": "n8n 諮詢機器人",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.events[0].source.userId }}",
+        "contextWindowLength": 10
+      },
+      "id": "3aaf1c1c-f877-46f0-b65a-10d363e1c54b",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        -112,
+        320
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.events[0].message.text }}",
+        "options": {
+          "systemMessage": "You are a n8n helpful assistant\n\n\n很瞭解 n8n 整個運作流程\n部屬在 Zeabur \n\n回應時，請隨時注意以下格式：\nconst safeLineMessage = lineMessage\n  .replace(/\\\\/g, '\\\\\\\\')   // 反斜線要先處理\n  .replace(/\"/g, '\\\\\"')     // 雙引號轉義（關鍵問題！）\n  .replace(/\\n/g, '\\\\n')    // 換行符轉義\n  .replace(/\\r/g, '\\\\r')    // 回車符轉義  \n  .replace(/\\t/g, '\\\\t');   // Tab符轉義"
+        }
+      },
+      "id": "24f73aab-fbde-4e44-b03b-6d04c680091e",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -240,
+        96
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "n8n-CRM",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        96
+      ],
+      "id": "d1fd5438-d50d-492e-928d-4d6a9b1d8cc9",
+      "name": "Webhook",
+      "webhookId": "[REMOVED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        320
+      ],
+      "id": "f0370028-21ec-45ae-b614-1a359b33abae",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer vs/hts0osMsRupRb/SPUQkBKMRLClo5PzDCemrNiP6xbXrDwwaKRyI7c0+qg7nlsBvhE2Qcp7uAgXhkEt88TIgHYGk8/RwqyfOPwAZ3wKgLzlzBCamFZOAHGn23Mnf7EQSzXoeJtXNyMjHLQfY9EFAdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Webhook').item.json.body.events[0].source.userId }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{ $json.output }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        96
+      ],
+      "id": "d4cff3c7-0842-49e9-a9c1-1577dfc05d76",
+      "name": "回覆 Line 訊息通知",
+      "notes": "告知用戶已收到影片並開始處理"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2acfc8c6-09e9-4d83-aaaf-3a1c06f33d7c",
+              "leftValue": "={{ $json.body.events[0].message.text }}",
+              "rightValue": "@AI",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -464,
+        96
+      ],
+      "id": "31f1576f-8833-4b86-9ec5-cb44dbe58327",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "loadingSeconds",
+              "value": "40"
+            },
+            {
+              "name": "chatId",
+              "value": "={{ $json.body.events[0].source.userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -464,
+        -96
+      ],
+      "id": "11c6187f-5768-4f30-8376-8863c9e547b9",
+      "name": "loading/start",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.line.me/v2/bot/message/push",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer vs/hts0osMsRupRb/SPUQkBKMRLClo5PzDCemrNiP6xbXrDwwaKRyI7c0+qg7nlsBvhE2Qcp7uAgXhkEt88TIgHYGk8/RwqyfOPwAZ3wKgLzlzBCamFZOAHGn23Mnf7EQSzXoeJtXNyMjHLQfY9EFAdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Webhook').item.json.body.events[0].source.userId }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"您好！如需真人回復請稍等，如想詢問 n8n 相關資訊，請輸入 @AI \"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -688,
+        -544
+      ],
+      "id": "ad4eb627-0a3b-4296-b6dc-f6fb6ee8830c",
+      "name": "回覆 Line 訊息通知1",
+      "notes": "告知用戶已收到影片並開始處理"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "ZN",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "1d49dbeb-4ed5-4bf3-b5bd-1b3ce5b27346"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "匯款後五碼 "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -464,
+        288
+      ],
+      "id": "32c9315b-a8f9-465a-8e5d-4a68d3072c00",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "condition_1",
+                    "leftValue": "={{ $('分析訊息內容').item.json.bankLast5 }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "有後五碼 (更新匯款)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "condition_2",
+                    "leftValue": "={{ $json['付款狀態'] }}",
+                    "rightValue": "已付款",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "已付款 (給群組連結)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -688,
+        512
+      ],
+      "id": "a95250f3-dbb9-4777-b715-ad2cc5f9dd06",
+      "name": "判斷情境 (Switch)"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "n8n-CRM",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        1280
+      ],
+      "id": "1cd1ccb4-f59d-4dee-9d3d-41188a56983e",
+      "name": "接收 Line 訊息",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得使用者傳來的文字\nconst userMessage = $input.item.json.body.events[0].message.text || '';\nconst replyToken = $input.item.json.body.events[0].replyToken;\nconst userId = $input.item.json.body.events[0].source.userId;\n\n// 1. 抓取 ZN 訂單編號 (ZN + 13位數字)\n// 例如：ZN1733246789456\nconst znRegex = /(ZN\\d{13})/i;\nconst znMatch = userMessage.match(znRegex);\nconst orderId = znMatch ? znMatch[1].toUpperCase() : null;\n\n// 2. 抓取 後五碼 (連續 5 位數字，且不是 ZN 編號的一部分)\n// 這裡用比較簡單的邏輯：如果字串中有獨立的 5 碼數字\nconst last5Regex = /(?<!\\d)\\d{5}(?!\\d)/;\nconst last5Match = userMessage.match(last5Regex);\n// 排除 ZN 編號本身被誤判 (雖然 ZN 後面是 13 碼，但保險起見)\nlet bankLast5 = last5Match ? last5Match[0] : null;\n\n// 如果找不到 ZN 編號，就無法處理\nconst isValid = !!orderId;\n\nreturn {\n  json: {\n    userMessage,\n    replyToken,\n    userId,\n    orderId,\n    bankLast5,\n    isValid\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        1376
+      ],
+      "id": "1ef801ab-96f8-4bbf-9efa-ac6215811c73",
+      "name": "分析訊息內容"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.isValid }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        1376
+      ],
+      "id": "79d5e570-4e91-4cf2-bf66-da01f3b83e0e",
+      "name": "是否有 ZN 編號?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"status\": \"ok\" }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        1904
+      ],
+      "id": "2bea39c9-67bd-4e08-b047-34fd2be9b665",
+      "name": "先回傳 200 OK"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA",
+          "mode": "list",
+          "cachedResultName": "1220報名名單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 396548294,
+          "mode": "list",
+          "cachedResultName": "報名資料",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit#gid=396548294"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "訂單編號",
+              "lookupValue": "={{ $json.orderId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        112,
+        1168
+      ],
+      "id": "e6a7e0e8-ee65-468b-a172-bb15bdbf929b",
+      "name": "搜尋訂單",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('分析訊息內容').item.json.bankLast5 }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "有後五碼 (匯款回報)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json['付款狀態'] }}",
+                    "rightValue": "已付款",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "已付款 (查詢狀態)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -688,
+        736
+      ],
+      "id": "6db30301-6d2a-425f-9330-2d44d4e19246",
+      "name": "判斷情境",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA",
+          "mode": "list",
+          "cachedResultName": "1220報名名單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 396548294,
+          "mode": "list",
+          "cachedResultName": "報名資料",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit#gid=396548294"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "付款狀態": "已付款(完成)",
+            "訂單編號": "={{ $('搜尋訂單').item.json['訂單編號'] }}",
+            "後五碼": "={{ $json.output.bankLast5 }}",
+            "付款時間": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "訂單編號"
+          ],
+          "schema": [
+            {
+              "id": "報名序號",
+              "displayName": "報名序號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "訂單編號",
+              "displayName": "訂單編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "報名時間",
+              "displayName": "報名時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "姓名",
+              "displayName": "姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "聯絡電話",
+              "displayName": "聯絡電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LINE ID",
+              "displayName": "LINE ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "公司/單位",
+              "displayName": "公司/單位",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "職稱",
+              "displayName": "職稱",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "報名課程",
+              "displayName": "報名課程",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "報名人數",
+              "displayName": "報名人數",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "付款方式",
+              "displayName": "付款方式",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "金額",
+              "displayName": "金額",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "付款狀態",
+              "displayName": "付款狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "後五碼",
+              "displayName": "後五碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "付款時間",
+              "displayName": "付款時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "綠界訂單號",
+              "displayName": "綠界訂單號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "發票類型",
+              "displayName": "發票類型",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "統一編號",
+              "displayName": "統一編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "公司抬頭",
+              "displayName": "公司抬頭",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "發票Email",
+              "displayName": "發票Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "備註",
+              "displayName": "備註",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "確認信狀態",
+              "displayName": "確認信狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Line通知狀態",
+              "displayName": "Line通知狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1232,
+        880
+      ],
+      "id": "7dfcb30c-17fc-40ee-9dc6-c79270fd1843",
+      "name": "更新後五碼",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "resource": "message"
+      },
+      "type": "n8n-nodes-base.line",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        2128
+      ],
+      "id": "8947a3cb-f9bf-460d-9c33-cbf3cc0eb782",
+      "name": "回覆：狀態"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA",
+          "mode": "list",
+          "cachedResultName": "1220報名名單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 396548294,
+          "mode": "list",
+          "cachedResultName": "報名資料",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit#gid=396548294"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "付款狀態": "已付款(完成)",
+            "row_number": 0,
+            "訂單編號": "={{$('搜尋訂單').item.訂單編號}}"
+          },
+          "matchingColumns": [
+            "訂單編號"
+          ],
+          "schema": [
+            {
+              "id": "報名序號",
+              "displayName": "報名序號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "訂單編號",
+              "displayName": "訂單編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "報名時間",
+              "displayName": "報名時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "姓名",
+              "displayName": "姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "聯絡電話",
+              "displayName": "聯絡電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "LINE ID",
+              "displayName": "LINE ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "公司/單位",
+              "displayName": "公司/單位",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "職稱",
+              "displayName": "職稱",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "報名課程",
+              "displayName": "報名課程",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "報名人數",
+              "displayName": "報名人數",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "付款方式",
+              "displayName": "付款方式",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "金額",
+              "displayName": "金額",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "付款狀態",
+              "displayName": "付款狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "後五碼",
+              "displayName": "後五碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "付款時間",
+              "displayName": "付款時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "綠界訂單號",
+              "displayName": "綠界訂單號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "發票類型",
+              "displayName": "發票類型",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "統一編號",
+              "displayName": "統一編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "公司抬頭",
+              "displayName": "公司抬頭",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "發票Email",
+              "displayName": "發票Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "備註",
+              "displayName": "備註",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "確認信狀態",
+              "displayName": "確認信狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Line通知狀態",
+              "displayName": "Line通知狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1232,
+        1104
+      ],
+      "id": "51f0b6c2-1014-4fdd-a36d-57d80374c270",
+      "name": "更新狀態",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "loadingSeconds",
+              "value": "40"
+            },
+            {
+              "name": "chatId",
+              "value": "={{ $json.body.events[0].source.userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -464,
+        1184
+      ],
+      "id": "bcecd4db-5ed5-4167-be51-c09ff2563eb4",
+      "name": "loading/start1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('接收 Line 訊息').item.json.body.events[0].source.userId }}",
+        "contextWindowLength": 10
+      },
+      "id": "81c93e30-e719-420f-bf7f-ad1f3fa06f50",
+      "name": "Simple Memory1",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        112,
+        1792
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('接收 Line 訊息').item.json.body.events[0].message.text }}",
+        "options": {
+          "systemMessage": "=You are a n8n helpful assistant\n\n\n你現在要幫我審核\n會有人傳 ZN+訂單編號 以及 匯款帳號後五碼\n\n你這條路是 非相關資訊 隨著{{ $('接收 Line 訊息').item.json.body.events[0].message.text }} 回應即可\n\n很瞭解 n8n 整個運作流程\n部屬在 Zeabur \n現在有 line message 新的社群節點\nn8n 要準備升級 2.0 \n\n你是 專家級的 n8n 高手 專門回應 n8n 相關問題\n\n如果有遇到不確定的 請使用 \nTool： perplexity"
+        }
+      },
+      "id": "746c2fab-4a90-4929-bf0a-3e8c76147b5d",
+      "name": "AI Agent1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        48,
+        1568
+      ],
+      "typeVersion": 1.8,
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        1792
+      ],
+      "id": "4593efb8-60a6-4ba7-829f-8d50cd72ced7",
+      "name": "OpenRouter Chat Model1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        720,
+        1568
+      ],
+      "id": "21c9aad6-a8ef-494a-b555-fe6f197cdcb9",
+      "name": "Line Messaging",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('接收 Line 訊息').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1888,
+        1152
+      ],
+      "id": "515aa040-a88f-475d-a9e1-d19f4c5e5fc9",
+      "name": "Line Messaging1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=訂單編號：{{ $json['訂單編號'] }}  已經收到後五碼 {{ $json['後五碼'] }}",
+        "options": {
+          "systemMessage": "你要幫忙審核訂單 是否已經收到後五碼 \n\n有的話就回傳 ok 並會寄通知信"
+        }
+      },
+      "id": "4e99a89f-4603-4cc0-ad78-a98671e9220c",
+      "name": "AI Agent2",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1456,
+        1008
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        1280
+      ],
+      "id": "ce86fa19-a60c-4aeb-9485-cc118956d186",
+      "name": "OpenRouter Chat Model2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('分析訊息內容').item.json.userMessage }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "你是 ZN Studio 的報名小幫手。你的任務是從使用者的訊息中提取「訂單編號(ZN開頭)」和「匯款後五碼」。\n\n查詢是否已成功匯款 (有成功 就有後五碼)\n沒有成功 請回復 請確認匯款後五碼後 並提供 \n\n你有 Tool sheet ：Get row(s) in sheet in Google Sheets\n可以查詢\n\n\n規則：\n\n訂單編號：通常是 ZN 開頭接 13 位數字。\n\n後五碼：通常是 5 位純數字。\n\n判斷意圖 (intent)：\n\n如果有「訂單編號」且有「後五碼」 -> 回傳 report_payment\n\n如果只有「訂單編號」 -> 回傳 check_status\n\n其他 -> 回傳 unknown\n\n輸出格式（必須是純 JSON）： { \"intent\": \"report_payment\", \"orderId\": \"ZN17...\", \"bankLast5\": \"12345\", \"reply\": \"簡短的回覆文字\" }"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        576,
+        960
+      ],
+      "id": "4cf1207d-8f0b-4349-9385-76eee27c65bf",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        448,
+        1184
+      ],
+      "id": "9be80bb1-b21d-4d06-a4c1-877c3a5f6891",
+      "name": "OpenRouter Chat Model3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('接收 Line 訊息').item.json.body.events[0].source.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        1184
+      ],
+      "id": "2c4cce33-3955-4b79-a8d5-08ac0ab70441",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserAutofixing",
+      "typeVersion": 1,
+      "position": [
+        832,
+        1184
+      ],
+      "id": "dbd0c420-aa7e-457c-a4b4-e258748e6aad",
+      "name": "Auto-fixing Output Parser"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{ \"intent\": \"report_payment\", \"orderId\": \"ZN17...\", \"bankLast5\": \"12345\", \"reply\": \"簡短的回覆文字\" }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        976,
+        1392
+      ],
+      "id": "7d608b90-24f9-4d78-bd28-86c04d0d4cd8",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        848,
+        1392
+      ],
+      "id": "608d0784-d353-4bb4-a1ee-98466a4ed5cd",
+      "name": "Google Gemini Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA",
+          "mode": "list",
+          "cachedResultName": "1220報名名單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 396548294,
+          "mode": "list",
+          "cachedResultName": "報名資料",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit#gid=396548294"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "訂單編號",
+              "lookupValue": "={{ $('搜尋訂單').item.json[\"訂單編號\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        1184
+      ],
+      "id": "67963a4a-0a12-4411-8bf2-6d00a13fc96b",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        240,
+        1792
+      ],
+      "id": "3e81c358-0ac1-44f6-9bd8-d20e4fcc5511",
+      "name": "Message a model in Perplexity",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('搜尋訂單').item.json.Email }}",
+        "subject": "=🎉【報名成功】ZN Studio n8n 實作課 - 訂單確認通知 ({{ $('搜尋訂單').item.json['訂單編號'] }})",
+        "message": "=<div style=\"font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333; line-height: 1.6;\">\n  \n  <h2 style=\"color: #0ea5a4; border-bottom: 2px solid #0ea5a4; padding-bottom: 10px;\">🎉 報名成功確認</h2>\n  \n  <p>Hi <strong>{{ $('搜尋訂單').item.json['姓名'] }}</strong> 您好，</p>\n  \n  <p>恭喜您！我們已收到您的匯款，您的報名已正式確認。<br>\n  非常期待在 12/20 與您見面，帶您一起用意想不到的角度玩轉 n8n！</p>\n\n  <div style=\"background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;\">\n    <h3 style=\"margin-top: 0; color: #2c3e50;\">📦 訂單資訊</h3>\n    <p style=\"margin: 5px 0;\"><strong>訂單編號：</strong>{{ $('搜尋訂單').item.json['訂單編號'] }}</p>\n    <p style=\"margin: 5px 0;\"><strong>付款金額：</strong>NT$ {{ $('搜尋訂單').item.json['金額'] }}</p>\n    <p style=\"margin: 5px 0;\"><strong>付款方式：</strong>匯款 (已付款)</p>\n  </div>\n\n  <div style=\"background-color: #e6fffa; padding: 15px; border-radius: 8px; border: 1px solid #b2f5ea; margin: 20px 0;\">\n    <h3 style=\"margin-top: 0; color: #0ea5a4;\">🎁 早鳥專屬福利</h3>\n    <p>歡迎加入我們的 VIP 學員群組！<br>\n    課前交流、課後提問都在這裡：</p>\n    <p style=\"text-align: center; margin-top: 15px;\">\n      <a href=\"https://line.me/ti/g/Smb6JaL93f\" style=\"background-color: #0ea5a4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;\">👉 點此加入 VIP Line 群組</a>\n    </p>\n  </div>\n\n  <div style=\"margin: 20px 0;\">\n    <h3 style=\"color: #2c3e50;\">📅 上課資訊</h3>\n    <ul style=\"list-style-type: none; padding: 0;\">\n      <li style=\"margin-bottom: 8px;\">🕒 <strong>時間：</strong>2025/12/20 (六) 13:00 - 17:00</li>\n      <li style=\"margin-bottom: 8px;\">📍 <strong>地點：</strong>台北市中正區許昌街 42 之 1 號 4 樓 D 教室</li>\n      <li style=\"margin-bottom: 8px;\">💻 <strong>準備：</strong>請務必攜帶筆記型電腦 (Windows/Mac 皆可)</li>\n    </ul>\n  </div>\n\n  <hr style=\"border: none; border-top: 1px solid #eee; margin: 30px 0;\">\n  \n  <p style=\"font-size: 14px; color: #666;\">\n    若有任何問題，歡迎直接回覆此信，或是透過 Line 官方帳號聯繫我們。<br>\n    Line OA：<a href=\"https://lin.ee/Faz0doj\" style=\"color: #0ea5a4;\">https://lin.ee/Faz0doj</a>\n  </p>\n  \n  <p style=\"margin-top: 20px;\"><strong>ZN Studio | Nick Chang 敬上</strong></p>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1888,
+        864
+      ],
+      "id": "57e46a5d-f508-43d9-bdb0-4c126eec44c4",
+      "name": "確認收到款項",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA",
+          "mode": "list",
+          "cachedResultName": "1220報名名單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 396548294,
+          "mode": "list",
+          "cachedResultName": "報名資料",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1LCnrVvjCfGvZ7EcKUuSuRfINFuCc343IZi8c7TEStvA/edit#gid=396548294"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 0,
+            "訂單編號": "={{ $('更新後五碼').item.json['訂單編號'] }}",
+            "Status": "已收到款項"
+          },
+          "matchingColumns": [
+            "訂單編號"
+          ],
+          "schema": [
+            {
+              "id": "報名序號",
+              "displayName": "報名序號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "訂單編號",
+              "displayName": "訂單編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "報名時間",
+              "displayName": "報名時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "姓名",
+              "displayName": "姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "聯絡電話",
+              "displayName": "聯絡電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "LINE ID",
+              "displayName": "LINE ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "公司/單位",
+              "displayName": "公司/單位",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "職稱",
+              "displayName": "職稱",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "報名課程",
+              "displayName": "報名課程",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "報名人數",
+              "displayName": "報名人數",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "付款方式",
+              "displayName": "付款方式",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "金額",
+              "displayName": "金額",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "付款狀態",
+              "displayName": "付款狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "後五碼",
+              "displayName": "後五碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "付款時間",
+              "displayName": "付款時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "綠界訂單號",
+              "displayName": "綠界訂單號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "發票類型",
+              "displayName": "發票類型",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "統一編號",
+              "displayName": "統一編號",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "公司抬頭",
+              "displayName": "公司抬頭",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "發票Email",
+              "displayName": "發票Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "備註",
+              "displayName": "備註",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "確認信狀態",
+              "displayName": "確認信狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Line通知狀態",
+              "displayName": "Line通知狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2176,
+        1152
+      ],
+      "id": "9faf5000-3231-4c8d-b00b-80adc30b5714",
+      "name": "更新狀態1",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "loading/start",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "回覆 Line 訊息通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "loading/start": {
+      "main": [
+        []
+      ]
+    },
+    "接收 Line 訊息": {
+      "main": [
+        [
+          {
+            "node": "分析訊息內容",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "loading/start1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "分析訊息內容": {
+      "main": [
+        [
+          {
+            "node": "是否有 ZN 編號?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否有 ZN 編號?": {
+      "main": [
+        [
+          {
+            "node": "搜尋訂單",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "搜尋訂單": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "判斷情境": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "更新後五碼": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新狀態": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "確認收到款項",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "更新後五碼",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "更新狀態",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-fixing Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Auto-fixing Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging1": {
+      "main": [
+        [
+          {
+            "node": "更新狀態1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "接收 Line 訊息": [
+      {
+        "json": {
+          "headers": {
+            "host": "nickleo9.zeabur.app",
+            "user-agent": "LineBotWebhook/2.0",
+            "content-length": "816",
+            "content-type": "application/json; charset=utf-8",
+            "x-forwarded-for": "147.92.149.166, 147.92.149.166",
+            "x-forwarded-host": "nickleo9.zeabur.app",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-line-signature": "BEOgFhcdF/YT6odrDx/AV2u0TUXgJDwPwwhaTPnbCXI=",
+            "x-real-ip": "147.92.149.166",
+            "x-zeabur-container-port": "5678",
+            "x-zeabur-ip-country": "JP",
+            "x-zeabur-request-id": "hnd1::b7c7e472-134e-42e3-abb9-71668f2fba22",
+            "accept-encoding": "gzip"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "destination": "Uf0111e880fc52d0c559634d2e4012ff7",
+            "events": [
+              {
+                "type": "message",
+                "message": {
+                  "type": "image",
+                  "id": "591999137231405833",
+                  "quoteToken": "x3p10vfG-4_EIDAdymBCbhw_D2_FXwjc8VF2hkYa0TYVh6UFOXWLBV2jTzomNYmQUWpAh293Arl2UbqUq8AqWDl5_VtqsT93ajFpHnghPnhapqNOBji6RyCVtyrDuyo7JiqF8OIGeyICd7AZmGfHOg",
+                  "markAsReadToken": "aAPVHD-Zn6zDU7B990F_d2k6uRdqblMWam_vJbB8ZaJ_574juJjE6aY30__E7GraTmmJqJhcRBZ3HYecB56ZL8anI9UpjEnZAleYXFJXncGObB6_K-UjSyOfpzCfg7gC3rBLLvapZY-XXZ1ywAN-U3P-2cvwEbErIseO3wZNGkFu85Pv5RDWzi6BAtlG4XMlvr7XtWdrWgFScrouQMND-w",
+                  "contentProvider": {
+                    "type": "line"
+                  }
+                },
+                "webhookEventId": "01KCDNF988VYCJMV2CQ4CPHYTQ",
+                "deliveryContext": {
+                  "isRedelivery": false
+                },
+                "timestamp": 1765690287133,
+                "source": {
+                  "type": "user",
+                  "userId": "U5d10cd952818cc961ce44e88aec3e5dc"
+                },
+                "replyToken": "018de8d8fa344e1d88207cd688b3cdb5",
+                "mode": "active"
+              }
+            ]
+          },
+          "webhookUrl": "https://nickleo9.zeabur.app/webhook/n8n-CRM",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "a8a9e7d4-8874-40fa-9577-bcdb7d8633ca",
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-05-06T16:45:09.836Z",
+      "createdAt": "2025-05-06T16:45:09.836Z",
+      "role": "workflow:owner",
+      "workflowId": "AoYTHhbcInrgNN0M",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

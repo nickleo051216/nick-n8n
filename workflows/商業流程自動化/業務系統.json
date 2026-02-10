@@ -1,0 +1,3718 @@
+{
+  "name": "業務系統",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "69d9b57c-405f-4070-87cc-11ae650b4fa2",
+              "leftValue": "={{ $json['換證年'] }}",
+              "rightValue": 11606,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            },
+            {
+              "id": "a2dd58ff-5092-4e0b-8200-f5e1af812690",
+              "leftValue": "={{ $json['換證年'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "84d6c7f8-5e16-4171-8b58-86ecb2610b05",
+              "leftValue": "={{ $json['換證年'] }}",
+              "rightValue": 11412,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1264,
+        16
+      ],
+      "id": "941848a2-318f-4014-b918-fbeb0ec247e0",
+      "name": "11412 < X <11606"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1040,
+        16
+      ],
+      "id": "1ad63e45-616c-4a50-8db8-59139a83c200",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -64
+      ],
+      "id": "2ea50ae6-1446-478d-811c-59e05786d123"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "730e8dee-0b13-4747-9da9-ce0c1c873492",
+              "leftValue": "={{ $json.uniformno }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -592,
+        -128
+      ],
+      "id": "968f0f60-d759-40d7-a172-92063f141716",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "tableId": "factories",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "emsno",
+              "fieldValue": "={{ $('Loop Over Items').item.json.emsno }}"
+            },
+            {
+              "fieldId": "uniformno",
+              "fieldValue": "={{ $('Loop Over Items').item.json.uniformno }}"
+            },
+            {
+              "fieldId": "facilityname",
+              "fieldValue": "={{ $('Loop Over Items').item.json.facilityname }}"
+            },
+            {
+              "fieldId": "facilityaddress",
+              "fieldValue": "={{ $('Loop Over Items').item.json.facilityaddress }}"
+            },
+            {
+              "fieldId": "industryareaname",
+              "fieldValue": "={{ $('Loop Over Items').item.json.industryareaname }}"
+            },
+            {
+              "fieldId": "industryid",
+              "fieldValue": "={{ $('Loop Over Items').item.json.industryid }}"
+            },
+            {
+              "fieldId": "industryname",
+              "fieldValue": "={{ $('Loop Over Items').item.json.industryname }}"
+            },
+            {
+              "fieldId": "isair",
+              "fieldValue": "={{ $('Loop Over Items').item.json.isair }}"
+            },
+            {
+              "fieldId": "iswater",
+              "fieldValue": "={{ $('Loop Over Items').item.json.iswater }}"
+            },
+            {
+              "fieldId": "iswaste",
+              "fieldValue": "={{ $('Loop Over Items').item.json.iswaste }}"
+            },
+            {
+              "fieldId": "istoxic",
+              "fieldValue": "={{ $('Loop Over Items').item.json.istoxic }}"
+            },
+            {
+              "fieldId": "issoil",
+              "fieldValue": "={{ $('Loop Over Items').item.json.issoil }}"
+            },
+            {
+              "fieldId": "consultant_company",
+              "fieldValue": "={{ $('Loop Over Items').item.json[\"顧問公司\"] }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $('Loop Over Items').item.json[\"電話\"] }}"
+            },
+            {
+              "fieldId": "renewal_year",
+              "fieldValue": "={{ $('Loop Over Items').item.json[\"換證年\"] }}"
+            },
+            {
+              "fieldId": "notes",
+              "fieldValue": "={{ $('Loop Over Items').item.json[\"備註\"] }}"
+            },
+            {
+              "fieldId": "scheduled_date",
+              "fieldValue": "={{ $('Loop Over Items').item.json[\"預計排程\"] }}"
+            },
+            {
+              "fieldId": "result",
+              "fieldValue": "={{ $('Loop Over Items').item.json[\"結果\"] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -128
+      ],
+      "id": "8e80d308-ee59-4859-903c-0cd5f0579045",
+      "name": "一個一個新增",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "factories",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uniformno",
+              "keyValue": "={{ $json.uniformno }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        -128
+      ],
+      "id": "f7c33989-d092-4bcb-8060-07961c4b3899",
+      "name": "取得該統編是否已存在",
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1280,
+        3984
+      ],
+      "id": "fbfbc60d-3964-420f-8ffe-7febefa1e9c5",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me1",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        3984
+      ],
+      "id": "deefb5f6-0ea6-4761-94a0-183b1627348b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "730e8dee-0b13-4747-9da9-ce0c1c873492",
+              "leftValue": "={{ $json.ban }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -640,
+        4032
+      ],
+      "id": "423df5ea-b26d-4142-8414-4cf2f14e2082",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "tableId": "water_permits",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ems_no",
+              "fieldValue": "={{ $('水許可').item.json.ems_no }}"
+            },
+            {
+              "fieldId": "ban",
+              "fieldValue": "={{ $('水許可').item.json.ban }}"
+            },
+            {
+              "fieldId": "fac_name",
+              "fieldValue": "={{ $('水許可').item.json.fac_name }}"
+            },
+            {
+              "fieldId": "per_no",
+              "fieldValue": "={{ $('水許可').item.json.per_no }}"
+            },
+            {
+              "fieldId": "per_sdate",
+              "fieldValue": "={{ $('水許可').item.json.per_sdate }}"
+            },
+            {
+              "fieldId": "per_edate",
+              "fieldValue": "={{ $('水許可').item.json.per_edate }}"
+            },
+            {
+              "fieldId": "per_type",
+              "fieldValue": "={{ $('水許可').item.json.per_type }}"
+            },
+            {
+              "fieldId": "address",
+              "fieldValue": "={{ $('水許可').item.json.address }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        4096
+      ],
+      "id": "686f653d-5d5a-4e93-8f9d-e4ad5919ea4a",
+      "name": "一個一個新增1",
+      "executeOnce": false,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "water_permits",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ems_no",
+              "keyValue": "={{ $json.ems_no }}"
+            },
+            {
+              "keyName": "ban",
+              "keyValue": "={{ $json.ban }}"
+            },
+            {
+              "keyName": "fac_name",
+              "keyValue": "={{ $json.fac_name }}"
+            },
+            {
+              "keyName": "per_no",
+              "keyValue": "={{ $json.per_no }}"
+            },
+            {
+              "keyName": "per_sdate",
+              "keyValue": "={{ $json.per_sdate }}"
+            },
+            {
+              "keyName": "per_edate",
+              "keyValue": "={{ $json.per_edate }}"
+            },
+            {
+              "keyName": "per_type",
+              "keyValue": "={{ $json.per_type }}"
+            },
+            {
+              "keyName": "address",
+              "keyValue": "={{ $json.address }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        4000
+      ],
+      "id": "abbd8384-0602-4a20-8370-31c4ad93bf99",
+      "name": "取得該統編是否已存在1",
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI",
+          "mode": "list",
+          "cachedResultName": "環境保護許可管理系統",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1707054240,
+          "mode": "list",
+          "cachedResultName": "水許可資料 (已合併)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit#gid=1707054240"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1504,
+        3984
+      ],
+      "id": "c954c2c9-433e-487c-b81f-13cbc7baefad",
+      "name": "水許可",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI",
+          "mode": "list",
+          "cachedResultName": "環境保護許可管理系統",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1707054240,
+          "mode": "list",
+          "cachedResultName": "水許可資料 (已合併)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit#gid=1707054240"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ban": "={{ $json.ban }}",
+            "Status": "done"
+          },
+          "matchingColumns": [
+            "ban"
+          ],
+          "schema": [
+            {
+              "id": "ems_no",
+              "displayName": "ems_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fac_name",
+              "displayName": "fac_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ban",
+              "displayName": "ban",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "per_no",
+              "displayName": "per_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_sdate",
+              "displayName": "per_sdate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_edate",
+              "displayName": "per_edate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_type",
+              "displayName": "per_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_sdate",
+              "displayName": "emi_sdate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_edate",
+              "displayName": "emi_edate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_waterunit",
+              "displayName": "emi_waterunit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_item",
+              "displayName": "emi_item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        4176
+      ],
+      "id": "ad2b3f73-28f5-4c00-8912-e4c4217ed85f",
+      "name": "Update row in sheet",
+      "credentials": "[REMOVED]",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        4336
+      ],
+      "id": "3f692393-f00f-468a-a87a-2870ee27f406",
+      "name": "Wait",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "97e2d355-ceb8-4748-9c4d-d64b3d7e2715",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "The 'Column to Match On' parameter is required",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        64,
+        3840
+      ],
+      "id": "24d012a9-19be-4b05-8d16-576b8dabe727",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI",
+          "mode": "list",
+          "cachedResultName": "環境保護許可管理系統",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1707054240,
+          "mode": "list",
+          "cachedResultName": "水許可資料 (已合併)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit#gid=1707054240"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ems_no": "={{ $('一個一個新增1').item.json.ems_no }}",
+            "Status": "done"
+          },
+          "matchingColumns": [
+            "ems_no"
+          ],
+          "schema": [
+            {
+              "id": "ems_no",
+              "displayName": "ems_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fac_name",
+              "displayName": "fac_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ban",
+              "displayName": "ban",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_no",
+              "displayName": "per_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_sdate",
+              "displayName": "per_sdate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_edate",
+              "displayName": "per_edate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_type",
+              "displayName": "per_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_sdate",
+              "displayName": "emi_sdate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_edate",
+              "displayName": "emi_edate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_waterunit",
+              "displayName": "emi_waterunit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_item",
+              "displayName": "emi_item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        288,
+        3936
+      ],
+      "id": "a40e9d3d-30e4-460c-ae51-03357f2b0642",
+      "name": "Update row in sheet1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI",
+          "mode": "list",
+          "cachedResultName": "環境保護許可管理系統",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1793317228,
+          "mode": "list",
+          "cachedResultName": "毒化物許可",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit#gid=1793317228"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1264,
+        3776
+      ],
+      "id": "2f79a2ba-89a3-4bf7-ab1e-bc42f76998fb",
+      "name": "毒許可",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -144,
+        3760
+      ],
+      "id": "34860306-18a3-40da-8783-50f35eaca822",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me2",
+      "typeVersion": 1,
+      "position": [
+        80,
+        3680
+      ],
+      "id": "7c273a8d-c50c-4913-b997-bd98f6b4824f"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "730e8dee-0b13-4747-9da9-ce0c1c873492",
+              "leftValue": "={{ $json.unino }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        3760
+      ],
+      "id": "299e2a33-bf10-4150-8979-91a6c77f0c49",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "tableId": "toxic_permits",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ems_no",
+              "fieldValue": "={{ $('毒許可').item.json.ems_no }}"
+            },
+            {
+              "fieldId": "unino",
+              "fieldValue": "={{ $('毒許可').item.json.unino }}"
+            },
+            {
+              "fieldId": "fac_name",
+              "fieldValue": "={{ $('毒許可').item.json.fac_name }}"
+            },
+            {
+              "fieldId": "per_no",
+              "fieldValue": "={{ $('毒許可').item.json.per_no }}"
+            },
+            {
+              "fieldId": "sdate",
+              "fieldValue": "={{ $('毒許可').item.json.sdate }}"
+            },
+            {
+              "fieldId": "edate",
+              "fieldValue": "={{ $('毒許可').item.json.edate }}"
+            },
+            {
+              "fieldId": "address",
+              "fieldValue": "={{ $('毒許可').item.json.address }}"
+            },
+            {
+              "fieldId": "emi_type",
+              "fieldValue": "={{ $('毒許可').item.json.emi_type }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        3856
+      ],
+      "id": "e58f4cb0-bf11-446f-9ecf-8ecc4c24365f",
+      "name": "一個一個新增2",
+      "executeOnce": false,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "toxic_permits",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ems_no",
+              "keyValue": "={{ $json.ems_no }}"
+            },
+            {
+              "keyName": "unino",
+              "keyValue": "={{ $json.unino }}"
+            },
+            {
+              "keyName": "fac_name",
+              "keyValue": "={{ $json.fac_name }}"
+            },
+            {
+              "keyName": "per_no",
+              "keyValue": "={{ $json.per_no }}"
+            },
+            {
+              "keyName": "sdate",
+              "keyValue": "={{ $json.sdate }}"
+            },
+            {
+              "keyName": "edate",
+              "keyValue": "={{ $json.edate }}"
+            },
+            {
+              "keyName": "address",
+              "keyValue": "={{ $json.address }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        304,
+        3680
+      ],
+      "id": "e9a65700-092c-40b0-bc1c-0c46d6502d5b",
+      "name": "取得該統編是否已存在2",
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI",
+          "mode": "list",
+          "cachedResultName": "環境保護許可管理系統",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1793317228,
+          "mode": "list",
+          "cachedResultName": "毒化物許可",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit#gid=1793317228"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "unino": "={{ $json.unino }}",
+            "Status": "done"
+          },
+          "matchingColumns": [
+            "unino"
+          ],
+          "schema": [
+            {
+              "id": "ems_no",
+              "displayName": "ems_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "fac_name",
+              "displayName": "fac_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "unino",
+              "displayName": "unino",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "emi_type",
+              "displayName": "emi_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_no",
+              "displayName": "per_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sdate",
+              "displayName": "sdate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "edate",
+              "displayName": "edate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_item",
+              "displayName": "emi_item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -816,
+        3856
+      ],
+      "id": "5f9077d5-d933-4a68-bf9a-f4f8c6f58b5c",
+      "name": "Update row in sheet2",
+      "credentials": "[REMOVED]",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        3760
+      ],
+      "id": "1b001b7e-f6de-49e2-b1ae-b70f47741ce4",
+      "name": "Wait1",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "97e2d355-ceb8-4748-9c4d-d64b3d7e2715",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "The 'Column to Match On' parameter is required",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -592,
+        3952
+      ],
+      "id": "4f4000b2-739e-48d0-88f4-1c96ea589346",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI",
+          "mode": "list",
+          "cachedResultName": "環境保護許可管理系統",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1793317228,
+          "mode": "list",
+          "cachedResultName": "毒化物許可",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit#gid=1793317228"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ems_no": "={{ $('毒許可').item.json.ems_no }}",
+            "Status": "done"
+          },
+          "matchingColumns": [
+            "ems_no"
+          ],
+          "schema": [
+            {
+              "id": "ems_no",
+              "displayName": "ems_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fac_name",
+              "displayName": "fac_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ban",
+              "displayName": "ban",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_no",
+              "displayName": "per_no",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_sdate",
+              "displayName": "per_sdate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_edate",
+              "displayName": "per_edate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "per_type",
+              "displayName": "per_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_sdate",
+              "displayName": "emi_sdate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_edate",
+              "displayName": "emi_edate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_waterunit",
+              "displayName": "emi_waterunit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emi_item",
+              "displayName": "emi_item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -368,
+        3952
+      ],
+      "id": "839bf32e-80a5-4f4e-8e02-28a8f584534c",
+      "name": "Update row in sheet3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1488,
+        3776
+      ],
+      "id": "22405350-2f3e-4952-86db-803d869e892d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "self-line",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2448,
+        2096
+      ],
+      "id": "8b0a9471-c978-434c-b452-50c88f0d9655",
+      "name": "Webhook",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n  const alerts = [];\n  \n  // 1. 定義要檢查的天數提醒（對應 line_clients 的通知設定）\n  const enabledDays = {\n    180: data.notify_180,\n    90: data.notify_90,\n    30: data.notify_30,\n    7: data.notify_7\n  };\n  \n  // 助手函數：檢查特定許可證是否需要發送通知\n  const checkAlert = (type, days, date, displayName) => {\n    // 只有當天數正好命中開啟的設定值時才發送 (或小於等於7天且開啟了7天通知)\n    if (days !== null && days < 200) {\n      alerts.push({\n        type: displayName,\n        days: days,\n        date: date || '待確認'\n      });\n    }\n  };\n\n  // 2. 檢查各項許可證 (使用 Supabase 回傳的新欄位名稱)\n  \n  // 空污\n  checkAlert('air', data.air_days_left, data.air_expiry_date, '🌬️ 空污許可');\n  \n  // 水污\n  checkAlert('water', data.water_days_left, data.water_expiry_date, '💧 水污許可');\n  \n  // 毒化物\n  checkAlert('toxic', data.toxic_days_left, data.toxic_expiry_date, '☠️ 毒化物許可');\n  \n  // 3. 有需要通知的項目才產生訊息\n  if (alerts.length > 0) {\n    let message = `⚠️ 許可證到期提醒\\n\\n📋 ${data.fac_name}\\n`;\n    \n    for (const alert of alerts) {\n      // 根據天數加上狀態燈號\n      const urgency = alert.days <= 30 ? '🔴' : alert.days <= 90 ? '🟡' : '🟢';\n      message += `\\n${alert.type}\\n${urgency} ${alert.days} 天後到期 (${alert.date})`;\n    }\n    \n    message += `\\n\\n請儘早辦理展延！\\n📞 客服熱線：(02)6609-5888`;\n    \n    results.push({\n      json: {\n        to: data.line_user_id,\n        message: message,\n        fac_name: data.fac_name // 留著備查\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        784
+      ],
+      "id": "e20cc3b0-93c7-43c4-b8a2-d85ca5aaa282",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $json.to }}",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.message }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        784
+      ],
+      "id": "227a1ab9-0529-4949-abe5-574ebbd50b6e",
+      "name": "Line Messaging",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://yeimehdcguwnwzkmopsu.supabase.co/rest/v1/rpc/get_expiring_permits",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaW1laGRjZ3V3bnd6a21vcHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzI5MTQsImV4cCI6MjA4MTA0ODkxNH0.OhQlheFmhJSoY-2U5OGPQQszSndZ0aHGBt-zsHOq0U4"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaW1laGRjZ3V3bnd6a21vcHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzI5MTQsImV4cCI6MjA4MTA0ODkxNH0.OhQlheFmhJSoY-2U5OGPQQszSndZ0aHGBt-zsHOq0U4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1264,
+        688
+      ],
+      "id": "079ac24e-71aa-41b0-a3e3-838486c1145c",
+      "name": "主動查詢是否快到期"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1d2fe236-fa54-4ed9-9020-bba7811c0840",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "^\\d{8}$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "綁定流程"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "查詢許可證",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "501af31b-9476-48cf-8ef7-1feb5bca7e13"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "查詢許可證"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1ab8d569-9a9f-4df2-827c-a7563638e756",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "查詢報價單",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "查詢報價單"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5c70778c-4618-4955-800b-2e683d696963",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "聯絡顧問",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "聯絡顧問"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "502d3d1d-2772-4353-ad15-40591ef36d43",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "申報查詢",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "申報查詢"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "adfa8fba-c46a-4479-9e69-67a43856ab95",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "案件進度",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "案件進度"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5e526ac7-b462-4651-89a9-540661d6b0e2",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "最新消息",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "最新消息"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3f228460-b9b2-4fd0-98a4-8d3cad043aa2",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "查詢單一報價單"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1936,
+        2064
+      ],
+      "id": "5ca0d0d8-bed3-4167-a40b-a366d6104a99",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst replyToken = $('Webhook').first().json.body.events[0].replyToken;\n\n// 狀態格式化\nfunction formatStatus(days) {\n  if (days === null) return '⚪ 無資料';\n  if (days < 0) return '⛔ 已過期';\n  if (days <= 30) return `🔴 ${days}天`;\n  if (days <= 90) return `🟡 ${days}天`;\n  if (days <= 180) return `🟢 ${days}天`;\n  return `✅ ${days}天`;\n}\n\n// 組合訊息\nlet message = `📋 ${data.client_name} \n許可證狀態\\n`;\nmessage += `━━━━━━━━━━━━\\n`;\n\nif (data.has_air && data.air_expiry) {\n  message += `🌬️ 空污：${formatStatus(data.air_days_left)}\\n`;\n  message += `   到期：${data.air_expiry}\\n`;\n}\n\nif (data.has_water && data.water_expiry) {\n  message += `💧 水污：${formatStatus(data.water_days_left)}\\n`;\n  message += `   到期：${data.water_expiry}\\n`;\n}\n\nif (data.has_waste && data.waste_expiry) {\n  message += `🗑️ 廢棄物：${formatStatus(data.waste_days_left)}\\n`;\n  message += `   到期：${data.waste_expiry}\\n`;\n}\n\nif (data.has_toxic && data.toxic_expiry) {\n  message += `☠️ 毒化物：${formatStatus(data.toxic_days_left)}\\n`;\n  message += `   到期：${data.toxic_expiry}\\n`;\n}\n\nmessage += `━━━━━━━━━━━━\\n`;\nmessage += `📞 聯繫顧問：(02)6609-5888`;\n\nreturn {\n  replyToken,\n  message\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        1616
+      ],
+      "id": "9b89e46a-3910-4f26-af66-b2700e5321ff",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.message }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        1616
+      ],
+      "id": "bc77645b-6d32-4ee8-a6b9-0edf4fddbbc9",
+      "name": "Line Messaging1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://yeimehdcguwnwzkmopsu.supabase.co/rest/v1/rpc/get_my_permits",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaW1laGRjZ3V3bnd6a21vcHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzI5MTQsImV4cCI6MjA4MTA0ODkxNH0.OhQlheFmhJSoY-2U5OGPQQszSndZ0aHGBt-zsHOq0U4"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaW1laGRjZ3V3bnd6a21vcHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzI5MTQsImV4cCI6MjA4MTA0ODkxNH0.OhQlheFmhJSoY-2U5OGPQQszSndZ0aHGBt-zsHOq0U4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"target_line_user_id\": \"{{ $('Webhook').item.json.body.events[0].source.userId }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1040,
+        1712
+      ],
+      "id": "b67bef32-2231-47bb-a168-1f86db80c060",
+      "name": "被動查詢",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "=您好！感謝您的諮詢。\n傑太環境工程團隊\n\n隨時為您服務：\n👷 專業技師：李先生 (分機 100) \n👩‍💼 請款財務：舒小姐 (分機 101) \n📝 報告疑慮：蔡小姐 (分機 102) \n💼 業務洽詢：張先生 (分機 103)\n📞 總機專線：02-6609-5888 \n\n📧 公司信箱：jetenv92662049@gmail.com\n📧 業務信箱：Jetenv02@gmail.com\n\n🌐 官方網站：\njetenv.com.tw \n🧵 Threads：\nthreads.com/@jet_env_tech\n\n若有其他需求或想進一步了解，歡迎直接留下您的 LINE ID 及 問題，我們將由專人與您聯絡！"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        2288
+      ],
+      "id": "c4ba709d-a3e1-4e4c-ad8a-025add5774c2",
+      "name": "Line Messaging3",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "replyToken": "={{ $json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.message }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        2480
+      ],
+      "id": "a975288e-5cf1-412e-a905-4dc48fbbda69",
+      "name": "Line Messaging4",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://yeimehdcguwnwzkmopsu.supabase.co/rest/v1/rpc/get_monthly_regulations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaW1laGRjZ3V3bnd6a21vcHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzI5MTQsImV4cCI6MjA4MTA0ODkxNH0.OhQlheFmhJSoY-2U5OGPQQszSndZ0aHGBt-zsHOq0U4"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaW1laGRjZ3V3bnd6a21vcHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzI5MTQsImV4cCI6MjA4MTA0ODkxNH0.OhQlheFmhJSoY-2U5OGPQQszSndZ0aHGBt-zsHOq0U4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"target_month\": 1 }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1040,
+        2480
+      ],
+      "id": "98808946-b0db-4f68-bf5b-e8c11a00a507",
+      "name": "申報查詢",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.all()[0].json;\nconst replyToken = $('Webhook').first().json.body.events[0].replyToken;\n\nconst currentMonth = new Date().getMonth() + 1;\nconst nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;\n\n// 申報資料（硬編碼版，也可從 Supabase 查詢）\nconst regulations = {\n  1: [\n    { cat: '💨', item: '空污費季報', deadline: '1月底' },\n    { cat: '💧', item: '廢水檢測申報', deadline: '1月底' },\n    { cat: '💧', item: '水污費申報', deadline: '1月底' },\n    { cat: '☢️', item: '毒化物運作紀錄', deadline: '每月' },\n    { cat: '🗑️', item: '貯存量月申報', deadline: '5日前' },\n    { cat: '🌍', item: '土壤氣體監測', deadline: '1月底' },\n    { cat: '🏭', item: '危險物品申報', deadline: '1月' }\n  ],\n  2: [\n    { cat: '☢️', item: '毒化物運作紀錄', deadline: '每月' },\n    { cat: '🗑️', item: '貯存量月申報', deadline: '5日前' }\n  ],\n  // ... 其他月份\n};\n\nfunction formatMonth(month, items) {\n  if (!items || items.length === 0) return '  ✅ 本月無申報項目\\n';\n  return items.map(r => `  ${r.cat} ${r.item} ⏰${r.deadline}`).join('\\n') + '\\n';\n}\n\nlet message = `📋 申報行事曆\\n`;\nmessage += `━━━━━━━━━━━━\\n\\n`;\nmessage += `📍 本月 (${currentMonth}月)\\n`;\nmessage += formatMonth(currentMonth, regulations[currentMonth]);\nmessage += `\\n📍 下月預告 (${nextMonth}月)\\n`;\nmessage += formatMonth(nextMonth, regulations[nextMonth]);\nmessage += `\\n━━━━━━━━━━━━\\n`;\nmessage += `� 需要代辦？聯繫我們！\\n`;\nmessage += `📞 (02)6609-5888`;\n\nreturn { replyToken, message };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        2480
+      ],
+      "id": "828f5bf4-ba7f-4990-9ea6-6774011acbf2",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "showLoadingAnimation",
+        "chatId": "={{ $json.body.events[0].source.userId }}",
+        "loadingSeconds": 30
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -1936,
+        1856
+      ],
+      "id": "478445ba-2980-4a74-a016-780cbfe20407",
+      "name": "Line Messaging5",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.body.events[0].message.text || \"\";\nconst regex = /(J-\\d{2}-\\d{5})[\\s,]+(\\d{8})/i;\nconst match = text.match(regex);\nif (match) {\n  return { isBindingInput: true, quoteNumber: match[1].toUpperCase(), taxId: match[2] };\n} else {\n  return { isBindingInput: false };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        1104
+      ],
+      "id": "725f8da1-39a2-48c3-a0e5-b41b765e79b1",
+      "name": "1. 解析綁定輸入"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "getAll",
+        "projectId": "jetenv-a82bc",
+        "collection": "=artifacts/jietai-prod/public/data/quotations"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        -1264,
+        1104
+      ],
+      "id": "fba2c568-850d-4575-9a2f-c937fd99dbb1",
+      "name": "2. Firestore 核對資料",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "tableId": "line_clients",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "line_user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+            },
+            {
+              "fieldId": "uniformno",
+              "fieldValue": "={{ $node[\"1. 解析綁定輸入\"].json.taxId }}"
+            },
+            {
+              "fieldId": "quote_number",
+              "fieldValue": "={{ $node[\"1. 解析綁定輸入\"].json.quoteNumber }}"
+            },
+            {
+              "fieldId": "fac_name",
+              "fieldValue": "={{ $json.clientName }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        1104
+      ],
+      "id": "97406835-638d-4e74-a398-42acfa4c3e22",
+      "name": "3. 正式建立綁定",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "恭喜您綁定成功！\n已為您開鎖相關功能\n1. 查詢自己工廠許可證期限進度\n2. 查詢報價單\n3. 公司客製化申報行事曆"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        560,
+        1328
+      ],
+      "id": "f04e8422-4509-4b86-89af-229af61d91ee",
+      "name": "綁定成功",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "您好，此功能為綁定功能，請先行進行綁定流程才能執行查詢。 \n(輸入 統編 及 報價單號 用以核對資料) \n\n 請先輸入統編："
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        2192
+      ],
+      "id": "0e07873a-7cfc-41b3-81db-b74010c5c0d7",
+      "name": "回傳綁定導引",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "line_clients",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "line_user_id",
+              "keyValue": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        2096
+      ],
+      "id": "5d611adf-0707-45f2-b345-7dc1701b21b7",
+      "name": "確認是否已綁定",
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1c22b660-6361-44f4-a65d-d4d95643b337",
+              "leftValue": "={{ $json.line_user_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -816,
+        2096
+      ],
+      "id": "df0ceeb3-6f3e-47aa-8667-557c483928b8",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "您好，此功能為綁定功能，請先行進行綁定流程才能執行查詢。 \n(輸入 統編 及 報價單號 用以核對資料) \n\n 請先輸入統編："
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        3040
+      ],
+      "id": "3d0c9c7f-f5a1-4444-8a4c-53bd1c420f22",
+      "name": "回傳綁定導引1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "line_clients",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "line_user_id",
+              "keyValue": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        2672
+      ],
+      "id": "abc9c87c-baf8-4307-9c5c-1670d13c4dc5",
+      "name": "確認是否已綁定1",
+      "alwaysOutputData": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1c22b660-6361-44f4-a65d-d4d95643b337",
+              "leftValue": "={{ $json.line_user_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -832,
+        2848
+      ],
+      "id": "a8c3ebe1-79cc-4d5f-8f8a-d35e701a5c90",
+      "name": "If7"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.body.events[0].message.text || \"\";\n// 偵測是否為純 8 位數字 (統編格式)\nconst regex = /^\\d{8}$/;\nif (regex.test(text.trim())) {\n  return { isTaxId: true, taxId: text.trim() };\n} else {\n  return { isTaxId: false };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        1424
+      ],
+      "id": "721a4176-3109-4ada-8f05-d0f1c2e7d243",
+      "name": "1. 偵測統編輸入"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "getAll",
+        "projectId": "jetenv-a82bc",
+        "collection": "=artifacts/jietai-prod/public/data/quotations",
+        "limit": 50
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        -816,
+        1424
+      ],
+      "id": "b7aaa94d-1db4-478b-99f4-842e73489bed",
+      "name": "2. Firestore 確認客戶身分",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "tableId": "line_clients",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "line_user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+            },
+            {
+              "fieldId": "uniformno",
+              "fieldValue": "={{ $('Webhook').item.json.body.events[0].message.text }}"
+            },
+            {
+              "fieldId": "fac_name",
+              "fieldValue": "={{ $('If8').item.json.clientName }}"
+            },
+            {
+              "fieldId": "quote_number",
+              "fieldValue": "={{ $('If8').item.json.quoteNumber }}"
+            },
+            {
+              "fieldId": "line_display_name",
+              "fieldValue": "={{ $json.profile.displayName }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        352,
+        1328
+      ],
+      "id": "59572b95-32e3-4fdd-9593-6cc0e78f991a",
+      "name": "3. 快速建立綁定 (Supabase)",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9b023a7a-60d8-452a-ac6a-2efe91dd6cc5",
+              "leftValue": "={{ $json.clientTaxId }}",
+              "rightValue": "={{ $('1. 偵測統編輸入').item.json.taxId }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -368,
+        1424
+      ],
+      "id": "938c83ad-27b5-4db9-b375-4fe293c2e3d1",
+      "name": "If8",
+      "executeOnce": false
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        144,
+        1328
+      ],
+      "id": "efc9d7c7-7c82-4d05-a292-188951d8bbef",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "getAll",
+        "projectId": "jetenv-a82bc",
+        "collection": "=artifacts/jietai-prod/public/data/quotations",
+        "limit": 50
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        -592,
+        2000
+      ],
+      "id": "36d46c9a-9f14-4fd6-ab57-ce0b442f5070",
+      "name": "2. Firestore 確認客戶身分1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "quoteNumber"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        2000
+      ],
+      "id": "d6531332-5957-4582-9b60-c735307100ec",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a2108fb-6f89-4236-b954-ce425eb760aa",
+              "leftValue": "={{ $('If6').item.json.uniformno }}",
+              "rightValue": "={{ $json.clientTaxId }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -368,
+        2000
+      ],
+      "id": "2ed07cf8-cd33-4619-9865-4487cc88e9b1",
+      "name": "Filter",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得彙整後的陣列\nconst data = $input.first().json;\n// 假設您剛才在 Aggregate 裡面設定欄位名稱為 quoteNumber\nconst quotes = data.quoteNumber; \n\nif (!quotes || quotes.length === 0) {\n  return { message: \"⚠️ 查無報價紀錄。\" };\n}\n\n// 2. 開始排版\nlet message = \"📋 您的報價單列表：\\n━━━━━━━━━━━━\\n\";\n\nquotes.forEach((num, index) => {\n  message += `${index + 1}. 單號：${num}\\n`;\n});\n\nmessage += \"━━━━━━━━━━━━\\n如需詳細內容請洽承辦人。\";\n\nreturn { message: message };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        2000
+      ],
+      "id": "3b4178a6-606b-486b-8f8b-9234482423ab",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.message }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        304,
+        2000
+      ],
+      "id": "03e6beff-49fc-4789-b4f1-5cb8bc759f4f",
+      "name": "Line Messaging7",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "content": "主動查詢許可證期效並通知",
+        "height": 256,
+        "width": 1056
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1632,
+        688
+      ],
+      "typeVersion": 1,
+      "id": "26b1db85-8358-4314-8815-81cda3ed6e54",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1488,
+        688
+      ],
+      "id": "1b36cfc2-36b1-4f4b-8eef-a98bb40dc6a7",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1056,
+        768
+      ],
+      "id": "6bfe96b9-5ec8-4c4c-9bed-eb5a11ababba",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me3",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        784
+      ],
+      "id": "e010b50f-6b4d-4f94-a4e0-96a2ef248965"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "查詢結果顯示，目前尚未建立您的報價資料。\n若您尚未取得傑太的報價單號，請先聯繫承辦人員完成報價作業後再進行查詢。\n若已取得報價單，請再次確認輸入 統編 用以核對資料是否正確。 \n\n(是否尚未收到傑太報價單？)\n\n要啟用此項功能請先請 傑太承辦人員 協助報價\n\n\n\n感謝您"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        1488
+      ],
+      "id": "af117111-9e28-4014-af43-5c8d783651f4",
+      "name": "綁定失敗",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3874d3d4-8c53-462e-bcbb-059434aa5d6d",
+              "leftValue": "={{ $json.uniformno }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -816,
+        1712
+      ],
+      "id": "c3a33db6-4251-4887-89ab-bb1cce85fe3c",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "您好，此功能為綁定功能，請先行進行綁定流程才能執行查詢。 \n(輸入 統編  用以核對資料) \n\n 請先輸入統編："
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        1808
+      ],
+      "id": "c2991448-058a-4207-8775-875d1fa97be1",
+      "name": "回傳綁定導引2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e51fd6fe-adde-481e-83d4-494d352220ba",
+              "leftValue": "={{ $('1. 偵測統編輸入').item.json.taxId }}",
+              "rightValue": "={{ $json.clientTaxId }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -592,
+        1424
+      ],
+      "id": "98d0c76c-2724-4279-a62b-3b4891cba06e",
+      "name": "Filter1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "getProfile",
+        "userId": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        1328
+      ],
+      "id": "178edb3b-051f-4ae2-b36e-3c96074bfbc4",
+      "name": "Line Messaging2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "=您好！感謝您的諮詢。\n傑太環境工程團隊\n\n此功能開發中，敬請期待，\n\n若有其他需求或想進一步了解，歡迎直接留下您的 LINE ID 及 問題，我們將由專人與您聯絡！"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -1648,
+        2432
+      ],
+      "id": "5f4fdd5c-27a4-4acd-9ca7-51f56bd7483d",
+      "name": "Line Messaging6",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bbca1c69-16ac-4fdc-b151-2ecfc071742b",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -144,
+        1840
+      ],
+      "id": "0d8b824f-a390-4901-b83f-cc50835d918e",
+      "name": "If9"
+    },
+    {
+      "parameters": {
+        "jsCode": "const lineClient = $('確認是否已綁定1').first().json;\nconst client = $('查詢客戶進度資料').first().json;\n\n// 處理找不到資料的情況\nif (!lineClient || !lineClient.uniformno) {\n  return {\n    message: `❌ 查無綁定資料\\n\\n請先輸入統編完成綁定流程。`\n  };\n}\n\n// 基本資訊\nconst uniformno = lineClient.uniformno;\nconst facName = lineClient.fac_name || client?.name || '您的公司';\nconst status = client?.status || '查詢中';\nconst nextAction = client?.next_action || '請洽承辦人';\nconst deadline = client?.deadline || '待確認';\n\n// 承辦人資訊\nconst officerName = client?.officer?.name || '傑太團隊';\nconst officerPhone = client?.officer?.phone || '(02)6609-5888';\n\n// 專屬連結\nconst portalUrl = `https://jetenv-sales-system.vercel.app/portal?id=${uniformno}`;\n\n// 組合訊息\nconst message = `📋 案件進度查詢\n━━━━━━━━━\n\n🏭 ${facName}\n📊 目前狀態：${status}\n📅 下一項待辦：${nextAction}\n⏰ 期限：${deadline}\n\n👇 點擊下方連結查看完整資訊：\n${portalUrl}\n\n✨ 可查看：\n• 許可證到期狀態\n• 專案進度\n• 申報行事曆\n\n📞 承辦人：${officerName}\n☎️ ${officerPhone}`;\n\nreturn { message };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        2752
+      ],
+      "id": "6f9f269a-3b9c-450f-9bbc-715ed7c32220",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "url": "https://yeimehdcguwnwzkmopsu.supabase.co/rest/v1/clients",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "*,officer:officers(name,phone,title)"
+            },
+            {
+              "name": "tax_id",
+              "value": "=eq.{{ $json.uniformno }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaW1laGRjZ3V3bnd6a21vcHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzI5MTQsImV4cCI6MjA4MTA0ODkxNH0.OhQlheFmhJSoY-2U5OGPQQszSndZ0aHGBt-zsHOq0U4"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InllaW1laGRjZ3V3bnd6a21vcHN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzI5MTQsImV4cCI6MjA4MTA0ODkxNH0.OhQlheFmhJSoY-2U5OGPQQszSndZ0aHGBt-zsHOq0U4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -624,
+        2752
+      ],
+      "id": "3a123c0e-ce15-4dfb-9465-1b74ed3e366c",
+      "name": "查詢客戶進度資料"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Webhook').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "=",
+              "text": "={{ $json.message }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        2752
+      ],
+      "id": "6a597a22-01b2-4ea9-93fa-33ffb57e5575",
+      "name": "回傳案件進度",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI",
+          "mode": "list",
+          "cachedResultName": "環境保護許可管理系統",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1638846679,
+          "mode": "list",
+          "cachedResultName": "土城區",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MeVmMZYOjrXAlTBlDIc7VoM30HuG1MufUgSPJpEEOvI/edit#gid=1638846679"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1488,
+        16
+      ],
+      "id": "03643c32-b186-41c5-acb9-48a4216e5421",
+      "name": "同步區",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 從 Webhook 取得資料\nconst input = $input.first().json.body.records;\nconst records =  $input.first().json.body.records|| [];\nconst sheetName = $input.first().json.body.sheetName || 'Unknown';\n\nconsole.log(`📥 收到 ${records.length} 筆資料，來自工作表：${sheetName}`);\n\nif (records.length === 0) {\n  throw new Error('沒有收到任何資料');\n}\n\n// 轉換資料格式，準備 Upsert\nconst formatted = records.map(r => ({\n  ems_no: r.ems_no || '',\n  county: r.county || '',\n  company_name: r.company_name || '',\n  address: r.address || '',\n  process_id: '',\n  process_name: '',\n  category: r.category || '操作',\n  permit_no: '',\n  effective_date: null,\n  expiry_date: r.expiry_date || ''  // 已經是 YYYY-MM-DD 格式\n}));\n\nreturn formatted.map(item => ({ json: item }));"
+      },
+      "id": "fb85d21c-f861-4709-87dc-bc04b033a1da",
+      "name": "格式轉換",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        -752
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "air_permits",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "ems_no",
+              "fieldValue": "={{ $json.ems_no }}"
+            },
+            {
+              "fieldId": "county",
+              "fieldValue": "={{ $json.county }}"
+            },
+            {
+              "fieldId": "company_name",
+              "fieldValue": "={{ $json.company_name }}"
+            },
+            {
+              "fieldId": "address",
+              "fieldValue": "={{ $json.address }}"
+            },
+            {
+              "fieldId": "category",
+              "fieldValue": "={{ $json.category }}"
+            },
+            {
+              "fieldId": "expiry_date",
+              "fieldValue": "={{ $json.expiry_date }}"
+            }
+          ]
+        }
+      },
+      "id": "b2e20871-9449-43bd-a6cd-430dcdb94afc",
+      "name": "Upsert Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        -688
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 統計結果\nconst items = $input.all();\nconst successCount = items.length;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ 成功同步 ${successCount} 筆資料`,\n    count: successCount,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "91f90b91-e8a4-415d-9594-7a062c90a459",
+      "name": "統計結果",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        -752
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "e499b88b-2a92-458f-86bc-505a2e34242a",
+      "name": "回應成功",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -544,
+        -752
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": false, \"error\": \"{{ $json.error.message }}\"}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "467b0774-049e-4325-bf7c-2c73d7610926",
+      "name": "回應錯誤",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -544,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sync-air-permits",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f3c9f90b-5d06-47fc-b72e-ef10ed1ad241",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1504,
+        -752
+      ],
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "air_permits",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ems_no",
+              "condition": "eq",
+              "keyValue": "={{ $json.ems_no }}"
+            }
+          ]
+        }
+      },
+      "id": "348db92d-c029-4d02-8bad-25f019588604",
+      "name": "Upsert Supabase1",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -960,
+        -864
+      ],
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "11412 < X <11606": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "取得該統編是否已存在",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "一個一個新增",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "一個一個新增": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得該統編是否已存在": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Replace Me1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me1": {
+      "main": [
+        [
+          {
+            "node": "取得該統編是否已存在1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "一個一個新增1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "一個一個新增1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得該統編是否已存在1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "水許可": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "毒許可": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "一個一個新增2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Replace Me2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me2": {
+      "main": [
+        [
+          {
+            "node": "取得該統編是否已存在2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "一個一個新增2": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得該統編是否已存在2": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "毒許可",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Line Messaging5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "主動查詢是否快到期": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "1. 偵測統編輸入",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "被動查詢",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "確認是否已綁定",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Line Messaging3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "申報查詢",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "確認是否已綁定1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Line Messaging6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "被動查詢": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "申報查詢": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging5": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. 解析綁定輸入": {
+      "main": [
+        [
+          {
+            "node": "2. Firestore 核對資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Firestore 核對資料": {
+      "main": [
+        [
+          {
+            "node": "3. 正式建立綁定",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. 正式建立綁定": {
+      "main": [
+        []
+      ]
+    },
+    "確認是否已綁定": {
+      "main": [
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "2. Firestore 確認客戶身分1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "回傳綁定導引",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "確認是否已綁定1": {
+      "main": [
+        [
+          {
+            "node": "If7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If7": {
+      "main": [
+        [
+          {
+            "node": "查詢客戶進度資料",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "回傳綁定導引1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. 偵測統編輸入": {
+      "main": [
+        [
+          {
+            "node": "2. Firestore 確認客戶身分",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Firestore 確認客戶身分": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. 快速建立綁定 (Supabase)": {
+      "main": [
+        [
+          {
+            "node": "綁定成功",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If8": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "綁定失敗",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "3. 快速建立綁定 (Supabase)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Firestore 確認客戶身分1": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "主動查詢是否快到期",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me3": {
+      "main": [
+        []
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "回傳綁定導引2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "If8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging": {
+      "main": [
+        [
+          {
+            "node": "Replace Me3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging2": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢客戶進度資料": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "回傳案件進度",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "同步區": {
+      "main": [
+        [
+          {
+            "node": "11412 < X <11606",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "格式轉換": {
+      "main": [
+        [
+          {
+            "node": "Upsert Supabase1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upsert Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Supabase": {
+      "main": [
+        [
+          {
+            "node": "統計結果",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "統計結果": {
+      "main": [
+        [
+          {
+            "node": "回應成功",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "格式轉換",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Supabase1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3d6064fa-af5b-44b2-9af2-9a8b98ecb6ba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5cb73612af9c3d99fb9474cf656425558c43c24de4951be223ad83a0b24b4e43"
+  },
+  "id": "k9QVDfOkeNRUoTIo",
+  "tags": []
+}

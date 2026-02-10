@@ -1,0 +1,2061 @@
+{
+  "updatedAt": "2025-12-10T04:48:15.029Z",
+  "createdAt": "2025-08-24T06:01:22.969Z",
+  "id": "At6wOrd76e24HvPB",
+  "name": "ig 串接 自動回覆",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "meta-ig",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -720,
+        720
+      ],
+      "id": "f65226fc-e238-4137-86f4-a167f211c6fc",
+      "name": "Webhook",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -272,
+        720
+      ],
+      "id": "23f7662f-52c0-40a7-b076-8ac75a225b38",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6a520f0d-acc0-4c9d-bf68-245c51de03c5",
+              "leftValue": "={{ $json.query['hub.mode'] }}",
+              "rightValue": "subscribe",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "366f49b7-9c47-46c9-a137-cfc846ced705",
+              "leftValue": "={{ $json.query['hub.verify_token'] }}",
+              "rightValue": "nickai",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -496,
+        720
+      ],
+      "id": "2286c3d8-e815-4673-aff5-a057b1dc7abd",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"recipient\": {\"id\": \"{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}\"},\n\"message\": {\"text\": \"收到訊息囉 🙌\\n\\n這是大禮包連結：\\nhttps://portaly.cc/zn.studio/product/TOevMqbiylnTyJlV5ub0\\n\\n感謝您的支持！\\n—\\n如需更多資訊及優惠，歡迎加入：\\nZN AI 樂園(n8n ai 自動化)：\\nhttps://reurl.cc/ekQX0j\\n\\n（此為 n8n 機器人自動回覆，真人回覆請稍候，感謝您的等候)\"}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -720,
+        496
+      ],
+      "id": "ad9fd68e-5737-49e8-9cc2-5b1108e6ab3d",
+      "name": "發送訊息"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1778932180,
+          "mode": "list",
+          "cachedResultName": "自動更新權杖",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1778932180"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "platform",
+              "lookupValue": "instagram"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -272,
+        1744
+      ],
+      "id": "3be32d59-8eb0-4740-b22e-1bfef2d16442",
+      "name": "拿 ig 權杖",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "meta-ig",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -720,
+        1744
+      ],
+      "id": "aac63a58-7149-40a6-a025-24cb9673bbb8",
+      "name": "接收ig",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "89d3059c-1ac5-446c-8d43-d36afb53daeb",
+                    "leftValue": "={{ $('接收ig').item.json.body.entry[0].messaging[0].message.text }}",
+                    "rightValue": "@",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "如果有 電子信箱 @"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "79032aba-5d32-46c7-97e3-48b0931a74b6",
+                    "leftValue": "={{ $('接收ig').item.json.body.entry[0].messaging[0].message.text }}",
+                    "rightValue": "索取大禮包",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "索取大禮包"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "36c32efa-b62c-4f7c-a72b-831301f27268",
+                    "leftValue": "={{ $('接收ig').item.json.body.entry[0].messaging[0].message.text }}",
+                    "rightValue": "付費",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "付費疑慮"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f590a717-62d9-494e-a8db-8348fed64c94",
+                    "leftValue": "={{ $('接收ig').item.json.body.entry[0].messaging[0].message.text }}",
+                    "rightValue": "合作",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "合作"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "13b23764-63e5-4b46-bd74-cee4c8ff6b56",
+                    "leftValue": "={{ $('接收ig').item.json.body.entry[0].messaging[0].message.text }}",
+                    "rightValue": "諮詢,學習,學",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "諮詢"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c449f483-00ea-435b-989b-d33b84c356d3",
+                    "leftValue": "={{ $('接收ig').item.json.body.entry[0].messaging[0].message.text }}",
+                    "rightValue": "中獎",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "中獎"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6878d1bc-3cbc-4901-a457-c82e1209353b",
+                    "leftValue": "={{ $('接收ig').item.json.body.entry[0].messaging[0].message.text }}",
+                    "rightValue": "={{ $('接收ig').item.json.body.entry[0].messaging[0].message.text }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        400,
+        1664
+      ],
+      "id": "4797d95c-513b-4e3f-8720-ea5b003de00f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$json.email}}",
+        "subject": "ZN Studio - 您的 專屬大禮包！",
+        "message": "<!DOCTYPE html>\n<html lang=\"zh-Hant\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>大禮包寄送</title>\n</head>\n<body style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #333;\">\n  <!-- 在開頭加入你的固定照片 -->\n  <div style=\"text-align: center; margin: 20px 0;\">\n    <img src=\"https://drive.google.com/uc?id=1scV4vLI0Wtf6ZrMam0SAIhmlc0-sl0hD\" alt=\"ZN Studio\" style=\"max-width: 100%; height: auto; border-radius: 10px;\">\n  </div>\n\n  <p>哈囉！🙌</p>\n\n  <p>這是大禮包連結：<br>\n    <a href=\"https://portaly.cc/zn.studio/product/TOevMqbiylnTyJlV5ub0\" target=\"_blank\">\n      點我查看大禮包 🎁\n    </a><br>\n    <a href=\"https://portaly.cc/zn.studio/product/AmcGCpKG5UCxe7CM65fQ\">\n      點我查看影片 json 檔 (免費)🎁\n    </a><br>\n     如想單買 指南手冊：<br>\n    <a href=\"https://portaly.cc/zn.studio/product/Doyrt0hjEBtjKUk42HG3\" target=\"_blank\">\n      點我查看指南手冊 🎁\n    </a>\n  </p>\n  <p>路徑在 n8n → n8n操作指南 → <strong>「n8n 操作指引指南製作.pdf」</strong></p>\n\n  <!-- 第二張圖片 -->\n  <div style=\"text-align: center; margin: 20px 0;\">\n    <img src=\"https://drive.google.com/uc?id=1dqnyoDLx6H29oQBg30XvgXZFs_U0i2PT\" alt=\"n8n 指南預覽\" style=\"max-width: 100%; height: auto; border-radius: 10px; border: 2px solid #e0e0e0;\">\n  </div>\n\n  <p>感謝您的支持！</p>\n\n  <hr style=\"border: none; border-top: 1px solid #ddd; margin: 20px 0;\">\n\n  <p>\n    如需更多資訊及優惠，歡迎加入：<br>\n    <strong>ZN AI 樂園 (n8n AI 自動化)</strong><br>\n    <a href=\"https://reurl.cc/ekQX0j\" target=\"_blank\">\n      點我加入社群 🚀\n    </a>\n  </p>\n\n  <hr style=\"border: none; border-top: 1px solid #ddd; margin: 20px 0;\">\n\n  <p>\n    📞 電話：0932-684-051<br>\n     個人網站：\n    <a href=\"https://portaly.cc/zn.studio\" target=\"_blank\">ZN Studio</a><br>\n     Threads：\n    <a href=\"https://www.threads.com/@nickai216\" target=\"_blank\">ZN Studio (@nickai216)</a><br>\n     LINE 社群：\n    <a href=\"https://reurl.cc/1OZNAY\" target=\"_blank\">點我加入</a><br>\n     LINE 個人：\n    <a href=\"https://lin.ee/Faz0doj\" target=\"_blank\">加我好友</a>\n  </p>\n\n  <p style=\"font-size: 12px; color: #666;\">\n    （此為 n8n 機器人自動寄信，感謝您的等候。如有疑慮請於 IG 回復，或直接回信，感謝您）\n  </p>\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1872,
+        1168
+      ],
+      "id": "5eecc35b-e191-4ddc-beae-5bfd704f5578",
+      "name": "Send a message",
+      "webhookId": "[REMOVED]",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": "[REMOVED]",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('拿 ig 權杖').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"message\": {\n    \"text\": \"收到訊息囉 🙌\\n請先輸入 email \\n立刻寄送完整大禮包（我們不會亂寄垃圾信，請放心）✨\\n\\n（此為 n8n 機器人自動回覆，真人回覆請稍候，感謝您的等候）\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        1360
+      ],
+      "id": "77418443-6330-4821-87e0-4ba2bc5df594",
+      "name": "發送請他們輸入 email"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('拿 ig 權杖').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"message\": {\n    \"text\": \"收到訊息囉 🙌您好～這個禮包裡包含完整的操作指南、實戰案例以及 n8n 自動化範例，都是我們花心力整理的專業內容。如果免費提供，很難保證後續持續更新與服務品質唷～✨\\n\\n（此為 n8n 機器人自動回覆，真人回覆請稍候，感謝您的等候）\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        1552
+      ],
+      "id": "49ddc620-267d-4ee2-827b-452cc948638c",
+      "name": "付費回應"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('拿 ig 權杖').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"message\": {\n    \"text\": \"您好！\\n已經將大禮包及相關社群連結寄信給您({{ $json.Email }})囉！\\n主旨為：ZN Studio - 您的 專屬大禮包！ \\n請再幫忙檢查信箱，感謝您！\\n\\n（此為 n8n 機器人自動回覆，感謝您的耐心等候）\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3424,
+        1168
+      ],
+      "id": "a62c96b3-a30b-40ed-a017-8ab0e2d1f744",
+      "name": "寄信後通知"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('接收ig').item.json.body.entry[0].messaging[0].message.text }}",
+        "options": {
+          "systemMessage": "你是 ZN Studio(Nick) 的助手小編 - 小Z\n知道 Nick 有自己的大禮包，然後都是要付費的\n因為裡面東西真的很多很多 \n檔案在 Tool 雲端的  \"threads 檔案\"\n請每次都幫我搜尋確認之後 再回覆\n有 各種 AI 的工具整理 (GPT, Gemini , Claude, Claude Code ,Vibe Coding , Gemini cli ... )\n還有 AI各種課程集中營 (一堆國內外的課程都在裡面)\n加上 n8n 憑證教學、模板教學、加上這次的 n8n 新手指南手冊\n9/15把無字幕影片上傳雲端，自動生成有字幕影片回傳雲端 也更新到大禮包 \n目前 也有 單獨免費的 \n可以到 https://portaly.cc/zn.studio 參觀\n只要有發文在 threads 就會把檔案放進大禮包\n所以 只會越來越豐富 越來越多內容\n\n如果有人只回覆  \"email\"  請他們輸入 他們收件的電子信箱，會再把檔案連結寄給他們\n\n每次回應 都已100字為限"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        1936
+      ],
+      "id": "b3aa725e-7fef-4bc7-89ce-ab2db06b8e4e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        640,
+        2160
+      ],
+      "id": "6b6806a4-6fbd-4837-93aa-6489eb95f1ba",
+      "name": "Google Gemini Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=default",
+        "contextWindowLength": 3
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -720,
+        2752
+      ],
+      "id": "17cdb29c-7b9d-4af6-86e7-abae7e8ebe7e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        816,
+        2144
+      ],
+      "id": "5a8a7620-5b49-4f79-ab25-9a22a72cfaaa",
+      "name": "Code Tool"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 523636917,
+          "mode": "list",
+          "cachedResultName": "IG Email (n8n 指南)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=523636917"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "User ID": "={{ $('Update row in sheet').item.json['User ID'] }}",
+            "Status(是否已寄出)": "TRUE",
+            "Email": "={{ $('擷取出 email').item.json.email }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "User ID",
+              "displayName": "User ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "留言時間",
+              "displayName": "留言時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status(是否已寄出)",
+              "displayName": "Status(是否已寄出)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "寄出時間",
+              "displayName": "寄出時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Gmail 連結",
+              "displayName": "Gmail 連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3200,
+        1168
+      ],
+      "id": "5b0a9b1d-f8da-4e9b-8d10-034350ee5085",
+      "name": "Append or update row in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        1744
+      ],
+      "id": "0884d9bc-bc3e-41d6-a213-8a3fee7fe386",
+      "name": "Wait",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.instagram.com/{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}?fields=username&access_token={{ $('拿 ig 權杖').item.json.token }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        176,
+        1744
+      ],
+      "id": "5e450fef-f8ed-4132-bffd-c8d500878387",
+      "name": "取得Username"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取出 IG 訊息文字\nconst text = $('接收ig').first().json.body.entry[0].messaging[0].message.text;\n\n// 用正規表達式抓 email\nconst emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/);\n\n// 回傳抓到的 email\nreturn [\n  {\n    json: {\n      email: emailMatch ? emailMatch[0] : null,\n      originalText: text\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        1168
+      ],
+      "id": "2c0b43d2-548d-441d-8427-b94b50ceef16",
+      "name": "擷取出 email"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 523636917,
+          "mode": "list",
+          "cachedResultName": "IG Email (n8n 指南)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=523636917"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "User ID": "={{ $('取得Username').item.json.username }}",
+            "留言時間": "={{ $now }}",
+            "Email": "={{ $('擷取出 email').item.json.email }}",
+            "Status(是否已寄出)": "FALSE"
+          },
+          "matchingColumns": [
+            "Status(是否已寄出)"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "User ID",
+              "displayName": "User ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "留言時間",
+              "displayName": "留言時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status(是否已寄出)",
+              "displayName": "Status(是否已寄出)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "寄出時間",
+              "displayName": "寄出時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Gmail 連結",
+              "displayName": "Gmail 連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1424,
+        1168
+      ],
+      "id": "6394e2ce-1f01-4073-9459-86450d6c76fd",
+      "name": "Update row in sheet",
+      "executeOnce": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 從 Gmail 節點取得寄送結果\nconst gmailResult = $input.first().json;\n\n// 取得正確的台灣時間\nconst taiwanTime = new Date().toLocaleString('zh-TW', {\n  timeZone: 'Asia/Taipei',\n  year: 'numeric',\n  month: '2-digit',\n  day: '2-digit',\n  hour: '2-digit',\n  minute: '2-digit',\n  second: '2-digit',\n  hour12: false\n});\n\n// 取得時間戳記\nconst taiwanTimestamp = new Date().getTime();\n\n// Gmail 相關資訊\nconst messageId = gmailResult.id;\nconst threadId = gmailResult.threadId;\nconst labelIds = gmailResult.labelIds || [];\n\n// 產生各種 Gmail 連結\nconst gmailSentLink = `https://mail.google.com/mail/u/0/#sent/${messageId}`;\nconst gmailInboxLink = `https://mail.google.com/mail/u/0/#inbox/${threadId}`;\nconst gmailThreadLink = `https://mail.google.com/mail/u/0/#all/${threadId}`;\n\n// 從前面的節點取得收件人資訊\nconst recipientEmail = $('擷取出 email').first().json.email;\nconst recipientUsername = $('取得Username').first().json.username;\nconst originalMessage = $('擷取出 email').first().json.originalText;\n\n// 產生追蹤ID\nconst trackingId = `EMAIL_${taiwanTimestamp}_${messageId.substring(0, 8)}`;\n\n// 分析標籤狀態\nconst isUnread = labelIds.includes('UNREAD');\nconst isSent = labelIds.includes('SENT');\nconst isInInbox = labelIds.includes('INBOX');\n\nreturn [\n  {\n    json: {\n      // === Gmail 核心資訊 ===\n      message_id: messageId,\n      thread_id: threadId,\n      label_ids: labelIds,\n      \n      // === 時間相關 ===\n      sent_time: taiwanTime,\n      sent_timestamp: taiwanTimestamp,\n      timezone: 'Asia/Taipei',\n      \n      // === Gmail 連結 ===\n      gmail_sent_link: gmailSentLink,           // 寄件備份連結\n      gmail_inbox_link: gmailInboxLink,         // 收件匣連結\n      gmail_thread_link: gmailThreadLink,       // 完整對話連結\n      gmail_main_link: gmailSentLink,           // 主要連結（用於 Sheet）\n      \n      // === 收件人資訊 ===\n      recipient_email: recipientEmail,\n      recipient_username: recipientUsername,\n      original_message: originalMessage,\n      \n      // === 狀態資訊 ===\n      status: '已寄送',\n      is_unread: isUnread,\n      is_sent: isSent,\n      is_in_inbox: isInInbox,\n      delivery_status: '成功寄出',\n      \n      // === 追蹤資訊 ===\n      tracking_id: trackingId,\n      tracking_note: `信件已於 ${taiwanTime} (台北時間) 成功寄出`,\n      process_note: `Message ID: ${messageId}`,\n      \n      // === 額外資訊 ===\n      email_subject: 'ZN Studio - 您的 專屬大禮包！',\n      sender_email: 'nickleo051216@gmail.com',\n      sender_name: 'Nick Chang | ZN Studio',\n      \n      // === 統計資訊 ===\n      labels_count: labelIds.length,\n      success: true,\n      error: null,\n      \n      // === 聯絡資訊 ===\n      contact_phone: '0932-684-051',\n      contact_website: 'https://portaly.cc/zn.studio',\n      contact_threads: 'https://www.threads.com/@nickai216',\n      contact_line_community: 'https://reurl.cc/1OZNAY',\n      contact_line_oa: 'https://lin.ee/Faz0doj'\n    }\n  }\n];\n\n// Nick Chang｜nickleo051216@gmail.com｜0932-684-051\n// 個人網站：ZN Studio｜https://portaly.cc/zn.studio\n// Threads： ZN Studio ( @nickai216 )｜https://www.threads.com/@nickai216\n// Line 社群：https://reurl.cc/1OZNAY\n// Line OA：https://lin.ee/Faz0doj"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2544,
+        1168
+      ],
+      "id": "d8fb3c30-2c4a-4d8a-87ce-de79f9edfa5f",
+      "name": "Code",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a0687b70-a073-497c-a64f-2d82d9b73c63",
+              "leftValue": "={{ $('擷取出 email').item.json.email }}",
+              "rightValue": "={{ $json.Email }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "58faad7c-1ddb-4177-83b9-b3cbe016a840",
+              "leftValue": "={{ $json['Status(是否已寄出)'] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        1168
+      ],
+      "id": "f01408b6-e16c-4037-b1a6-8e03dd160d04",
+      "name": "如果有相同 USERNAME",
+      "executeOnce": false,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 節點名稱：過濾機器人訊息和自己的回覆\n\nconst webhookData = $input.first().json;\nconst messageData = webhookData.body.entry[0].messaging[0];\nconst messageText = messageData.message.text;\nconst senderId = messageData.sender.id;\nconst recipientId = messageData.recipient.id;\nconst isEcho = messageData.message.is_echo || false;\n\n// 你的 Instagram 頁面 ID（需要替換成你實際的頁面 ID）\nconst myPageId = \"655732630882719\"; // 這是你的 Instagram 商業帳號 ID\n\n// 機器人回覆關鍵字列表\nconst botKeywords = [\n    \"此為 n8n 機器人自動回覆\",\n    \"感謝您的耐心等候\",\n    \"已經將大禮包寄信給您\",\n    \"真人回覆請稍候\"\n];\n\n// 檢查是否為機器人訊息\nconst isBotMessage = botKeywords.some(keyword => \n    messageText.includes(keyword)\n);\n\n// 檢查是否為自己發送的訊息\nconst isMyMessage = senderId === myPageId || isEcho === true;\n\n// 如果是機器人訊息或自己的訊息，停止執行\nif (isBotMessage || isMyMessage) {\n    // 可選：加入 console.log 來追蹤被過濾的訊息\n    if (isBotMessage) {\n        console.log(\"過濾機器人訊息:\", messageText);\n    }\n    if (isMyMessage) {\n        console.log(\"過濾自己的訊息:\", messageText, \"| is_echo:\", isEcho);\n    }\n    \n    // 停止執行\n    return [];\n} else {\n    // 繼續處理用戶訊息\n    console.log(\"處理用戶訊息:\", messageText);\n    return [$input.first().json];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        1744
+      ],
+      "id": "6f3924a4-35b1-4297-864d-8e78fef8bb5a",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('拿 ig 權杖').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"message\": {\n    \"text\": \"您好！\\n您已經留言過您的電子信箱囉！\\n您的 Email 主旨為：ZN Studio - 您的 專屬大禮包！ \\n請再幫忙檢查信箱，感謝您！\\n\\n（此為 n8n 機器人自動回覆，感謝您的耐心等候）\"\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -720,
+        944
+      ],
+      "id": "72fa90b3-2b82-4ba4-a8e9-7a42c22e3191",
+      "name": "已經留言過 email"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 523636917,
+          "mode": "list",
+          "cachedResultName": "IG Email (n8n 指南)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=523636917"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "寄出時間": "={{ $json.sent_time }}",
+            "Gmail 連結": "={{ $json.gmail_sent_link }}",
+            "Email": "={{ $('擷取出 email').item.json.email }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "User ID",
+              "displayName": "User ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "留言時間",
+              "displayName": "留言時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status(是否已寄出)",
+              "displayName": "Status(是否已寄出)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "寄出時間",
+              "displayName": "寄出時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Gmail 連結",
+              "displayName": "Gmail 連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2976,
+        1168
+      ],
+      "id": "d8f6c47b-fd5f-490d-bfe5-9d9b8ddb933a",
+      "name": "Update row in sheet1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 523636917,
+          "mode": "list",
+          "cachedResultName": "IG Email (n8n 指南)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=523636917"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status(是否已寄出)",
+              "lookupValue": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        976,
+        1168
+      ],
+      "id": "3fefb63e-dbde-4354-8727-682dd008211f",
+      "name": "取得",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1648,
+        1168
+      ],
+      "id": "dceacb3c-ac6a-4484-acf1-546439ab791d",
+      "name": "Wait1",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('拿 ig 權杖').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient.id",
+              "value": "={{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}"
+            },
+            {
+              "name": "message.text",
+              "value": "={{ $json.output }}  （此為 n8n 機器人自動回覆，感謝您的耐心等候）"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1056,
+        1936
+      ],
+      "id": "2f7a700b-9a1e-40e0-ab03-f5cfe91dfb4f",
+      "name": "AI回應"
+    },
+    {
+      "parameters": {
+        "errorMessage": "已經留言過了"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        944
+      ],
+      "id": "fdc2301b-4dd4-4c0f-b745-5d39b0aba719",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('拿 ig 權杖').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"message\": {\n    \"text\": \"收到訊息囉 🙌您好～感謝您的信任及肯定，您的邀約我會謹記在心\\n如想進一步討論\\n請私訊我 Line：nickleo9 \\n Gmail：nickleo051216@gmail.com \\n我會盡快於24小時內回覆您！ \\n感謝您\\n\\n（此為 n8n 機器人自動回覆，真人回覆請稍候，感謝您的等候）\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        1744
+      ],
+      "id": "fe7ee4ec-9c1d-45dd-928e-b44d3699ce6a",
+      "name": "合作"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Send a message').item.json.Email }}",
+        "subject": "ZN Studio - 您的 專屬大禮包！",
+        "message": "<!DOCTYPE html>\n<html lang=\"zh-Hant\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>大禮包寄送</title>\n</head>\n<body style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #333;\">\n  <!-- 在開頭加入你的固定照片 -->\n  <div style=\"text-align: center; margin: 20px 0;\">\n    <img src=\"https://drive.google.com/uc?id=1scV4vLI0Wtf6ZrMam0SAIhmlc0-sl0hD\" alt=\"ZN Studio\" style=\"max-width: 100%; height: auto; border-radius: 10px;\">\n  </div>\n\n  <p>哈囉！🙌</p>\n\n  <p>這是大禮包連結：<br>\n    <a href=\"https://portaly.cc/zn.studio/product/TOevMqbiylnTyJlV5ub0\" target=\"_blank\">\n      點我查看大禮包 🎁\n    </a><br>\n    <a href=\"https://portaly.cc/zn.studio/product/AmcGCpKG5UCxe7CM65fQ\">\n      點我查看影片 json 檔 (免費)🎁\n    </a><br>\n     如想單買 指南手冊：<br>\n    <a href=\"https://portaly.cc/zn.studio/product/Doyrt0hjEBtjKUk42HG3\" target=\"_blank\">\n      點我查看指南手冊 🎁\n    </a>\n  </p>\n  <p>路徑在 n8n → n8n操作指南 → <strong>「n8n 操作指引指南製作.pdf」</strong></p>\n\n  <!-- 第二張圖片 -->\n  <div style=\"text-align: center; margin: 20px 0;\">\n    <img src=\"https://drive.google.com/uc?id=1dqnyoDLx6H29oQBg30XvgXZFs_U0i2PT\" alt=\"n8n 指南預覽\" style=\"max-width: 100%; height: auto; border-radius: 10px; border: 2px solid #e0e0e0;\">\n  </div>\n\n  <p>感謝您的支持！</p>\n\n  <hr style=\"border: none; border-top: 1px solid #ddd; margin: 20px 0;\">\n\n  <p>\n    如需更多資訊及優惠，歡迎加入：<br>\n    <strong>ZN AI 樂園 (n8n AI 自動化)</strong><br>\n    <a href=\"https://reurl.cc/ekQX0j\" target=\"_blank\">\n      點我加入社群 🚀\n    </a>\n  </p>\n\n  <hr style=\"border: none; border-top: 1px solid #ddd; margin: 20px 0;\">\n\n  <p>\n    📞 電話：0932-684-051<br>\n     個人網站：\n    <a href=\"https://portaly.cc/zn.studio\" target=\"_blank\">ZN Studio</a><br>\n     Threads：\n    <a href=\"https://www.threads.com/@nickai216\" target=\"_blank\">ZN Studio (@nickai216)</a><br>\n     LINE 社群：\n    <a href=\"https://reurl.cc/1OZNAY\" target=\"_blank\">點我加入</a><br>\n     LINE 個人：\n    <a href=\"https://lin.ee/Faz0doj\" target=\"_blank\">加我好友</a>\n  </p>\n\n  <p style=\"font-size: 12px; color: #666;\">\n    （此為 n8n 機器人自動寄信，感謝您的等候。如有疑慮請於 IG 回復，或直接回信，感謝您）\n  </p>\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2320,
+        1248
+      ],
+      "id": "7e568dbc-1e2c-4e0f-aacb-5fb67eaa23c7",
+      "name": "Send a message1",
+      "webhookId": "[REMOVED]",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": "[REMOVED]",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "[REMOVED]",
+        "text": "=IG自動回覆寄信bug：{{ $json['User ID'] }} 的 {{ $json.Email }} 發生錯誤，改用 nickleo3 寄信",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2096,
+        1248
+      ],
+      "id": "19347078-1326-4473-b509-da4ee7a9b7d7",
+      "name": "Send a text message",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('拿 ig 權杖').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"message\": {\n    \"text\": \"收到訊息囉 🙌恭喜你中獎囉！很開心參加 ZN Studio 的抽獎活動！我會謹記在心\\n邀請碼請稍等~\\n這邊是 更新後的新手指南 https://drive.google.com/file/d/1iARwA8-8582qS9HuISBJ8_rbuAOssew6/view?usp=sharing \\n 如對活動有疑慮 請私訊我 \\n Line：nickleo9 \\n Gmail：nickleo051216@gmail.com \\n我會盡快於24小時內回覆您！ \\n感謝您\\n\\n（此為 n8n 機器人自動回覆，真人回覆請稍候，感謝您的等候）\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        2528
+      ],
+      "id": "808cf40b-0be3-4fd7-b049-b57386a55fc0",
+      "name": "合作2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('拿 ig 權杖').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"message\": {\n    \"text\": \"收到訊息囉 🙌您好～感謝您的信任及肯定，這邊小Z會幫您安排諮詢\\n如想進一步討論\\n請私訊我 Line：nickleo9 \\n Gmail：nickleo051216@gmail.com \\n我會盡快於24小時內回覆您！ \\n感謝您\\n\\n（此為 n8n 機器人自動回覆，真人回覆請稍候，感謝您的等候）\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        2336
+      ],
+      "id": "edfc796e-01d3-4f5f-93ef-9e3910ca0892",
+      "name": "諮詢"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.instagram.com/v23.0/{{ $('接收ig').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('拿 ig 權杖').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('接收ig').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"message\": {\n    \"text\": \"收到訊息囉 🙌恭喜你中獎囉！很開心參加 ZN Studio 的抽獎活動！我會謹記在心\\n邀請碼請稍等~\\n這邊是 更新後的新手指南 https://drive.google.com/file/d/1iARwA8-8582qS9HuISBJ8_rbuAOssew6/view?usp=sharing \\n 如對活動有疑慮 請私訊我 \\n Line：nickleo9 \\n Gmail：nickleo051216@gmail.com \\n我會盡快於24小時內回覆您！ \\n感謝您\\n\\n（此為 n8n 機器人自動回覆，真人回覆請稍候，感謝您的等候）\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        2768
+      ],
+      "id": "8513ba83-ab24-4f60-abf0-4abb6a1c4909",
+      "name": "影片"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "limit": 50,
+        "queryString": "threads 檔案",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        2128
+      ],
+      "id": "7d33c613-f43f-48b1-8895-1fdcc6737591",
+      "name": "Search files and folders in Google Drive",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 30,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2752,
+        1264
+      ],
+      "id": "ba847c89-1084-44c2-abdc-5234f549450c",
+      "name": "30分鐘之後重試",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 523636917,
+          "mode": "list",
+          "cachedResultName": "IG Email (n8n 指南)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=523636917"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1536,
+        1776
+      ],
+      "id": "ad99a743-46cb-4fbd-a9ac-009511e32e83",
+      "name": "Get row(s) in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4e2af9e4-385a-4e23-b01c-a88145102d13",
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "d8884e51-01e9-4f2a-8375-99fc1ff8852e",
+              "leftValue": "={{ $json['課程通知信'] }}",
+              "rightValue": "X",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        1776
+      ],
+      "id": "bcf98782-3818-4a10-a2fd-1b228ff3dd11",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2048,
+        1776
+      ],
+      "id": "75b4f8c5-301f-4e13-9b36-698fc6849409",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        2768,
+        1888
+      ],
+      "id": "48870829-166c-428c-84d5-fb761c4b9ee9"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "ZN Studio 首堂 n8n 實體課通知！ 12/20 優先通知！",
+        "emailType": "text",
+        "message": "你好，我是 Nick\n還記得之前你因為我的 Threads n8n 指南來索取教學，所以這次想特別第一時間通知你：\n我會在 12/20 開一堂「從零開始的 n8n 實作課」，一樣是以能「真的學會並帶回家」為目標。\n\n這堂課不會只是看我示範，而是你會親手做出至少一條完整工作流，當天就能帶走使用。\n\n課程資訊如下：\n\n日期：12/20（六）13:00–17:00\n地點：台北車站前商務中心（許昌街 42-1 號 4 樓）\n費用：NT$ 3,000\n名額：限 15 名（額滿即關閉）\n\n課程會帶你從最基礎開始，一步一步完成：\n– n8n 的核心概念與好用技巧\n– Line OA 串接與 AI 應用\n– 如何把 AI + 自動化真正用在日常或工作流程裡\n\n課堂最終成果：\n你會完成一個「智能行事曆助理」工作流，包括文字、圖片辨識、語音辨識與自動新增行程。\n（如果進度順利，還會加碼實作一個小型 AI 機器人）\n\n報名方式：\n只要點這個連結即可完成報名流程：\nhttps://nickleo051216.github.io/n8ncourse/\n\n你不需要回信；如果對課程內容有疑問，回信找我就行，我會親自回覆。\n\n很期待能在課堂上一同交流 n8n ！\n\n——\nNick（ZN Studio）\n電話：0932-684-051\n個人網站：https://portaly.cc/zn.studio\n\nThreads：https://www.threads.com/@nickai216\n\nLINE 社群：https://reurl.cc/1OZNAY\n\nLINE 個人：https://lin.ee/Faz0doj",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2288,
+        1792
+      ],
+      "id": "2bd5c371-eb97-4a2f-8742-148a8998e199",
+      "name": "Send a message2",
+      "webhookId": "[REMOVED]",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 523636917,
+          "mode": "list",
+          "cachedResultName": "IG Email (n8n 指南)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=523636917"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Loop Over Items').item.json.row_number }}",
+            "課程通知信": "done"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "User ID",
+              "displayName": "User ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "留言時間",
+              "displayName": "留言時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status(是否已寄出)",
+              "displayName": "Status(是否已寄出)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "寄出時間",
+              "displayName": "寄出時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Gmail 連結",
+              "displayName": "Gmail 連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "課程通知信",
+              "displayName": "課程通知信",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2464,
+        1792
+      ],
+      "id": "6a415d98-44fc-4ff1-9ab3-473d69db459e",
+      "name": "Update row in sheet2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        1856
+      ],
+      "id": "3a6e126d-2e2b-4ed1-9a66-b07f1869ae56",
+      "name": "Wait2",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        1776
+      ],
+      "id": "d7fd8661-9c7c-4995-9e53-4929679045f9",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "拿 ig 權杖": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "接收ig": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "發送訊息": {
+      "main": [
+        []
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "擷取出 email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "發送請他們輸入 email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "付費回應",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "合作",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "諮詢",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "合作2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "發送請他們輸入 email": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI回應",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "Code Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "寄信後通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "取得Username",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寄信後通知": {
+      "main": [
+        []
+      ]
+    },
+    "取得Username": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "擷取出 email": {
+      "main": [
+        [
+          {
+            "node": "取得",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "30分鐘之後重試",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "如果有相同 USERNAME": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "拿 ig 權杖",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得": {
+      "main": [
+        [
+          {
+            "node": "如果有相同 USERNAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "已經留言過 email": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders in Google Drive": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "30分鐘之後重試": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "已經留言過 email": [
+      {
+        "json": {
+          "recipient_id": "1227213202781378",
+          "message_id": "aWdfZAG1faXRlbToxOklHTWVzc2FnZAUlEOjE3ODQxNDc0ODQyNzgwMDI0OjM0MDI4MjM2Njg0MTcxMDMwMTI0NDI3NjAzMzUwNjc2NDU4MTczNjozMjQwNjg1MzAxODAxMDkxNTAwNDQ0NjE0MjI0ODI1NTQ4OAZDZD"
+        }
+      }
+    ]
+  },
+  "versionId": "795c7954-342a-4093-95b2-fb1e836cb873",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-08-24T06:01:22.969Z",
+      "createdAt": "2025-08-24T06:01:22.969Z",
+      "role": "workflow:owner",
+      "workflowId": "At6wOrd76e24HvPB",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-08-24T17:31:32.101Z",
+      "createdAt": "2025-08-24T17:31:32.101Z",
+      "id": "NdMmboef1PsJUri9",
+      "name": "Meta"
+    },
+    {
+      "updatedAt": "2025-08-24T17:31:53.456Z",
+      "createdAt": "2025-08-24T17:31:53.456Z",
+      "id": "PSM7votZ1HFLfxBG",
+      "name": "自動回覆"
+    },
+    {
+      "updatedAt": "2025-08-24T17:32:06.697Z",
+      "createdAt": "2025-08-24T17:32:06.697Z",
+      "id": "kpx6xsJeA5I6Yth9",
+      "name": "私訊"
+    }
+  ]
+}

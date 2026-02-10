@@ -1,0 +1,849 @@
+{
+  "updatedAt": "2025-09-24T03:55:33.159Z",
+  "createdAt": "2025-05-15T01:51:50.890Z",
+  "id": "9Ru9u9SKcbBCOeJL",
+  "name": "AI Line Bot",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 關於這個節點的作者\n\n**公司名稱**: 好事發生數位  \n**公司網址**: [https://ohya.co](https://ohya.co)  \n**LINE 社群**: [點我加入 LINE 群組](https://line.me/ti/g2/bfnrSbbUE56PISKtQa9KK5gqpMhed_DXf-hmQw)  \n**聯絡信箱**: gary@ohya.co  \n**Threads**: [https://www.threads.net/@ohya.studio](https://www.threads.net/@ohya.studio)",
+        "height": 220,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3104,
+        80
+      ],
+      "id": "0748c074-568f-4106-9c40-d455322ff71c",
+      "name": "關於這個節點的作者"
+    },
+    {
+      "parameters": {
+        "content": "## Webhook 入口\n\n**說明：**\n- 監聽來自 LINE 的訊息，觸發自動回應流程。\n\n**注意事項：**\n1. 確保 Webhook 設定正確，確保 LINE 可發送請求。\n2. 需要在 LINE Developers Console 設定 Webhook URL。",
+        "height": 260,
+        "width": 360
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2464,
+        64
+      ],
+      "id": "8cd51af0-322e-412b-8399-b96d6b07019a",
+      "name": "Webhook 入口說明"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "= 回應這個訊息：{{ $json.chat_input }}\n以繁體中文，純文字輸出，不要帶 HTML。\n如果提到日期 提到 最新 都已 {{ $now; Asia/Taipei}} 開始\n每次回應 上網搜尋 並 都一定要提供 資料網路連結來源\n\n如果是查詢天氣，(都先幫我把地名 翻譯成英文)幫我用mcp Tools 查詢  也加上用 mpc Tools查詢到的降雨機率 \n\n 如果是照片，請幫我分析思考這是代表甚麼意思？  沒有照片就不用回這個\n\n 反問我3個問題 跟{{ $json.chat_input }}訊息有關的問題\n 都以條列式回應\n\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant\n\n今天是：{{ $today }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -384,
+        1168
+      ],
+      "id": "f8bfffae-12d5-4c86-a035-bd56ad0f4646",
+      "name": "AI 語言模型"
+    },
+    {
+      "parameters": {
+        "content": "## AI 語言模型\n\n**說明：**\n- 呼叫 AI 模型（如 Google Gemini）來產生適當回應。\n\n**注意事項：**\n1. 確保 API Key 正確填寫，避免請求失敗。\n2. 設定 `prompt` 要求輸出 JSON，避免格式錯誤。",
+        "height": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2720,
+        48
+      ],
+      "id": "6c066a5d-649f-4f62-8608-ba2fb1e6c32e",
+      "name": "AI 語言模型說明"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 完整輸出 items 結構，查看所有可能的位置\nconsole.log(\"完整項目結構:\");\nitems.forEach((item, index) => {\n  console.log(`項目 ${index} 的結構:`, JSON.stringify(item, null, 2));\n  \n  // 遞迴尋找 replyToken\n  function findReplyToken(obj, path = '') {\n    if (!obj || typeof obj !== 'object') return;\n    \n    Object.keys(obj).forEach(key => {\n      if (key === 'replyToken') {\n        console.log(`發現 replyToken 在路徑: ${path}.${key}, 值: ${obj[$('Webhook 入口1').first().json.body.events[0].replyToken]}`);\n      }\n      if (typeof obj[key] === 'object' && obj[key] !== null) {\n        findReplyToken(obj[key], path ? `${path}.${key}` : key);\n      }\n    });\n  }\n  \n  findReplyToken(item);\n});\n\n// 尋找 replyToken (優先順序: 根層級 > json 屬性 > 深層結構)\nlet replyToken = null;\nlet replyTokenItem = null;\n\n// 方法1：直接在根層級查找\nreplyTokenItem = items.find(item => item.replyToken !== undefined);\nif (replyTokenItem) {\n  replyToken = replyTokenItem.replyToken;\n  console.log(\"方法1找到 replyToken:\", replyToken);\n}\n\n// 方法2：在 json 屬性中查找\nif (!replyToken) {\n  replyTokenItem = items.find(item => item.json && item.json.replyToken !== undefined);\n  if (replyTokenItem) {\n    replyToken = replyTokenItem.json.replyToken;\n    console.log(\"方法2找到 replyToken:\", replyToken);\n  }\n}\n\n// 方法3：嘗試在深層結構中查找\nif (!replyToken) {\n  replyTokenItem = items.find(item => \n    item.json && item.json.body && item.json.body.events && \n    item.json.body.events[0] && item.json.body.events[0].replyToken\n  );\n  if (replyTokenItem) {\n    replyToken = replyTokenItem.json.body.events[0].replyToken;\n    console.log(\"方法3找到 replyToken:\", replyToken);\n  }\n}\n\n// 如果都找不到，使用預設值\nif (!replyToken) {\n  console.warn(\"未找到 replyToken，使用預設值\");\n  replyToken = \"e61bbd8c0be1462c8094731a576b27d8\";\n}\n\n// 找到包含 AI 輸出的項目（來自 AI 語言模型節點）\nconst outputItem = items.find(item => item.json && item.json.output !== undefined);\nlet aiResponse = \"無法獲取回應\";\n\nif (outputItem) {\n  aiResponse = outputItem.json.output.trim();\n  console.log(\"找到原始 AI 輸出，長度:\", aiResponse.length, \"字元\");\n} else {\n  console.warn(\"未找到 AI 輸出，使用預設文本\");\n}\n\n// 檢查是否需要分段發送訊息\n// LINE 文字訊息限制為 5000 字元，我們使用較保守的 4000 字元分段\nconst MAX_LENGTH = 4000;\nlet segments = [];\n\nif (aiResponse.length <= MAX_LENGTH) {\n  // 短訊息，直接發送\n  segments = [aiResponse];\n  console.log(\"短訊息，直接發送\");\n} else {\n  // 長訊息需要分段\n  console.log(\"訊息太長，需要分段發送\");\n  \n  // 智能分段 - 嘗試在段落或句子處分割\n  let remainingText = aiResponse;\n  while (remainingText.length > 0) {\n    let segmentLength = Math.min(remainingText.length, MAX_LENGTH);\n    \n    // 如果不是最後一段且長度達到上限，嘗試在句子結尾或段落處分割\n    if (segmentLength === MAX_LENGTH && remainingText.length > MAX_LENGTH) {\n      // 尋找合適的分割點（換行符、句號、問號、驚嘆號）\n      const preferredBreaks = ['\\n\\n', '\\n', '。', '！', '？', '。', '.', '!', '?'];\n      \n      for (const breakChar of preferredBreaks) {\n        // 從最大長度位置向前查找最近的分隔符\n        const lastBreakPos = remainingText.lastIndexOf(breakChar, MAX_LENGTH);\n        if (lastBreakPos > MAX_LENGTH * 0.7) { // 至少要有 70% 的長度\n          segmentLength = lastBreakPos + breakChar.length;\n          break;\n        }\n      }\n    }\n    \n    // 提取當前段落\n    const segment = remainingText.substring(0, segmentLength);\n    segments.push(segment);\n    \n    // 更新剩餘文本\n    remainingText = remainingText.substring(segmentLength);\n  }\n  \n  console.log(`訊息已分為 ${segments.length} 段`);\n}\n\n// 創建符合 LINE API 格式的訊息數組\nconst messages = segments.map(segment => ({\n  type: \"text\",\n  text: segment\n}));\n\n// 返回格式化結果\nreturn [\n  {\n    json: {\n      replyToken: replyToken,\n      text: aiResponse\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        1168
+      ],
+      "id": "cf20c14c-fce4-4581-a482-6f21da740b26",
+      "name": "處理 AI 回應"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer pGKcRxW097Tfz7q8TUq5Ja94vPdONMW8x0hlZcsE+2fG25PAe759mQ+XcSdFL6XQ7Z6k4VYvMFywnOLubHNAmMPTRGCO43z3GXuY6RrGdOWnJ5rXbi/pHsj2mBH5L2nchderXKI56uh+6zMLJfJgUQdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook 入口1').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{$json.text.replace(/\\n/g, '\\\\n');}}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        1168
+      ],
+      "id": "c47320ca-af57-46a2-a1ff-598dd2a83c2d",
+      "name": "發送回應給 LINE"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer pGKcRxW097Tfz7q8TUq5Ja94vPdONMW8x0hlZcsE+2fG25PAe759mQ+XcSdFL6XQ7Z6k4VYvMFywnOLubHNAmMPTRGCO43z3GXuY6RrGdOWnJ5rXbi/pHsj2mBH5L2nchderXKI56uh+6zMLJfJgUQdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.body.events[0].source.userId }}"
+            },
+            {
+              "name": "loadingSeconds",
+              "value": "60"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1520,
+        864
+      ],
+      "id": "53597d8b-c2e3-4c8c-81cd-e934f35ce6c8",
+      "name": "loading/start"
+    },
+    {
+      "parameters": {
+        "path": "tools"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        32
+      ],
+      "id": "9a0c1de3-c0cf-427d-9d4e-cf453e180b84",
+      "name": "MCP Server Trigger",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        256
+      ],
+      "id": "3258f4e8-4d38-4cbc-b04d-44fb61f754fb",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "content": "## 處理 AI 回應\n\n**說明：**\n- 解析 AI 產生的回應，取得 `replyToken` 和 `text`。\n\n**注意事項：**\n1. 確保 AI Agent 輸出的格式正確。\n2. 若 AI 輸出錯誤，應該要在這裡處理錯誤邏輯。",
+        "height": 280
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2064,
+        64
+      ],
+      "id": "23a0c235-c492-48a1-ac61-6b896f7c3dcd",
+      "name": "處理 AI 回應的說明"
+    },
+    {
+      "parameters": {
+        "jsCode": "items[0].json.sessionId = $input.first().json.body.events[0].source.userId\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1520,
+        1072
+      ],
+      "id": "aaf67e5a-0abc-466c-aacb-fd949c0449b3",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook 入口1').item.json.body.events[0].message.type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c5c5ba43-467d-40fb-8b23-cbdc2e207743"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3c6645bc-26c8-473b-9e8d-96ce335e6157",
+                    "leftValue": "={{ $('Webhook 入口1').item.json.body.events[0].message.type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b2a1ad81-cbbd-434c-bac2-16c8a32275ae",
+                    "leftValue": "={{ $('Webhook 入口1').item.json.body.events[0].message.type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1296,
+        1072
+      ],
+      "id": "746e18b2-ff55-4c4e-af7d-93488371c863",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "19e2a5fa-6e69-4dfa-9ef3-56db37a277e1",
+              "name": "chat_input",
+              "value": "={{ $('Webhook 入口1').item.json.body.events[0].message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "96ddeea0-23c6-4d89-9c0f-fad22d460047",
+              "name": "type",
+              "value": "text",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        864
+      ],
+      "id": "18de4107-e787-4900-8a6e-14b3595d7d23",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('Webhook 入口1').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer pGKcRxW097Tfz7q8TUq5Ja94vPdONMW8x0hlZcsE+2fG25PAe759mQ+XcSdFL6XQ7Z6k4VYvMFywnOLubHNAmMPTRGCO43z3GXuY6RrGdOWnJ5rXbi/pHsj2mBH5L2nchderXKI56uh+6zMLJfJgUQdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1088,
+        1072
+      ],
+      "id": "1b45af2a-edea-499a-87bd-3888e3e98acf",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92008b54-ed4c-46f1-9e77-60cf9646f3c8",
+              "name": "chat_input",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "848d064d-e72e-49c7-a6e3-2b464ca1bc39",
+              "name": "type",
+              "value": "voice",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        1072
+      ],
+      "id": "61138b67-e71e-46f2-ae5f-9c3e7916ef14",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('Webhook 入口1').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer pGKcRxW097Tfz7q8TUq5Ja94vPdONMW8x0hlZcsE+2fG25PAe759mQ+XcSdFL6XQ7Z6k4VYvMFywnOLubHNAmMPTRGCO43z3GXuY6RrGdOWnJ5rXbi/pHsj2mBH5L2nchderXKI56uh+6zMLJfJgUQdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1088,
+        1264
+      ],
+      "id": "428de4c8-969a-4634-90cb-5bda90227f4d",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92008b54-ed4c-46f1-9e77-60cf9646f3c8",
+              "name": "chat_input",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "848d064d-e72e-49c7-a6e3-2b464ca1bc39",
+              "name": "type",
+              "value": "image",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        1264
+      ],
+      "id": "a69d3415-2236-4c61-9384-02da84c378b5",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        1424
+      ],
+      "id": "4d99ee58-d463-4da3-a269-0b3a18bf1047",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-message",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1744,
+        960
+      ],
+      "id": "cf3ef515-e726-4b6b-916d-5dd5a74c55b6",
+      "name": "Webhook 入口1",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "default",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -368,
+        1424
+      ],
+      "id": "8b5728c3-bcf8-43a6-80e7-57686225c2ed",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://nickleo9.zeabur.app/mcp/tools/sse",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        1424
+      ],
+      "id": "eef400af-8fa8-42d2-88d8-906fb5a80ba5",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "cityName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', ``, 'string') }}",
+        "language": "ZH_TW"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        256
+      ],
+      "id": "e793a5a3-d657-46e6-bb13-e3609a1ce90b",
+      "name": "OpenWeatherMap",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "toolDescription": "是一個網路搜尋工具",
+        "method": "POST",
+        "url": "https://api.firecrawl.dev/v1/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n \"query\": \"{word}\",\n \"limit\": 5\n }",
+        "placeholderDefinitions": {
+          "values": [
+            {
+              "name": "word",
+              "description": "keyword"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        -336,
+        256
+      ],
+      "id": "d13acd6f-acd7-4d3d-8baf-aaf3c98fe09a",
+      "name": "search",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-2024-11-20",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-2024-11-20"
+        },
+        "text": "請幫我閱讀這張圖片裡面的資訊",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -864,
+        1264
+      ],
+      "id": "4301c343-70d4-40bd-9689-f331c597f86d",
+      "name": "AI轉照片資訊",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -864,
+        1072
+      ],
+      "id": "36098e71-87a2-4ac6-87de-89e2201fa00f",
+      "name": "AI轉語音資訊",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "model": "sonar",
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "simplify": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify_Output', ``, 'boolean') }}",
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        1424
+      ],
+      "id": "70c5f6e2-7478-48a5-8e82-7bde38ec93ca",
+      "name": "Message a model in Perplexity",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "AI 語言模型": {
+      "main": [
+        [
+          {
+            "node": "處理 AI 回應",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理 AI 回應": {
+      "main": [
+        [
+          {
+            "node": "發送回應給 LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI轉語音資訊",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "AI轉照片資訊",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook 入口1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "loading/start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "OpenWeatherMap": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI轉照片資訊": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI轉語音資訊": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI 語言模型",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "51ec7e23-6ce1-482a-9655-69ee0f8093b2",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-05-15T01:51:50.890Z",
+      "createdAt": "2025-05-15T01:51:50.890Z",
+      "role": "workflow:owner",
+      "workflowId": "9Ru9u9SKcbBCOeJL",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

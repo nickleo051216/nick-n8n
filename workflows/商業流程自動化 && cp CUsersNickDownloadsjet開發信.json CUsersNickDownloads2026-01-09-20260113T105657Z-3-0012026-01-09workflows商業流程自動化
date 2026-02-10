@@ -1,0 +1,2593 @@
+{
+  "name": "報價系統",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.events[0].message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=你是一個資料庫助理。協助查詢目前資料庫資料"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -544,
+        112
+      ],
+      "id": "eca2ea78-8c84-4a1f-9603-06346bc162b2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        336
+      ],
+      "id": "7066efe6-5c8d-4c57-95ec-c00d38f5affe",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "YEx1b6s2mdczY9oa",
+          "name": "1104 jet02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "jetenv-a82bc",
+        "collection": "=artifacts/jietai-prod/public/data/customers",
+        "documentId": "=",
+        "columns": "name, taxId, contact, phone, address, email"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        1968,
+        768
+      ],
+      "id": "ebda5279-eba8-463a-b6f7-f661b5b97e58",
+      "name": "Create a document",
+      "credentials": {
+        "googleApi": {
+          "id": "FMGPQsk5eHoKygqD",
+          "name": "Google Firebase Cloud Firestore account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得 AI 的輸出 (它現在是一長串文字)\nconst aiOutputText = $input.first().json.output;\n\n// 2. 清理並解析 JSON\nlet parsedData = {};\ntry {\n  // 去除可能存在的 markdown 符號 (```json ... ```)\n  const cleanJson = aiOutputText.replace(/```json/g, '').replace(/```/g, '').trim();\n  parsedData = JSON.parse(cleanJson);\n} catch (error) {\n  // 如果解析失敗，給一個錯誤訊息\n  parsedData = { error: \"JSON Parse Failed\", raw: aiOutputText };\n}\n\n// 3. 回傳乾淨的資料給 Firestore\nreturn parsedData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        656
+      ],
+      "id": "548514b5-0530-4ff3-842c-4dec9494a8d1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5851b04a-d3bd-4c75-bb36-d51d494bfdf5",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "嗨",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "help"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "=查詢",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "ce6ffda5-76a0-4cd4-b82c-f40b78d850c1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "查詢"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5bb17cbd-8d7b-48fd-b01b-4fa09899b9d1",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "=新增",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "文字新增"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "992a88bb-f917-4b23-ac7a-a74449f39010",
+                    "leftValue": "={{ $json.body.events[0].message.type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "圖片名片新增"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "475bc2b5-58f4-4d60-a2db-2c1a8b99a6f8",
+                    "leftValue": "={{ $json.body.events[0].message.type }}",
+                    "rightValue": "=file",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "報價單回簽上傳"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cb99004b-b4eb-41aa-bcc4-8f67efcee2e4",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AI"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -768,
+        672
+      ],
+      "id": "ef2a1bd0-b704-4938-8e7b-1b0d156d91d5",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=你是一個資料庫助理。請將使用者的文字轉換為以下的 JSON 格式。\n請只輸出純 JSON，不要有 markdown 格式 (如 ```json)。\n\nOutput JSON Keys:\n- name: 公司名稱\n- taxId: 統一編號\n- contact: 聯絡人姓名\n- phone: 電話\n- address: 地址\n- email: 電子信箱\n- fax: 傳真\n\n如果找不到對應資訊，請填入 null 或空字串。"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        768
+      ],
+      "id": "96339abb-bbe1-4140-84be-1015fb518d4d",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('Line Messaging Trigger').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer sz9Mcs3vTV5ZcvTUE7an0hNkJjV88FYu4N1yg2jlm1DbXfMwMdVbdxs1VNWDkY8z2/aLAJeDY180qElxfH74sJyvN95aE1UrGwxRiC7N621V1IX2gRY+QTYvW2588lKcliSdkzJuIbLXtqhuDiN3/QdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        784
+      ],
+      "id": "c2218eb9-4545-4857-8f6a-590fcab96331",
+      "name": "圖片"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "getAll",
+        "projectId": "jetenv-a82bc",
+        "database": "=(default)",
+        "collection": "=artifacts/jietai-prod/public/data/quotations",
+        "simple": false
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestoreTool",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        336
+      ],
+      "id": "2c6eccb0-dd64-46ae-baa3-fcc4a0336c13",
+      "name": "Get many documents in Google Cloud Firestore",
+      "credentials": {
+        "googleApi": {
+          "id": "FMGPQsk5eHoKygqD",
+          "name": "Google Firebase Cloud Firestore account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "=",
+              "text": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        224
+      ],
+      "id": "ea3137fe-5912-4ed3-889b-01fb0d0ece6c",
+      "name": "Line Messaging",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "2gfTo7PPhAW3kDOK",
+          "name": "報價系統小幫手"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "請幫我閱讀這張圖片裡面的資訊",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        704,
+        784
+      ],
+      "id": "29c70c8c-3206-4810-817e-914bd5999566",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CsBGZAgQrtKeRnkC",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "92008b54-ed4c-46f1-9e77-60cf9646f3c8",
+              "name": "chatInput",
+              "value": "={{ $json.content }}",
+              "type": "string"
+            },
+            {
+              "id": "848d064d-e72e-49c7-a6e3-2b464ca1bc39",
+              "name": "type",
+              "value": "image",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        784
+      ],
+      "id": "567a590e-426c-4310-bd60-09f12d126ea5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "={{ $('Line Messaging Trigger').item.json.body.events[0].message.quoteToken }}",
+              "text": "=此張名片已登入 報價系統 https://jetenvmoney.zeabur.app/\n客戶名稱為：{{ $json.name }}\n電話：{{ $json.phone }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        768
+      ],
+      "id": "1e4488de-976a-49fd-874e-f7ef2d5e025d",
+      "name": "Line Messaging1",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "2gfTo7PPhAW3kDOK",
+          "name": "報價系統小幫手"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        944
+      ],
+      "id": "66e6fcb6-945f-4a84-9a39-98e292a58e40",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "YEx1b6s2mdczY9oa",
+          "name": "1104 jet02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "money",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -992,
+        608
+      ],
+      "id": "af61e7e0-9474-481c-9bc7-bb086dce78da",
+      "name": "Line Messaging Trigger",
+      "webhookId": "e4ca8806-a5dd-4116-9438-38062b2b9842"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得 Line 傳來的檔名\nconst fileName = $input.item.json.body.events[0].message.fileName;\n\n// 正規表達式抓取 J-YY-MMxxx 格式 (例如 J-25-12001)\nconst regex = /(J-\\d{2}-\\d{5})/;\nconst match = fileName.match(regex);\n\nif (match) {\n  return {\n    json: {\n      found: true,\n      quoteNumber: match[1], // 抓到的單號\n      originalName: fileName\n    }\n  };\n} else {\n  // 沒抓到單號，回傳 found: false 讓後面的 If 節點判斷\n  return {\n    json: {\n      found: false,\n      error: \"檔名格式不正確\"\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        1392
+      ],
+      "id": "011a0b37-7913-419a-aa4b-5d6a80926e67",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "getAll",
+        "projectId": "jetenv-a82bc",
+        "collection": "=artifacts/jietai-prod/public/data/quotations"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        1392
+      ],
+      "id": "9f16c7ca-1b73-4960-b47e-2a99e20a4483",
+      "name": "Get many documents",
+      "credentials": {
+        "googleApi": {
+          "id": "FMGPQsk5eHoKygqD",
+          "name": "Google Firebase Cloud Firestore account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0561371d-fe48-4320-80a2-8ca8d0f9ddbe",
+              "leftValue": "={{ $json.quoteNumber }}",
+              "rightValue": "={{ $('Code in JavaScript1').item.json.quoteNumber }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        1392
+      ],
+      "id": "309a6641-3053-4378-aea3-a0a6968070af",
+      "name": "Filter",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7266c3df-aa91-4fb4-8178-e0a8f6136d11",
+              "leftValue": "={{ $json._name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        1392
+      ],
+      "id": "5bba21bc-ba53-4370-9c92-ed4e98c4aec4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "={{ $('Line Messaging Trigger').item.json.body.events[0].message.quoteToken }}",
+              "text": "=查無此張報價單 \n\n報價單請重新確認檔案名稱 協助修正  \nJ-xx-XXxxx-客戶名-案件名\n\n再重新上傳"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        608,
+        1488
+      ],
+      "id": "43388eb3-f218-4484-a4ed-e81ef52ddcc1",
+      "name": "Line Messaging3",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "2gfTo7PPhAW3kDOK",
+          "name": "報價系統小幫手"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "=",
+              "text": "=此張報價單 {{ $('更新系統(移動到已簽回)').item.json.fields.quoteNumber.stringValue }}\n已順利更新為 已回簽\n並順利歸檔 \n歸檔連結為：{{ $json.webViewLink }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        1200
+      ],
+      "id": "b46ac6ad-a7c8-47e6-91f9-4a8e4b2c92cc",
+      "name": "Line Messaging4",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "2gfTo7PPhAW3kDOK",
+          "name": "報價系統小幫手"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "text": "=您好 我是傑太報價系統小幫手\n有什麼可以幫您？\n1. 查詢報價進度\n(請先輸入 查詢 再輸入您要找的資料)\n2. 新增客戶\n(直接輸入文字 or 圖片檔名片)\n3. 報價單簽回回傳歸檔\n(請直接上傳 PDF 檔案 並以 J-XX-XXxxx 命名)"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        512
+      ],
+      "id": "6a4728b5-d72f-46df-bc51-badb25b330c5",
+      "name": "Line Messaging5",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "2gfTo7PPhAW3kDOK",
+          "name": "報價系統小幫手"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "=(回簽){{ $json.fields.quoteNumber.stringValue }}-{{ $json.fields.clientContact.stringValue }}-{{ $json.fields.projectName.stringValue }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1iGn4RDEqyfKKIjg19Y0CTzfXAMzOTYSC",
+          "mode": "list",
+          "cachedResultName": "報價單回簽",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1iGn4RDEqyfKKIjg19Y0CTzfXAMzOTYSC"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1056,
+        1200
+      ],
+      "id": "3fdd5e81-ba6b-4edc-8aca-77b433836c48",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://firestore.googleapis.com/v1/projects/jetenv-a82bc/databases/(default)/documents/artifacts/jietai-prod/public/data/quotations/{{ $('If').item.json._id }}?updateMask.fieldPaths=status&updateMask.fieldPaths=updatedAt",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"fields\": {\n    \"status\": {\n      \"stringValue\": \"ordered\"\n    },\n    \"updatedAt\": {\n      \"timestampValue\": \"{{ $now.toISO() }}\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        608,
+        1200
+      ],
+      "id": "58b0348e-6891-445a-a1b9-13daa4ad546c",
+      "name": "更新系統(移動到已簽回)",
+      "credentials": {
+        "googleApi": {
+          "id": "FMGPQsk5eHoKygqD",
+          "name": "Google Firebase Cloud Firestore account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('Line Messaging Trigger').first().json.body.events[0].message.id }}/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        832,
+        1200
+      ],
+      "id": "79565d1d-9a84-41d6-b6e9-201156c77667",
+      "name": "Line 轉檔",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hnZ4WkIDEqEMY9Op",
+          "name": "傑太報價系統"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.events[0].message.text }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant\n\n傑太報價系統小幫手\n\n1. 查詢報價進度\n(請先輸入 查詢 再輸入您要找的資料)\n2. 新增客戶\n(直接輸入文字 or 圖片檔名片)\n3. 報價單簽回回傳歸檔\n(請直接上傳 PDF 檔案 並以 J-XX-XXxxx 命名)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        928
+      ],
+      "id": "4cd8244b-7be3-4d1c-8770-82db24072aa6",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        1152
+      ],
+      "id": "e707ae9d-edaa-4bd8-bf69-90ed0fde74ff",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "YEx1b6s2mdczY9oa",
+          "name": "1104 jet02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "=",
+              "text": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        1024
+      ],
+      "id": "e62b1fb1-56bb-4f53-a989-c3a19d3e7f21",
+      "name": "Line Messaging6",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "2gfTo7PPhAW3kDOK",
+          "name": "報價系統小幫手"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.events[0].source.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -352,
+        1168
+      ],
+      "id": "eb18ebc7-1080-4563-b911-8e9e8addeb52",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "showLoadingAnimation",
+        "chatId": "={{ $json.body.events[0].source.userId }}",
+        "loadingSeconds": 40
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        480
+      ],
+      "id": "e58f9667-4a05-4c92-bacd-70a3b64af796",
+      "name": "動畫",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "2gfTo7PPhAW3kDOK",
+          "name": "報價系統小幫手"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "ipas-conpanynumber",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2192,
+        2144
+      ],
+      "id": "10bc6f44-8829-41c8-97ba-42063533f1f4",
+      "name": "MOEA Webhook",
+      "webhookId": "fb0bfef4-2d5e-491f-be39-e4af8e3a0672"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-taxid",
+              "leftValue": "={{ $json.query.taxId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1968,
+        2144
+      ],
+      "id": "8a884194-3060-4ac5-8b4c-25c32bfeaa79",
+      "name": "檢查統編參數"
+    },
+    {
+      "parameters": {
+        "url": "=http://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {{ $json.query.taxId }}&$skip=0&$top=1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1744,
+        2048
+      ],
+      "id": "69c9290f-f180-490e-9a0c-2b7f7f22e4b8",
+      "name": "查詢公司基本資料"
+    },
+    {
+      "parameters": {
+        "url": "=http://data.gcis.nat.gov.tw/od/data/api/426D5542-71FC-4547-9C54-30BDFE20C2CA?$format=json&$filter=Business_Accounting_NO eq {{ $('MOEA Webhook').item.json.query.taxId }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1520,
+        2048
+      ],
+      "id": "0b6b619e-5961-4d9b-8b73-bca7beddc604",
+      "name": "查詢營業項目"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得基本資料\nconst basicData = $('查詢公司基本資料').first().json;\nconst itemsData = $input.first().json;\n\n// 如果查無資料\nif (!basicData || (Array.isArray(basicData) && basicData.length === 0)) {\n  return { found: false };\n}\n\nconst company = Array.isArray(basicData) ? basicData[0] : basicData;\n\n// 格式化營業項目\nlet industryStats = [];\nif (Array.isArray(itemsData)) {\n  industryStats = itemsData.map(item => {\n    const code = item.Business_Seq_NO || '';\n    const name = item.Business_Item || item.Business_Item_Desc || '';\n    return `${code} ${name}`.trim();\n  }).filter(item => item.length > 0);\n}\n\nreturn {\n  found: true,\n  data: {\n    taxId: company.Business_Accounting_NO,\n    name: company.Company_Name,\n    status: company.Company_Status_Desc,\n    representative: company.Responsible_Name,\n    address: company.Company_Location,\n    capital: company.Capital_Stock_Amount,\n    industryStats: industryStats\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1296,
+        2048
+      ],
+      "id": "ef590853-0f1c-4aa4-a4f1-b658c69da8a4",
+      "name": "格式化回傳資料"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -1072,
+        2048
+      ],
+      "id": "8ec4a7a3-367a-421f-9691-4af0844b9c4e",
+      "name": "回傳成功"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"error\": \"統編參數 (taxId) 為必填\", \"found\": false}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -1744,
+        2240
+      ],
+      "id": "e996ed82-fdf3-4c0e-b5d8-b95df558bbe1",
+      "name": "回傳錯誤"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "email",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2224,
+        1776
+      ],
+      "id": "0b4f2311-0105-4e5c-aaaf-7ac8fd286bb0",
+      "name": "一鍵寄出",
+      "webhookId": "bfbea04e-1cf8-4dba-96d9-a0dc66969a38"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -1600,
+        1776
+      ],
+      "id": "d24c5ace-bc6e-4f69-b7e8-fd3572607b66",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.events[0].message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=你是一個資料庫助理。請將使用者的文字轉換為以下的 JSON 格式。\n請只輸出純 JSON，不要有 markdown 格式 (如 ```json)。\n\nOutput JSON Keys:\n- name: 公司名稱\n- taxId: 統一編號\n- contact: 聯絡人姓名\n- phone: 電話\n- address: 地址\n- email: 電子信箱\n- fax: 傳真\n\n如果找不到對應資訊，請填入 null 或空字串。"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        240,
+        320
+      ],
+      "id": "63a81f39-25f9-4944-8750-e65a8ce18941",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        240,
+        512
+      ],
+      "id": "097bcba3-a61f-4642-9dd9-45087851affd",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "YEx1b6s2mdczY9oa",
+          "name": "1104 jet02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "= {{ $('一鍵寄出').item.json.body.subject }}",
+        "message": "={{ $('一鍵寄出').item.json.body.clientContact }} 先生/小姐 您好，  \n感謝您對傑太環境工程的信任與支持！  \n附件為「{{ $('一鍵寄出').item.json.body.projectName }}」之報價單\n（單號：{{ $('一鍵寄出').item.json.body.quoteNumber }}）， \n報價總金額為 NT$ {{ ($('一鍵寄出').item.json.body.grandTotal || 0).toLocaleString() }} 元（含稅）。  \n\n報價單內容細項如附件，如有任何問題或需要調整，歡迎隨時與我們聯繫。  \n\n若報價內容無誤，請於報價單簽名處簽章後回傳， 我們將盡速安排後續作業。 \n\n祝 商祺  \n\n傑太環境工程顧問有限公司\nJET Environmental Engineering Ltd\n業務副理 張惟荏\n電話: (02)6609-5888 #103\n統編: 60779653\nLine 官方帳號：https://lin.ee/5oBJERfl\n網站: https://www.jetenv.com.tw/",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "={{ $json.filename }}"
+              }
+            ]
+          },
+          "ccList": "iversonhsien@gmail.com",
+          "sendTo": "={{ $('一鍵寄出').item.json.body.to }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -1808,
+        1776
+      ],
+      "id": "252b1c7e-7f73-40de-a0d4-89e80ea4bc53",
+      "name": "Create a draft",
+      "webhookId": "9e7c7e45-31e3-45b5-9dbb-5381b3868c09",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "Jcs1hsrsdjXQ20gH",
+          "name": "jetenv"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "conversion",
+        "htmlContent": "={{ $json.body.quoteHtml }}",
+        "filename": "={{ $json.body.quoteNumber }}",
+        "conversionOptions": {
+          "conversionOutput": "file"
+        }
+      },
+      "type": "@pdfgeneratorapi/n8n-nodes-pdf-generator-api.pdfGeneratorApi",
+      "typeVersion": 1,
+      "position": [
+        -2016,
+        1776
+      ],
+      "id": "42e24b58-9da4-4187-83ff-7d0efdc84617",
+      "name": "Convert HTML content to PDF",
+      "credentials": {
+        "pdfGeneratorApi": {
+          "id": "e4kzr70Pvj500K5A",
+          "name": "PDF Generator account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sync-quotation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3280,
+        944
+      ],
+      "id": "fdadc0fd-15d3-42ea-aee7-d9bf054309b8",
+      "name": "Webhook",
+      "webhookId": "c223770e-2ec4-4310-b1f6-0bf153387804"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.mode }}",
+                    "rightValue": "create",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "66efea5c-5671-4c3f-acd0-e5d152181fdf"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "create"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9e828c48-11d0-415f-ac71-3068d659422f",
+                    "leftValue": "={{ $('Webhook').item.json.body.mode }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1131d9ee-c372-40fd-85eb-d1e0a70272c5",
+                    "leftValue": "={{ $('Webhook').item.json.body.mode }}",
+                    "rightValue": "version",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "version"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0bae84a5-d1cd-42aa-8cee-06d577ed7bc2",
+                    "leftValue": "={{ $('Webhook').item.json.body.mode }}",
+                    "rightValue": "delete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delete"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -2768,
+        912
+      ],
+      "id": "9f95a4c6-67d8-4021-865e-faac054b54aa",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Search files and folders').item.json.id }}",
+          "mode": "id"
+        },
+        "changeFileContent": true,
+        "inputDataFieldName": "={{ $json.filename }}",
+        "newUpdatedFileName": "={{ $('Webhook').item.json.body.filename }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1968,
+        912
+      ],
+      "id": "fa2104c1-a623-4702-951c-cd50d1f138fe",
+      "name": "Update file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "conversion",
+        "htmlContent": "={{ $('Webhook').item.json.body.quoteHtml }}",
+        "filename": "={{ $('Webhook').item.json.body.quoteNumber }}",
+        "conversionOptions": {
+          "conversionOutput": "file"
+        }
+      },
+      "type": "@pdfgeneratorapi/n8n-nodes-pdf-generator-api.pdfGeneratorApi",
+      "typeVersion": 1,
+      "position": [
+        -2240,
+        912
+      ],
+      "id": "a6e4f0de-a4a8-4698-9eff-7ce2c54a5bb1",
+      "name": "Convert HTML content to PDF1",
+      "credentials": {
+        "pdfGeneratorApi": {
+          "id": "e4kzr70Pvj500K5A",
+          "name": "PDF Generator account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $('Webhook').item.json.body.quoteNumber }}",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -3056,
+        944
+      ],
+      "id": "bbb93d9b-3469-49a9-b000-ceed7de68159",
+      "name": "Search files and folders",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "conversion",
+        "htmlContent": "={{ $('Webhook').item.json.body.quoteHtml }}",
+        "filename": "={{ $('Webhook').item.json.body.quoteNumber }}",
+        "conversionOptions": {
+          "conversionOutput": "file"
+        }
+      },
+      "type": "@pdfgeneratorapi/n8n-nodes-pdf-generator-api.pdfGeneratorApi",
+      "typeVersion": 1,
+      "position": [
+        -2240,
+        752
+      ],
+      "id": "a45d70b6-465f-4736-9f9b-902ed0546fd2",
+      "name": "Convert HTML content to PDF2",
+      "credentials": {
+        "pdfGeneratorApi": {
+          "id": "e4kzr70Pvj500K5A",
+          "name": "PDF Generator account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.filename }}",
+        "name": "={{ $('Webhook').item.json.body.filename }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1aHDPgFiPf0ZUwrDLAhCK5odnBCDCyVbz",
+          "mode": "list",
+          "cachedResultName": "報價單",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1aHDPgFiPf0ZUwrDLAhCK5odnBCDCyVbz"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1984,
+        752
+      ],
+      "id": "30f69efc-6ef0-43fb-91b1-b40e2cc563d2",
+      "name": "Upload file1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"status\": \"success\" }",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -1248,
+        1056
+      ],
+      "id": "6dc2c645-28ed-47c9-83e5-54ffb9c1089a",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $('Webhook').item.json.body.quoteNumber }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1aHDPgFiPf0ZUwrDLAhCK5odnBCDCyVbz",
+          "mode": "list",
+          "cachedResultName": "報價單",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1aHDPgFiPf0ZUwrDLAhCK5odnBCDCyVbz"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2240,
+        1232
+      ],
+      "id": "b6845e0f-6b39-4b4c-bdf5-9c54067e6a35",
+      "name": "Create folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "conversion",
+        "htmlContent": "={{ $('Webhook').item.json.body.quoteHtml }}",
+        "filename": "={{ $('Webhook').item.json.body.quoteNumber }}",
+        "conversionOptions": {
+          "conversionOutput": "file"
+        }
+      },
+      "type": "@pdfgeneratorapi/n8n-nodes-pdf-generator-api.pdfGeneratorApi",
+      "typeVersion": 1,
+      "position": [
+        -2032,
+        1232
+      ],
+      "id": "bca62ebb-ff07-4d8d-94b8-a82724d1a57e",
+      "name": "Convert HTML content to PDF3",
+      "credentials": {
+        "pdfGeneratorApi": {
+          "id": "e4kzr70Pvj500K5A",
+          "name": "PDF Generator account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.filename }}",
+        "name": "={{ $('Webhook').item.json.body.filename }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Create folder').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1824,
+        1232
+      ],
+      "id": "9bc9da2e-4a16-4443-bacb-f7f0e1f5382f",
+      "name": "上傳版本更新",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Search files and folders').item.json.id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Create folder').item.json.id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1616,
+        1232
+      ],
+      "id": "3fc7cd35-aab2-4434-aa53-142c4d07a3f6",
+      "name": "移動舊版本進去",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "32bff26d-2a3f-4a13-b649-a24f2f94d65e",
+              "leftValue": "={{ $('Search files and folders').item.json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2448,
+        928
+      ],
+      "id": "a69fcb5e-ab26-4a7a-812d-4e98d3920dd7",
+      "name": "如果不是空的 直接true"
+    },
+    {
+      "parameters": {
+        "resource": "conversion",
+        "htmlContent": "={{ $('Webhook').item.json.body.quoteHtml }}",
+        "filename": "={{ $('Webhook').item.json.body.quoteNumber }}",
+        "conversionOptions": {
+          "conversionOutput": "file"
+        }
+      },
+      "type": "@pdfgeneratorapi/n8n-nodes-pdf-generator-api.pdfGeneratorApi",
+      "typeVersion": 1,
+      "position": [
+        -2240,
+        1056
+      ],
+      "id": "e2eaf222-3102-4438-8fa5-27e48b52cec2",
+      "name": "Convert HTML content to PDF4",
+      "credentials": {
+        "pdfGeneratorApi": {
+          "id": "e4kzr70Pvj500K5A",
+          "name": "PDF Generator account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.filename }}",
+        "name": "={{ $('Webhook').item.json.body.filename }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1aHDPgFiPf0ZUwrDLAhCK5odnBCDCyVbz",
+          "mode": "list",
+          "cachedResultName": "報價單",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1aHDPgFiPf0ZUwrDLAhCK5odnBCDCyVbz"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1968,
+        1056
+      ],
+      "id": "d9ef4187-20bc-47ae-9786-67b7dd303b36",
+      "name": "Upload file2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Search files and folders').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2240,
+        1408
+      ],
+      "id": "fa2394e1-f990-456e-917c-ee47ab662ba8",
+      "name": "Delete a file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "雲端同步\n",
+        "height": 944,
+        "width": 2336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3312,
+        736
+      ],
+      "typeVersion": 1,
+      "id": "36aa048c-78cf-4dfc-8161-d2d7f4589451",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1744,
+        496
+      ],
+      "id": "540868bb-d612-4917-b8d7-482b2b937935",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.contact }}-{{ $json.name }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Search files and folders1').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2000,
+        496
+      ],
+      "id": "e9c604c8-7b1a-4afe-89d4-d67c9a2b80dc",
+      "name": "Upload file3",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $today.format('yyyy-MM-dd') }}",
+        "filter": {
+          "driveId": {
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "whatToSearch": "folders"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -240,
+        752
+      ],
+      "id": "a672d6a3-f1a6-43e6-a673-07938ffeab43",
+      "name": "Search files and folders1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e201dac3-f648-497e-a797-89c76d58f20b",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -32,
+        768
+      ],
+      "id": "2ecd401b-8ac7-429b-bedf-6048cde5385b",
+      "name": "If1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $today.format('yyyy-MM-dd') }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1Rs723QJQlP5mpwHH7mTIX0RpGmIJc1y1",
+          "mode": "list",
+          "cachedResultName": "名片",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1Rs723QJQlP5mpwHH7mTIX0RpGmIJc1y1"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        192,
+        672
+      ],
+      "id": "86f7bac8-c0d8-4142-9b15-b29752a7097d",
+      "name": "Create folder1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $('Create folder1').item.json.id }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2256,
+        496
+      ],
+      "id": "54f46f76-7cca-44ca-901d-4dca876053d4",
+      "name": "Move file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "yvOmwh6RKQx4HIk8",
+          "name": "jetenv02"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $('Line Messaging Trigger').item.json.body.events[0].source.userId }}",
+        "messages": {
+          "values": [
+            {
+              "quoteToken": "={{ $('Line Messaging Trigger').item.json.body.events[0].message.quoteToken }}",
+              "text": "=此張名片雲端同步失敗 請查詢雲端\n報價系統 https://jetenvmoney.zeabur.app/\n客戶名稱為：{{ $json.name }}\n電話：{{ $json.phone }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        2736,
+        688
+      ],
+      "id": "67a8531f-a364-4753-902d-9022490f9894",
+      "name": "Line Messaging2",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "2gfTo7PPhAW3kDOK",
+          "name": "報價系統小幫手"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "240ce54d-2c0e-4420-8924-124ee2ccfca8",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "Node 'Create folder1' hasn't been executed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2464,
+        592
+      ],
+      "id": "1d74d17a-8212-4b06-a717-bf14590a7422",
+      "name": "If2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search files and folders1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "圖片": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many documents in Google Cloud Firestore": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging Trigger": {
+      "main": [
+        [
+          {
+            "node": "動畫",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Get many documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many documents": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "更新系統(移動到已簽回)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Line Messaging3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新系統(移動到已簽回)": {
+      "main": [
+        [
+          {
+            "node": "Line 轉檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line 轉檔": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "動畫": {
+      "main": [
+        []
+      ]
+    },
+    "MOEA Webhook": {
+      "main": [
+        [
+          {
+            "node": "檢查統編參數",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "檢查統編參數": {
+      "main": [
+        [
+          {
+            "node": "查詢公司基本資料",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "回傳錯誤",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢公司基本資料": {
+      "main": [
+        [
+          {
+            "node": "查詢營業項目",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢營業項目": {
+      "main": [
+        [
+          {
+            "node": "格式化回傳資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "格式化回傳資料": {
+      "main": [
+        [
+          {
+            "node": "回傳成功",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "一鍵寄出": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML content to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML content to PDF": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML content to PDF2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "如果不是空的 直接true",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create folder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update file1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML content to PDF1": {
+      "main": [
+        [
+          {
+            "node": "Update file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML content to PDF2": {
+      "main": [
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create folder": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML content to PDF3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML content to PDF3": {
+      "main": [
+        [
+          {
+            "node": "上傳版本更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "上傳版本更新": {
+      "main": [
+        [
+          {
+            "node": "移動舊版本進去",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "移動舊版本進去": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "如果不是空的 直接true": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML content to PDF1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert HTML content to PDF4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML content to PDF4": {
+      "main": [
+        [
+          {
+            "node": "Upload file2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload file3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Create folder1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "圖片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create folder1": {
+      "main": [
+        [
+          {
+            "node": "圖片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file3": {
+      "main": [
+        [
+          {
+            "node": "Move file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Move file": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Line Messaging2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5e2af755-e391-461b-ae7d-8e1c9d2fe93a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5cb73612af9c3d99fb9474cf656425558c43c24de4951be223ad83a0b24b4e43"
+  },
+  "id": "yWh51nm8xmH1nhof",
+  "tags": []
+}

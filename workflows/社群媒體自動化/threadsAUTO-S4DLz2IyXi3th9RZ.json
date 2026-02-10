@@ -1,0 +1,1902 @@
+{
+  "updatedAt": "2025-12-14T06:50:31.137Z",
+  "createdAt": "2025-06-17T16:11:28.345Z",
+  "id": "S4DLz2IyXi3th9RZ",
+  "name": "threadsAUTO",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        -1200
+      ],
+      "id": "0e8edb28-76e1-4bf8-8049-e27e284668dc",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "threads-post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ContainerId": "={{ $json.id }}",
+            "row_number": "={{ $('GetLastestUnpublish').item.json.row_number }}",
+            "id": "={{ $('GetLastestUnpublish').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Posted",
+              "displayName": "Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1856,
+        -640
+      ],
+      "id": "7b540794-650a-4555-97fa-fb4151db5ac5",
+      "name": "InsertContainerId",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.threads.net/v1.0/23977660861892336/threads_publish",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $('get threads new token').item.json.token }}"
+            },
+            {
+              "name": "creation_id",
+              "value": "={{ $json.ContainerId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2080,
+        -640
+      ],
+      "id": "cd12cd13-ca50-4ba6-b5c8-d09cd2140004",
+      "name": "PublishPost",
+      "executeOnce": true,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.threads.net/v1.0/23977660861892336/threads",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "media_type",
+              "value": "TEXT"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.token }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Code').item.json.Content }}"
+            },
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        -640
+      ],
+      "id": "7ec76325-ce80-42bc-93bc-4f3f492a86aa",
+      "name": "CreatePostContainer",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "threads-post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        976,
+        -640
+      ],
+      "id": "bd35762d-6d60-486a-bd34-8feccb02c3ab",
+      "name": "GetAllPost",
+      "alwaysOutputData": false,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "threads-post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1152,
+        -640
+      ],
+      "id": "d72344c4-968b-435c-b067-2fdc5eafb045",
+      "name": "GetLastestUnpublish",
+      "alwaysOutputData": false,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 修正版：處理布爾值和字串的混合情況\nconst allPosts = $input.all();\nconst unpublishedPosts = allPosts.filter(item => {\n  const posted = item.json.Posted;\n  \n  // 處理不同類型的 Posted 值\n  if (posted === true || posted === \"true\" || posted === \"True\") {\n    return false; // 已發布，排除\n  }\n  \n  if (posted === false || posted === \"false\" || posted === \"False\" || posted === \"\" || posted === null || posted === undefined) {\n    return true; // 未發布，保留\n  }\n  \n  return true; // 預設為未發布\n});\n\n// 取得第一筆未發布的貼文\nif (unpublishedPosts.length > 0) {\n  return [unpublishedPosts[0]];\n} else {\n  return []; // 沒有未發布的貼文，返回空陣列\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        -640
+      ],
+      "id": "6d988d35-be29-460f-b0b3-0c1a8d7d4780",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "threads-post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Posted": "TRUE",
+            "id": "={{ $('InsertContainerId').item.json.id }}",
+            "CreateId": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Posted",
+              "displayName": "Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CreateId",
+              "displayName": "CreateId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2576,
+        -640
+      ],
+      "id": "7dbe7707-6ef4-46b4-9c42-5902942daa21",
+      "name": "UpdatePostStatus1",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{ $json.cleanText }}\"\n    },\n    {\n      \"type\": \"flex\",\n      \"altText\": \"貼文操作選單\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"size\": \"kilo\",\n        \"header\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"🤖 內容操作選單\",\n              \"weight\": \"bold\",\n              \"color\": \"#ffffff\",\n              \"size\": \"lg\",\n              \"align\": \"center\"\n            }\n          ],\n          \"backgroundColor\": \"#6366f1\",\n          \"paddingAll\": \"15px\"\n        },\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"請選擇您要執行的操作：\",\n              \"size\": \"sm\",\n              \"color\": \"#666666\",\n              \"margin\": \"sm\",\n              \"align\": \"center\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"md\"\n            }\n          ],\n          \"paddingAll\": \"15px\"\n        },\n        \"footer\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"spacing\": \"sm\",\n          \"contents\": [\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"postback\",\n                \"label\": \"✅ 立即發布\",\n                \"data\": \"action=PUBLISH\",\n                \"displayText\": \"發布\"\n              },\n              \"color\": \"#10b981\"\n            },\n            {\n              \"type\": \"button\",\n              \"style\": \"secondary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"postback\",\n                \"label\": \"🔄 重新生成\",\n                \"data\": \"action=REGENERATE\",\n                \"displayText\": \"重新生成\"\n              },\n              \"color\": \"#6366f1\"\n            },\n            {\n              \"type\": \"button\",\n              \"style\": \"secondary\",\n              \"height\": \"sm\",\n              \"action\": {\n                \"type\": \"postback\",\n                \"label\": \"📝 我要修改\",\n                \"data\": \"action=MODIFY\",\n                \"displayText\": \"我要修改\"\n              },\n              \"color\": \"#f59e0b\"\n            }\n          ],\n          \"paddingAll\": \"15px\"\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        -1344
+      ],
+      "id": "c2321e94-c51f-4674-95ed-774ebf38a4cd",
+      "name": "發送回應給 LINE",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// LINE Bot 支援換行的 Code1 修正版\n// 獲取內容\nlet generatedContent;\nif ($input.first().json.message && $input.first().json.message.content) {\n  generatedContent = $input.first().json.message.content;\n} else if ($input.first().json.Content) {\n  generatedContent = $input.first().json.Content;\n} else {\n  generatedContent = \"無法取得內容\";\n}\n\n// 建立 LINE 訊息文字（保持換行）\nconst lineText = `🤖 AI 為你生成了新的 iPAS 貼文：\n\n${generatedContent}\n\n📝 請回覆：\n✅ 「發布」或「Yes」- 立即發布到 Threads\n🔄 「重新生成」- 生成新內容\n📝 「修改：[你的建議]」- 根據建議調整內容`;\n\n// 🔥 關鍵：正確轉義換行符號，讓 LINE 能顯示換行\nconst cleanText = lineText\n  .replace(/\\r?\\n/g, '\\\\n')      // 將換行符號轉義為 \\\\n（LINE 會正確解析）\n  .replace(/\"/g, '\\\\\"')          // 轉義雙引號\n  .trim();                       // 去除首尾空白\n\n// 返回處理過的資料\nreturn [{\n  json: {\n    Content: generatedContent,\n    cleanText: cleanText,\n    Posted: \"PENDING\",\n    Status: \"WAITING_APPROVAL\",\n    Time: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -1344
+      ],
+      "id": "4f0933f9-991a-43a6-9476-7b85e9d8b0b7",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "366fa163-4b56-4f08-9bcf-bdaaedaa8f92",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -544
+      ],
+      "id": "ad3c273d-f9a8-4d75-b5b5-1dc12f8d4681",
+      "name": "Webhook",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "PUBLISH",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a5222d2e-4d1d-4275-a8ef-7b795945afaa"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "78ee16d2-5144-4dc9-af17-e45e2190e1c1",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "MODIFY",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        160,
+        -448
+      ],
+      "id": "9d9ff385-6de7-4950-a31a-1a6166b2a8f2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 更新版：判斷意圖節點 - 支援 FLEX 卡片 postback 事件\n// 作者：Nick Chang｜nickleo051216@gmail.com｜0932-684-051\n// 個人網站：ZN Studio｜https://portaly.cc/zn.studio\n// Threads：ZN Studio (@nickai216)｜https://www.threads.com/@nickai216\n\nconsole.log('🚀 開始處理LINE事件...');\n\n// 取得LINE事件資料\nconst webhookData = $input.first().json;\nconst lineEvent = webhookData.body?.events?.[0];\n\nif (!lineEvent) {\n  console.log('❌ 錯誤：無效的LINE事件');\n  return [{ json: { error: '無效的LINE事件' } }];\n}\n\nconst userId = lineEvent.source.userId;\nconst replyToken = lineEvent.replyToken;\nlet action = 'MODIFY';  // 預設為修改\nlet suggestion = '';\nlet originalMessage = '';\n\n// 🎯 處理不同類型的LINE事件\nif (lineEvent.type === 'postback') {\n  // 📱 處理 FLEX 卡片的 postback 事件\n  const postbackData = lineEvent.postback.data;\n  originalMessage = lineEvent.postback.displayText || '';\n  \n  console.log('📱 收到 postback 事件:', postbackData);\n  \n  // 解析 postback 數據 (格式: action=PUBLISH)\n  const actionMatch = postbackData.match(/action=([A-Z_]+)/);\n  if (actionMatch) {\n    const buttonAction = actionMatch[1];\n    \n    switch(buttonAction) {\n      case 'PUBLISH':\n        action = 'PUBLISH';\n        console.log('✅ 用戶點擊：立即發布');\n        break;\n      case 'REGENERATE':\n        action = 'MODIFY';  // 重新生成也歸類為修改流程\n        suggestion = '重新生成';\n        console.log('🔄 用戶點擊：重新生成');\n        break;\n      case 'MODIFY':\n        action = 'MODIFY';\n        suggestion = '進入修改模式';\n        console.log('📝 用戶點擊：我要修改');\n        break;\n      default:\n        console.log('❓ 未知的 postback 動作:', buttonAction);\n        action = 'MODIFY';\n    }\n  }\n  \n} else if (lineEvent.type === 'message' && lineEvent.message) {\n  // 💬 處理傳統文字訊息\n  const userMessage = lineEvent.message.text || '';\n  const cleanMessage = userMessage.trim();\n  originalMessage = cleanMessage;\n  \n  console.log('💬 收到文字訊息:', userMessage);\n  \n  // 🔍 智能判斷用戶意圖\n  if (cleanMessage.startsWith('修改：') || cleanMessage.startsWith('建議：')) {\n    action = 'MODIFY';\n    suggestion = cleanMessage.replace(/^(修改：|建議：)/, '').trim();\n    console.log('📝 辨識為修改動作，建議:', suggestion);\n    \n  } else {\n    // 檢查發布關鍵字\n    const publishKeywords = ['發布', 'OK', 'Yes', '確定', '同意', '發表', 'publish'];\n    const regenerateKeywords = ['重新生成', '再來一次', '重新來', 'regenerate', '重做'];\n    \n    if (publishKeywords.some(keyword => \n      cleanMessage.toLowerCase().includes(keyword.toLowerCase()))) {\n      action = 'PUBLISH';\n      console.log('✅ 辨識為發布動作');\n      \n    } else if (regenerateKeywords.some(keyword => \n      cleanMessage.toLowerCase().includes(keyword.toLowerCase()))) {\n      action = 'MODIFY';  // 重新生成也歸類為修改流程\n      suggestion = '重新生成';\n      console.log('🔄 辨識為重新生成動作');\n      \n    } else {\n      action = 'MODIFY';\n      suggestion = cleanMessage;\n      console.log('📝 辨識為修改動作，建議:', suggestion);\n    }\n  }\n} else {\n  console.log('❓ 未知的事件類型:', lineEvent.type);\n  action = 'MODIFY';\n}\n\n// 🎯 建立統一的回應格式（只有兩種路線：PUBLISH 或 MODIFY）\nconst result = {\n  action: action,              // 只會是 'PUBLISH' 或 'MODIFY'\n  suggestion: suggestion,      // 修改建議或動作類型\n  userId: userId,\n  originalMessage: originalMessage,\n  timestamp: new Date().toISOString(),\n  replyToken: replyToken,\n  eventType: lineEvent.type,\n  // 除錯資訊\n  debug: {\n    eventType: lineEvent.type,\n    hasPostback: !!lineEvent.postback,\n    hasMessage: !!lineEvent.message,\n    postbackData: lineEvent.postback?.data || null,\n    processedAs: action === 'PUBLISH' ? '發布流程' : '修改/重新生成流程'\n  }\n};\n\nconsole.log('✨ 處理完成，走向:', result.debug.processedAs);\nconsole.log('📋 完整結果:', JSON.stringify(result, null, 2));\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -448
+      ],
+      "id": "9b64fcdc-11e1-4eb3-bed6-a4a7d9b6d67d",
+      "name": "判斷意圖"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"今日文章 {{ $('取得連結').item.json.permalink }}  已發布\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2800,
+        -640
+      ],
+      "id": "829393ee-8c26-4980-80bf-33840593500f",
+      "name": "通知已發送",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 719822527,
+          "mode": "list",
+          "cachedResultName": "AIPOST TRY",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=719822527"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Content": "={{ $json.choices[0].message.content }}",
+            "Status": "DRAFT",
+            "GeneratedTime": "={{ $now }}",
+            "Version": "1",
+            "UserAction": "初始生成",
+            "IsLatest": "TRUE",
+            "PostDate": "={{ $now.format('DD') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "GeneratedTime",
+              "displayName": "GeneratedTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Version",
+              "displayName": "Version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "UserAction",
+              "displayName": "UserAction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "IsLatest",
+              "displayName": "IsLatest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "PostDate",
+              "displayName": "PostDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        320,
+        -1216
+      ],
+      "id": "f9cc47ff-1440-4905-90d1-20320de50b90",
+      "name": "AIPOST TRY  新增草稿",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 719822527,
+          "mode": "list",
+          "cachedResultName": "AIPOST TRY",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=719822527"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "IsLatest",
+              "lookupValue": "TRUE"
+            },
+            {
+              "lookupColumn": "PostDate",
+              "lookupValue": "={{ $now.format('DD') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        384,
+        -336
+      ],
+      "id": "62043ab4-2757-4e9a-a404-2443b618895c",
+      "name": "取得最新版本",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=你是專業的社群內容創作者。請根據以下指示修改內容：\n\n原始內容：\n{{ $('取得最新版本').item.json.Content }}\n\n修改要求：\n{{ $('判斷意圖').item.json.suggestion }}\n\n你有 Tool：Message a model in Perplexity1\n\n可以使用 進行搜尋最新消息並修改\n\n請保持以下格式要求：\n- 字數：100-200字\n- 使用適當換行讓內容易讀\n- 每行不超過30字\n- emoji適度使用\n- hashtag不用放\n- 語氣風格要符合iPAS應用規劃師的專業形象\n\n請只回傳修改後的內容，不要額外說明。\n\n\n\n你是專業的社群內容創作者，請生成有趣的繁體中文Threads貼文。\n\n發文內容為 n8n 教學相關消息更新， n8n 相關知識 或是AI科技 生成式AI、AI工具應用(n8n, LineBot, apps script, claude, gemini...)等介紹分享\n\n\n\n| 語氣風格     | 發文語氣說明                                                                 |\n|--------------|------------------------------------------------------------------------------|\n| 🚀 熱血共學風 | 以「正在努力中的 n8n 學習者」語氣，分享學習目標、挑戰或練習主題，激勵自己也鼓舞別人。        |\n| 🎯 專業科普風 | 用「懂技術但會講人話」的語氣，簡單清楚解釋 AI、iPAS 或生成式技術觀念，幫助讀者理解。        |\n| 🛠️ 實作教學風 | 用「有做過、來分享給大家」的語氣，條理清楚介紹你的自動化整合流程或實作經驗。                |\n| 📖 備考日記風 | 以「今天學了什麼」的語氣記錄 iPAS 備考進度與心得，語氣自然可親，像在寫日記一樣。            |\n| 🌏 趨勢洞察風 | 用「未來顧問」的語氣提出 AI 在產業、職場的觀察或見解，語氣沉穩，可附提問鼓勵思考。        |\n| 🌿 輕鬆生活風 | 用「朋友聊天」的語氣，分享日常趣事、生活觀察，輕鬆自然，避免太多專業詞彙。                |\n| 🧘 總結反思風 | 以「一週回顧」的語氣總結進度、心得，並規劃下週，語氣穩重、有條理，呈現持續成長感。         |\n\n語氣隨機用一種\n\n🚀【iPAS應用規劃師每日挑戰】 🚀【iPAS應用規劃師每日挑戰】 Day {{ Math.floor((new Date() - new Date('2025-06-20')) / (1000 * 60 * 60 * 24)) + 1 }}  \n**格式要求：**\n- 字數：100-200字\n- 使用適當換行讓內容易讀\n- 每行不超過30字\n- emoji適度使用，不要過多\n- hashtag不用放\n\n**輸出格式範例：**\n🌟 開場吸引注意\n\n主要內容第一段\n保持簡潔有力 ✨\n\n內容豐富一些\n\n互動問題或總結\n鼓勵大家留言討論 💬\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        608,
+        -336
+      ],
+      "id": "3723d2bf-381a-4e55-a7bc-a64657a6a1de",
+      "name": "OpenAI1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\":\"{{ $json.cleanText }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -448
+      ],
+      "id": "cde113fe-8bf3-4388-b429-35325b64a2e9",
+      "name": "發送回應給 LINE1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// LINE Bot 支援換行的 Code1 修正版\n// 獲取內容\nlet generatedContent;\nif ($input.first().json.message && $input.first().json.message.content) {\n  generatedContent = $input.first().json.message.content;\n} else if ($input.first().json.Content) {\n  generatedContent = $input.first().json.Content;\n} else {\n  generatedContent = \"無法取得內容\";\n}\n\n// 建立 LINE 訊息文字（保持換行）\nconst lineText = `🤖 AI 為你生成了新的 iPAS 貼文：\n\n${generatedContent}\n\n📝 請回覆：\n✅ 「發布」或「Yes」- 立即發布到 Threads\n🔄 「重新生成」- 生成新內容\n📝 「修改：[你的建議]」- 根據建議調整內容`;\n\n// 🔥 關鍵：正確轉義換行符號，讓 LINE 能顯示換行\nconst cleanText = lineText\n  .replace(/\\r?\\n/g, '\\\\n')      // 將換行符號轉義為 \\\\n（LINE 會正確解析）\n  .replace(/\"/g, '\\\\\"')          // 轉義雙引號\n  .trim();                       // 去除首尾空白\n\n// 返回處理過的資料\nreturn [{\n  json: {\n    Content: generatedContent,\n    cleanText: cleanText,\n    Posted: \"PENDING\",\n    Status: \"WAITING_APPROVAL\",\n    Time: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        -448
+      ],
+      "id": "22730c97-df85-47ad-8bf9-584b2d4e3e86",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 719822527,
+          "mode": "list",
+          "cachedResultName": "AIPOST TRY",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=719822527"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "IsLatest": "FALSE",
+            "row_number": "={{ $('取得最新版本').item.json.row_number }}",
+            "Version": "=={{ $('取得最新版本').item.json.Version }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "GeneratedTime",
+              "displayName": "GeneratedTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Version",
+              "displayName": "Version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "UserAction",
+              "displayName": "UserAction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "IsLatest",
+              "displayName": "IsLatest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "PostDate",
+              "displayName": "PostDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        976,
+        -240
+      ],
+      "id": "89a30de7-8fde-46fe-bb7e-98547b05e348",
+      "name": "舊版本更新",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer kYRupZwyMBgGXVMGuZWbLID3MkieSHykUuIPYom1Gk21ZL1Qg+M5AZGhzP4t/h5O9AZ7PUih+JMVUbNZLbc6HWtld/eL+U6mec5WO3RIgWCoiZuocSkfdt0WolGtCmAej4ynw4FVmRPkz4FS1+bk8AdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.body.events[0].source.userId }}"
+            },
+            {
+              "name": "loadingSeconds",
+              "value": "40"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -64,
+        -640
+      ],
+      "id": "64c39552-608d-4e2a-a7f0-f84ca94863f3",
+      "name": "loading/start"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 719822527,
+          "mode": "list",
+          "cachedResultName": "AIPOST TRY",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=719822527"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "IsLatest": "=TRUE",
+            "Version": "={{ $json.Version }}+1",
+            "PostDate": "={{ $now.format('DD') }}",
+            "Content": "={{ $('OpenAI1').item.json.message.content }}",
+            "GeneratedTime": "={{ $('取得最新版本').item.json.GeneratedTime }}",
+            "Status": "={{ $('取得最新版本').item.json.Status }}",
+            "UserAction": "=修正版"
+          },
+          "matchingColumns": [
+            "IsLatest"
+          ],
+          "schema": [
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "GeneratedTime",
+              "displayName": "GeneratedTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Version",
+              "displayName": "Version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "UserAction",
+              "displayName": "UserAction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "IsLatest",
+              "displayName": "IsLatest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "PostDate",
+              "displayName": "PostDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1200,
+        -240
+      ],
+      "id": "952118ed-5d6d-4c4f-94a6-2dff5bd41f77",
+      "name": "新增新版本",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 719822527,
+          "mode": "list",
+          "cachedResultName": "AIPOST TRY",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=719822527"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "IsLatest",
+              "lookupValue": "TRUE"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        384,
+        -640
+      ],
+      "id": "1ef4e925-d34a-4090-91d9-138977139ea9",
+      "name": "取得最新草稿",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "threads-post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Posted": "FALSE",
+            "Content": "={{ $json.Content }}",
+            "Time": "={{ $json.GeneratedTime }}"
+          },
+          "matchingColumns": [
+            "Posted"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Posted",
+              "displayName": "Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        672,
+        -640
+      ],
+      "id": "9505c9ae-5044-449a-bd64-8434bbc229df",
+      "name": "Update row in sheet",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "threads-post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Content": "={{ $('Message a model').item.json.message.content }}",
+            "Posted": "FALSE",
+            "Time": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "Posted"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Image",
+              "displayName": "Image",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tag",
+              "displayName": "Tag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Posted",
+              "displayName": "Posted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ContainerId",
+              "displayName": "ContainerId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "PublishPostId",
+              "displayName": "PublishPostId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        656,
+        -928
+      ],
+      "id": "a1dd629f-6291-40e2-a064-e7be60bc363b",
+      "name": "Update row in threads-post",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -992
+      ],
+      "id": "b4398ad4-1ca2-41e5-983b-1dc2f36c0224",
+      "name": "Message a model in Perplexity",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=你是專業的社群內容創作者，請生成有趣的繁體中文Threads貼文。\n生活化一點 (例如平常生活中常常用到的 AI n8n  專業知識)\n發文內容為 任何職業使用 可以怎麼使用 n8n AI，用到怎麼樣的情況要用哪種 n8n AI，\n\n(可以引用 或是{{ $today }}n8n 相關更新或是工作流 n8n AI工具應用(n8n, claude, GPT, gemini, apps script...)等介紹分享)\n\n你有 工具 \n\"Message a model in Perplexity\"\n\n請協助上網搜尋   {{ $today }} 最新的AI新聞\n並結合內文生成內容  任何職業使用 可以怎麼使用 n8n AI，用到怎麼樣的情況要用哪種n8n 工作流\n\n\n| 語氣風格     | 發文語氣說明                                                                 |\n|--------------|------------------------------------------------------------------------------|\n| 🚀 熱血共學風 | 以「正在努力中的 AI 學習者」語氣，分享學習目標、挑戰或練習主題，激勵自己也鼓舞別人。        |\n| 🎯 專業科普風 | 用「懂技術但會講人話」的語氣，簡單清楚解釋 AI、iPAS 或生成式技術觀念，幫助讀者理解。        |\n| 🛠️ 實作教學風 | 用「有做過、來分享給大家」的語氣，條理清楚介紹你的自動化整合流程或實作經驗。                |\n| 📖 備考日記風 | 以「今天學了什麼」的語氣記錄 iPAS 備考進度與心得，語氣自然可親，像在寫日記一樣。            |\n| 🌏 趨勢洞察風 | 用「未來顧問」的語氣提出 AI 在產業、職場的觀察或見解，語氣沉穩，可附提問鼓勵思考。        |\n| 🌿 輕鬆生活風 | 用「朋友聊天」的語氣，分享日常趣事、生活觀察，輕鬆自然，避免太多專業詞彙。                |\n| 🧘 總結反思風 | 以「一週回顧」的語氣總結進度、心得，並規劃下週，語氣穩重、有條理，呈現持續成長感。         |\n\n以上語氣隨機用一種\n\n標題用：\n🚀【iPAS應用規劃師每日挑戰】 Day {{ Math.floor((new Date() - new Date('2025-06-20')) / (1000 * 60 * 60 * 24)) + 1 }}\n**格式要求：**\n- 字數：100-250字\n- 使用適當換行讓內容易讀\n- 每行不超過30字\n- emoji適度使用，不要過多\n- hashtag 不用放\n\n**輸出格式範例：**\n🌟 開場吸引注意\n\n主要內容第一段\n保持簡潔有力 ✨\n\n內容以 專業知識為主 豐富一些\n\n互動問題或總結\n鼓勵大家留言討論 💬\n不用放標籤\n\n你有 工具 \n\"Message a model in Perplexity\"\n\n請協助上網搜尋最新的AI新聞(Claude 更新 GPT 更新 Gemini 更新 等AI工具的更新)\n並結合內文生成內容\n"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -64,
+        -1200
+      ],
+      "id": "595cf475-d567-4108-870a-710ad0422d45",
+      "name": "Message a model",
+      "retryOnFail": true,
+      "credentials": "[REMOVED]",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E",
+          "mode": "list",
+          "cachedResultName": "Nick_n8n_demo ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1778932180,
+          "mode": "list",
+          "cachedResultName": "自動更新權杖",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2VDbZHjGZbTiT_qyXIAJjLw0pn5B-fOyxVIsoZXl9E/edit#gid=1778932180"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1488,
+        -640
+      ],
+      "id": "da50d11f-d2cc-41b7-823f-1a68c5e09d7c",
+      "name": "get threads new token",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "messages": {
+          "message": [
+            {
+              "content": "=修改要求：\n{{ $('判斷意圖').item.json.suggestion }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -112
+      ],
+      "id": "f6d1cec0-b6b0-4cf0-9daf-5081bcd911c9",
+      "name": "Message a model in Perplexity1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"此次AI發文 發生錯誤\"\n    }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        -1008
+      ],
+      "id": "384da052-35c9-403d-bc74-de146bab53cd",
+      "name": "發送回應給 LINE2",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2480,
+        -400
+      ],
+      "id": "f12cada5-5c12-4a12-8d7b-c4b1736b5011",
+      "name": "Wait",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.threads.net/v1.0/{{ $json.id }}?fields=permalink",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $('get threads new token').item.json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2288,
+        -480
+      ],
+      "id": "c25b8f4e-4f2c-44c9-ab40-cb8134f98008",
+      "name": "取得連結",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "InsertContainerId": {
+      "main": [
+        [
+          {
+            "node": "PublishPost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PublishPost": {
+      "main": [
+        [
+          {
+            "node": "取得連結",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CreatePostContainer": {
+      "main": [
+        [
+          {
+            "node": "InsertContainerId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetAllPost": {
+      "main": [
+        [
+          {
+            "node": "GetLastestUnpublish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetLastestUnpublish": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "get threads new token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UpdatePostStatus1": {
+      "main": [
+        [
+          {
+            "node": "通知已發送",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "發送回應給 LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "判斷意圖",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "loading/start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "判斷意圖": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "取得最新草稿",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "取得最新版本",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "發送回應給 LINE": {
+      "main": [
+        []
+      ]
+    },
+    "AIPOST TRY  新增草稿": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update row in threads-post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得最新版本": {
+      "main": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "發送回應給 LINE1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI1": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "舊版本更新",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "舊版本更新": {
+      "main": [
+        [
+          {
+            "node": "新增新版本",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "新增新版本": {
+      "main": [
+        []
+      ]
+    },
+    "取得最新草稿": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "GetAllPost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in threads-post": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model in Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "Message a model",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "AIPOST TRY  新增草稿",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "發送回應給 LINE2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get threads new token": {
+      "main": [
+        [
+          {
+            "node": "CreatePostContainer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity1": {
+      "ai_tool": [
+        [
+          {
+            "node": "OpenAI1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "取得連結",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得連結": {
+      "main": [
+        [
+          {
+            "node": "UpdatePostStatus1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "b39ed1f6-63ff-4add-9aff-b0fdfaf372a3",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-06-17T16:11:28.345Z",
+      "createdAt": "2025-06-17T16:11:28.345Z",
+      "role": "workflow:owner",
+      "workflowId": "S4DLz2IyXi3th9RZ",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-08-24T17:31:32.101Z",
+      "createdAt": "2025-08-24T17:31:32.101Z",
+      "id": "NdMmboef1PsJUri9",
+      "name": "Meta"
+    },
+    {
+      "updatedAt": "2025-08-24T17:32:57.694Z",
+      "createdAt": "2025-08-24T17:32:57.694Z",
+      "id": "E9OvZU03hNYmh0w5",
+      "name": "發文"
+    },
+    {
+      "updatedAt": "2025-08-24T17:33:21.949Z",
+      "createdAt": "2025-08-24T17:33:21.949Z",
+      "id": "D2tHhJwBo05gqGYr",
+      "name": "Line"
+    }
+  ]
+}

@@ -1,0 +1,362 @@
+{
+  "updatedAt": "2025-10-04T07:57:30.574Z",
+  "createdAt": "2025-07-23T13:21:15.207Z",
+  "id": "ujdfr62UC304xIB6",
+  "name": "顧問教學",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "options": {
+          "systemMessage": "=你的名字叫 n8n \n\n我是Nick \n每次回我都要用稱呼\n\n如果有提到日期都幫我從{{ $today}}開始 \n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        0
+      ],
+      "id": "655ebd79-dfdd-479a-bc34-712d46ebb1b2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        64,
+        416
+      ],
+      "id": "4db6b8e6-dc4b-4bcb-af0f-fb6de2c3a8c1",
+      "name": "Google Gemini Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "50fec31b-0d63-4276-8258-e44e4c8266e0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        -48
+      ],
+      "id": "29920a13-1242-4e87-98b1-7dc103eeccd5",
+      "name": "Webhook",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer Ez09/r2eyHiuYXm4lDs7RHXqivSb2Ox08yb70fzWw43aJF5js+DvhRWHWJzwAreX9wNB/Bx1yMXTIF7ZdPpJt+og29eFU0AbxsKFotxrCSDfSzc8sbk+fHMPnoNjFFYxTKnZyKyNAHMsxQikRWg5QQdB04t89/1O/w1cDnyilFU="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{JSON.stringify($json.output)}}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        0
+      ],
+      "id": "2c9c0d6c-9dda-4106-97bb-391fc0ee33fc",
+      "name": "Line reply"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.body.events[0].source.userId }}"
+            },
+            {
+              "name": "loadingSeconds",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        32,
+        -160
+      ],
+      "id": "6a1a7069-3a7d-4ebd-b18b-e66c7ef90618",
+      "name": "loading/start1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Document', ``, 'string') }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sheet', ``, 'string') }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        240
+      ],
+      "id": "b5be3d0c-b8d0-431f-a41d-1f0bd1c1e5c0",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {},
+      "id": "c152bbc5-575d-4804-b580-a06139d040d4",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code 節點 - 爬取熱門話題 (優化版)\n// Nick Chang｜nickleo051216@gmail.com｜0932-684-051\n// 個人網站：ZN Studio｜https://portaly.cc/zn.studio\n// Threads： ZN Studio ( @nickai216 )｜https://www.threads.com/@nickai216\n// Line 社群：https://reurl.cc/1OZNAY\n// Line OA：https://lin.ee/Faz0doj\n\ntry {\n  // 獲取輸入資料\n  const inputData = $input.all()[0];\n  console.log('輸入資料類型:', typeof inputData);\n  console.log('輸入資料鍵值:', Object.keys(inputData));\n  \n  // 取得HTML內容\n  let htmlContent;\n  if (inputData.json && inputData.json.data) {\n    htmlContent = inputData.json.data;\n  } else if (inputData.json && inputData.json.body) {\n    htmlContent = inputData.json.body;\n  } else if (inputData.binary && inputData.binary.data) {\n    htmlContent = inputData.binary.data.toString();\n  } else {\n    throw new Error('找不到HTML內容');\n  }\n  \n  console.log('HTML內容長度:', htmlContent.length);\n  \n  const articles = [];\n  \n  // 使用正則表達式直接解析，避免cheerio的性能問題\n  const articleRegex = /<article[^>]*class=\"[^\"]*elementor-post[^\"]*\"[^>]*>([\\s\\S]*?)<\\/article>/g;\n  let match;\n  \n  while ((match = articleRegex.exec(htmlContent)) !== null && articles.length < 20) {\n    const articleHtml = match[1];\n    \n    // 提取標題和URL\n    const titleMatch = articleHtml.match(/<h3[^>]*class=\"[^\"]*elementor-post__title[^\"]*\"[^>]*>[\\s\\S]*?<a[^>]*href=\"([^\"]*)\"[^>]*>\\s*(.*?)\\s*<\\/a>/);\n    \n    // 提取日期\n    const dateMatch = articleHtml.match(/<span[^>]*class=\"[^\"]*elementor-post-date[^\"]*\"[^>]*>\\s*([\\d\\-]+)\\s*<\\/span>/);\n    \n    if (titleMatch && dateMatch) {\n      const url = titleMatch[1];\n      const title = titleMatch[2].replace(/<[^>]*>/g, '').trim(); // 移除HTML標籤\n      const publishDate = dateMatch[1];\n      \n      articles.push({\n        title: title,\n        url: url,\n        publishDate: publishDate,\n        scrapedAt: new Date().toISOString(),\n        source: '向新力運彩',\n        category: '熱門話題'\n      });\n    }\n  }\n  \n  console.log('找到文章數量:', articles.length);\n  \n  if (articles.length === 0) {\n    // 如果沒找到文章，回傳錯誤信息用於調試\n    return [{\n      json: {\n        error: '未找到文章',\n        htmlLength: htmlContent.length,\n        sampleHtml: htmlContent.substring(0, 1000)\n      }\n    }];\n  }\n  \n  // 回傳結果\n  return articles.map(article => ({\n    json: article\n  }));\n  \n} catch (error) {\n  console.error('錯誤:', error);\n  return [{\n    json: {\n      error: error.message,\n      stack: error.stack\n    }\n  }];\n}"
+      },
+      "id": "003aa0b3-92e4-4831-9646-274a6868c628",
+      "name": "提取文章資料",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://8-sport.com/",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "fec3055d-e8ab-4a6a-9774-e3660500eafe",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        448,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -288,
+        128
+      ],
+      "id": "40d31eae-711b-4932-8be1-5b8d1d970559",
+      "name": "When chat message received",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        224
+      ],
+      "id": "bfc0f441-4ec7-4b6f-a94e-155f18e5bc6b",
+      "name": "OpenAI Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        224
+      ],
+      "id": "428f0303-4f35-41c9-94cb-15dcd186ea53",
+      "name": "Simple Memory"
+    }
+  ],
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Line reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "loading/start1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line reply": {
+      "main": [
+        []
+      ]
+    },
+    "loading/start1": {
+      "main": [
+        []
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        []
+      ]
+    },
+    "提取文章資料": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "提取文章資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "ea3fd255-020d-48b4-b204-0ebad6b674d2",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-07-23T13:21:15.207Z",
+      "createdAt": "2025-07-23T13:21:15.207Z",
+      "role": "workflow:owner",
+      "workflowId": "ujdfr62UC304xIB6",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}

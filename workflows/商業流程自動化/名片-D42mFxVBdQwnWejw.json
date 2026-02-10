@@ -1,0 +1,1000 @@
+{
+  "updatedAt": "2025-06-25T06:32:51.694Z",
+  "createdAt": "2025-06-24T05:54:25.407Z",
+  "id": "D42mFxVBdQwnWejw",
+  "name": "名片",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f6ae4565-16d6-419a-a86a-c276189e14a7",
+      "name": "LINE Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1560,
+        470
+      ],
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 改良版「處理分析資料」節點 - 修正電話號碼解析\n\n// 獲取 AI 分析的回傳資料\nlet aiResponse = $input.first().json.output || $input.first().json.response || $input.first().json.text || '';\n\n// 🔧 重要：獲取並保留 binary 資料\nlet inputBinary = $input.first().binary || {};\nconsole.log('輸入的 binary 資料:', Object.keys(inputBinary));\n\nconsole.log('原始 AI 回應:', aiResponse);\n\ntry {\n  // 初始化結果物件\n  let businessCardData = {\n    name: '',\n    company: '',\n    position: '',\n    phone: '', // 市話\n    mobile: '', // 手機\n    email: '',\n    address: '',\n    website: '',\n    tags: [],\n    created_date: new Date().toISOString().split('T')[0],\n    source: 'LINE Bot 自動化',\n    original_image_url: '',\n    notes: ''\n  };\n\n  // 清理 AI 回應資料\n  let cleanResponse = aiResponse\n    .replace(/```json\\n?/g, '')\n    .replace(/```\\n?/g, '')\n    .replace(/^\\s*[\\{\\[]/g, '{')\n    .replace(/[\\}\\]]\\s*$/g, '}')\n    .trim();\n\n  console.log('清理後的回應:', cleanResponse);\n\n  // 🔧 改進的資料清理函數\n  function cleanFieldValue(value) {\n    if (!value) return '';\n    \n    return value\n      .replace(/^[^：:]*[：:]\\s*/, '') // 移除開頭的標籤（如\"姓名：\"）\n      .replace(/^\\s*[:：]\\s*/, '') // 移除開頭的冒號\n      .replace(/^[，,]\\s*/, '') // 移除開頭的逗號\n      .replace(/[，,]\\s*$/, '') // 移除結尾的逗號\n      .trim();\n  }\n\n  // 🔧 改進的電話號碼處理函數\n  function parsePhoneNumbers(text) {\n    let result = { mobile: '', phone: '' };\n    \n    // 🔧 分別解析手機和市話\n    \n    // 1. 先找手機號碼（明確標示為手機的）\n    let mobilePatterns = [\n      /手機號碼[：:]\\s*([^\\n\\r，,]+)/g,\n      /行動電話[：:]\\s*([^\\n\\r，,]+)/g,\n      /Mobile[：:]\\s*([^\\n\\r，,]+)/gi\n    ];\n    \n    for (let pattern of mobilePatterns) {\n      let matches = [...text.matchAll(pattern)];\n      for (let match of matches) {\n        if (match[1]) {\n          let cleanMobile = match[1].trim().replace(/[\\s\\-]/g, '');\n          if (cleanMobile.startsWith('09') || cleanMobile.length === 10) {\n            result.mobile = cleanMobile;\n            console.log('找到手機號碼:', result.mobile);\n            break;\n          }\n        }\n      }\n      if (result.mobile) break;\n    }\n    \n    // 2. 再找市話（明確標示為電話的，或有區碼的）\n    let phonePatterns = [\n      /(?:電話|Tel|Phone)(?!號碼)[：:]\\s*([^\\n\\r，,]+)/gi, // 電話但不是電話號碼\n      /^電話[：:]\\s*([^\\n\\r，,]+)/gm // 行首的電話\n    ];\n    \n    for (let pattern of phonePatterns) {\n      let matches = [...text.matchAll(pattern)];\n      for (let match of matches) {\n        if (match[1]) {\n          let phoneStr = match[1].trim();\n          // 檢查是否為市話格式（有區碼或包含#）\n          if (phoneStr.includes('02-') || phoneStr.includes('03-') || \n              phoneStr.includes('04-') || phoneStr.includes('07-') || \n              phoneStr.includes('#') || phoneStr.match(/0[2-8][\\d\\-\\s]+/)) {\n            result.phone = phoneStr;\n            console.log('找到市話:', result.phone);\n            break;\n          }\n        }\n      }\n      if (result.phone) break;\n    }\n    \n    // 3. 如果還沒找到，用通用的電話號碼解析\n    if (!result.mobile && !result.phone) {\n      let generalPhonePattern = /(?:電話號碼|聯絡電話)[：:]\\s*([^\\n\\r，,]+)/g;\n      let matches = [...text.matchAll(generalPhonePattern)];\n      \n      for (let match of matches) {\n        if (match[1]) {\n          let phoneStr = match[1].trim();\n          \n          // 判斷是手機還是市話\n          if (phoneStr.startsWith('09') || (phoneStr.replace(/[\\s\\-]/g, '').length === 10 && phoneStr.startsWith('09'))) {\n            result.mobile = phoneStr.replace(/[\\s\\-]/g, '');\n            console.log('通用解析找到手機:', result.mobile);\n          } else if (phoneStr.includes('-') || phoneStr.includes('#') || phoneStr.match(/0[2-8]/)) {\n            result.phone = phoneStr;\n            console.log('通用解析找到市話:', result.phone);\n          }\n        }\n      }\n    }\n    \n    // 4. 最後嘗試：直接尋找台灣手機號碼格式\n    if (!result.mobile) {\n      let mobileRegex = /09\\d{2}[\\-\\s]?\\d{3}[\\-\\s]?\\d{3}/g;\n      let mobileMatch = text.match(mobileRegex);\n      if (mobileMatch) {\n        result.mobile = mobileMatch[0].replace(/[\\s\\-]/g, '');\n        console.log('格式匹配找到手機:', result.mobile);\n      }\n    }\n    \n    console.log('電話解析結果:', result);\n    return result;\n  }\n\n  // 解析 JSON 或文字\n  let parsedData = null;\n  if (cleanResponse.startsWith('{') && cleanResponse.endsWith('}')) {\n    try {\n      parsedData = JSON.parse(cleanResponse);\n      console.log('成功解析 JSON:', parsedData);\n    } catch (jsonError) {\n      console.log('JSON 解析失敗，使用文字解析');\n    }\n  }\n\n  // 資料提取邏輯\n  if (parsedData) {\n    // JSON 格式解析\n    businessCardData.name = cleanFieldValue(parsedData.姓名 || parsedData.name || '');\n    businessCardData.company = cleanFieldValue(parsedData.公司 || parsedData.company || '');\n    businessCardData.position = cleanFieldValue(parsedData.職位 || parsedData.position || '');\n    businessCardData.email = cleanFieldValue(parsedData.電子郵件 || parsedData.email || parsedData.信箱 || '');\n    businessCardData.address = cleanFieldValue(parsedData.地址 || parsedData.address || '');\n    businessCardData.website = cleanFieldValue(parsedData.網站 || parsedData.website || '');\n    \n    // 處理電話號碼\n    let phoneData = parsedData.電話號碼 || parsedData.phone || parsedData.手機號碼 || parsedData.mobile || '';\n    let phoneResult = parsePhoneNumbers(phoneData);\n    businessCardData.mobile = phoneResult.mobile;\n    businessCardData.phone = phoneResult.phone;\n    \n    // 處理標籤\n    let tags = parsedData.標籤 || parsedData.tags || '';\n    if (typeof tags === 'string') {\n      businessCardData.tags = tags.split(',').map(tag => cleanFieldValue(tag)).filter(tag => tag);\n    } else if (Array.isArray(tags)) {\n      businessCardData.tags = tags.map(tag => cleanFieldValue(tag)).filter(tag => tag);\n    }\n  } else {\n    // 🔧 文字解析邏輯 - 大幅改進\n    let tempText = cleanResponse;\n    console.log('開始文字解析...');\n    \n    // 姓名解析\n    let namePatterns = [\n      /姓名[：:]\\s*([^\\n\\r，,]+)/,\n      /^([^\\n\\r，,]+?)(?:\\n|公司|職位|電話|$)/m\n    ];\n    \n    for (let pattern of namePatterns) {\n      let match = tempText.match(pattern);\n      if (match && match[1]) {\n        businessCardData.name = cleanFieldValue(match[1]);\n        console.log('找到姓名:', businessCardData.name);\n        break;\n      }\n    }\n    \n    // 公司解析\n    let companyPatterns = [\n      /公司[：:]\\s*([^\\n\\r，,]+)/,\n      /(?:任職於|服務於|工作於)\\s*([^\\n\\r，,]+)/\n    ];\n    \n    for (let pattern of companyPatterns) {\n      let match = tempText.match(pattern);\n      if (match && match[1]) {\n        businessCardData.company = cleanFieldValue(match[1]);\n        console.log('找到公司:', businessCardData.company);\n        break;\n      }\n    }\n    \n    // 職位解析\n    let positionPatterns = [\n      /職位[：:]\\s*([^\\n\\r，,]+)/,\n      /(?:擔任|職稱|職務)[：:]\\s*([^\\n\\r，,]+)/\n    ];\n    \n    for (let pattern of positionPatterns) {\n      let match = tempText.match(pattern);\n      if (match && match[1]) {\n        businessCardData.position = cleanFieldValue(match[1]);\n        console.log('找到職位:', businessCardData.position);\n        break;\n      }\n    }\n    \n    // 🔧 使用改進的電話號碼解析函數\n    let phoneResult = parsePhoneNumbers(tempText);\n    businessCardData.mobile = phoneResult.mobile;\n    businessCardData.phone = phoneResult.phone;\n    \n    // Email 解析\n    let emailPatterns = [\n      /(?:電子郵件|信箱|email|Email|E-mail)[：:]\\s*([^\\n\\r\\s，,]+)/,\n      /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/\n    ];\n    \n    for (let pattern of emailPatterns) {\n      let match = tempText.match(pattern);\n      if (match && match[1]) {\n        businessCardData.email = cleanFieldValue(match[1]);\n        console.log('找到信箱:', businessCardData.email);\n        break;\n      }\n    }\n    \n    // 地址解析\n    let addressPatterns = [\n      /地址[：:]\\s*([^\\n\\r]+)/,\n      /(?:住址|通訊地址|聯絡地址)[：:]\\s*([^\\n\\r]+)/\n    ];\n    \n    for (let pattern of addressPatterns) {\n      let match = tempText.match(pattern);\n      if (match && match[1]) {\n        businessCardData.address = cleanFieldValue(match[1]);\n        console.log('找到地址:', businessCardData.address);\n        break;\n      }\n    }\n    \n    // 網站解析\n    let websitePatterns = [\n      /網站[：:]\\s*([^\\n\\r\\s，,]+)/,\n      /(?:Website|URL|官網)[：:]\\s*([^\\n\\r\\s，,]+)/i,\n      /(https?:\\/\\/[^\\s，\\n\\r]+)/,\n      /www\\.[^\\s，\\n\\r]+/\n    ];\n    \n    for (let pattern of websitePatterns) {\n      let match = tempText.match(pattern);\n      if (match && match[1] && match[1].trim() !== '無') {\n        businessCardData.website = cleanFieldValue(match[1]);\n        console.log('找到網站:', businessCardData.website);\n        break;\n      } else if (match && match[0] && match[0].startsWith('www')) {\n        businessCardData.website = match[0];\n        console.log('找到網站:', businessCardData.website);\n        break;\n      }\n    }\n    \n    // 標籤解析\n    let tagsMatch = tempText.match(/標籤[：:]\\s*([^\\n\\r]+)/);\n    if (tagsMatch && tagsMatch[1] && tagsMatch[1].trim() !== '無') {\n      businessCardData.tags = tagsMatch[1].split(',')\n        .map(tag => cleanFieldValue(tag))\n        .filter(tag => tag);\n    }\n  }\n\n  // 🔧 最終資料清理和格式化\n  \n  // 清理電話號碼格式\n  if (businessCardData.phone) {\n    businessCardData.phone = businessCardData.phone\n      .replace(/[（）()]/g, '')\n      .trim();\n  }\n  \n  if (businessCardData.mobile) {\n    businessCardData.mobile = businessCardData.mobile\n      .replace(/[\\s\\-]/g, '')\n      .trim();\n    \n    // 確保手機號碼格式正確\n    if (businessCardData.mobile.length === 10 && businessCardData.mobile.startsWith('09')) {\n      // 格式化為 0912-345-678\n      businessCardData.mobile = businessCardData.mobile.replace(/(\\d{4})(\\d{3})(\\d{3})/, '$1-$2-$3');\n    }\n  }\n  \n  // 清理 Email\n  if (businessCardData.email) {\n    businessCardData.email = businessCardData.email\n      .toLowerCase()\n      .replace(/[，；;]/g, '')\n      .trim();\n  }\n  \n  // 清理網站 URL\n  if (businessCardData.website && businessCardData.website !== '無') {\n    if (!businessCardData.website.startsWith('http')) {\n      businessCardData.website = 'https://' + businessCardData.website;\n    }\n  } else {\n    businessCardData.website = '';\n  }\n\n  // 自動標籤生成\n  if (businessCardData.tags.length === 0) {\n    let autoTags = [];\n    if (businessCardData.position) {\n      let position = businessCardData.position.toLowerCase();\n      if (position.includes('總經理') || position.includes('ceo') || position.includes('執行長')) {\n        autoTags.push('高階主管');\n      } else if (position.includes('業務') || position.includes('銷售')) {\n        autoTags.push('業務');\n      } else if (position.includes('工程師') || position.includes('技術')) {\n        autoTags.push('技術');\n      } else if (position.includes('經理') || position.includes('主管')) {\n        autoTags.push('管理職');\n      }\n    }\n    businessCardData.tags = autoTags;\n  }\n\n  businessCardData.processing_status = '成功';\n  businessCardData.confidence_score = businessCardData.name && businessCardData.company ? '高' : '中';\n\n  console.log('=== 最終處理結果 ===');\n  console.log('姓名:', businessCardData.name);\n  console.log('公司:', businessCardData.company);\n  console.log('職位:', businessCardData.position);\n  console.log('手機:', businessCardData.mobile);\n  console.log('市話:', businessCardData.phone);\n  console.log('信箱:', businessCardData.email);\n  console.log('地址:', businessCardData.address);\n  console.log('網站:', businessCardData.website);\n\n  // 🔧 關鍵修正：確保 binary 資料正確傳遞\n  let outputBinary = {};\n  \n  if (inputBinary && Object.keys(inputBinary).length > 0) {\n    Object.assign(outputBinary, inputBinary);\n    console.log('✅ Binary 資料已複製:', Object.keys(outputBinary));\n    \n    let binaryKeys = Object.keys(outputBinary);\n    if (binaryKeys.length > 0 && !outputBinary.data) {\n      outputBinary.data = outputBinary[binaryKeys[0]];\n      console.log('✅ Binary 資料已設定為 \"data\" 欄位');\n    }\n  } else {\n    console.error('❌ 沒有找到輸入的 binary 資料');\n  }\n\n  // 🔧 改善回傳資料結構\n  return [{\n    json: {\n      // Notion 資料庫欄位對應\n      '姓名': businessCardData.name,\n      '公司': businessCardData.company,\n      '職位': businessCardData.position,\n      '行動電話': businessCardData.mobile, // 🔧 手機\n      '電話': businessCardData.phone,      // 🔧 市話\n      '信箱': businessCardData.email,\n      '地址': businessCardData.address,\n      '網站': businessCardData.website,\n      '標籤': businessCardData.tags,\n      '新增日期': businessCardData.created_date,\n      '來源': 'LINE Bot 自動化',\n      '備註': `處理狀態: ${businessCardData.processing_status}, 信心度: ${businessCardData.confidence_score}`,\n      '原始資料': cleanResponse.substring(0, 300),\n      \n      // 額外資訊\n      'suggested_filename': `${businessCardData.name}_${businessCardData.company}_${businessCardData.created_date}.jpg`,\n      'processing_timestamp': new Date().toISOString(),\n      'binary_data_available': Object.keys(outputBinary).length > 0\n    },\n    binary: outputBinary\n  }];\n\n} catch (error) {\n  console.error('處理錯誤:', error);\n  \n  return [{\n    json: {\n      '姓名': '解析失敗',\n      '公司': '',\n      '職位': '',\n      '行動電話': '',\n      '電話': '',\n      '信箱': '',\n      '地址': '',\n      '網站': '',\n      '標籤': ['錯誤'],\n      '新增日期': new Date().toISOString().split('T')[0],\n      '來源': 'LINE Bot 自動化',\n      '備註': `錯誤: ${error.message}`,\n      '原始資料': aiResponse.substring(0, 300),\n      'binary_data_available': Object.keys(inputBinary || {}).length > 0\n    },\n    binary: inputBinary || {}\n  }];\n}"
+      },
+      "id": "d10b864f-2a2c-46a3-b2a2-f14325b78478",
+      "name": "處理分析資料",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "items[0].json.sessionId = $input.first().json.body.events[0].source.userId\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1042,
+        720
+      ],
+      "id": "80b02acc-9c65-4c53-b4ba-aadc2f4bec80",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        1080
+      ],
+      "id": "6a8687be-620e-494a-85f7-0a7222416816",
+      "name": "OpenRouter Chat Model1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{ $('LINE Webhook').item.json.body.events[0].message.id }}/content",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer pNCflz/R0BcJDi5uDi1fIEFLPE7lkUDF/KhTN7njAbCykxvjnU49+jKXQTKJR8BGAnh0hf4uIpRcpI29MltTQD4IS4nmg99CgeUh/SqEkPcVJ8Sn/3Na5zTUy269ntwkBRQzdGkC9PI2+ySSCZJvOgdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -744,
+        720
+      ],
+      "id": "a4e3dde9-be7f-4d38-af5b-9c660dc0e7c3",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI",
+          "mode": "list",
+          "cachedResultName": "電子名片",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "名片總覽",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "姓名": "={{ $('Merge').item.json['姓名'] }}",
+            "公司": "={{ $('Merge').item.json['公司'] }}",
+            "職位": "={{ $('Merge').item.json['職位'] }}",
+            "電話": "={{ $('Merge').item.json['電話'] }}",
+            "信箱": "={{ $('Merge').item.json['信箱'] }}",
+            "地址": "={{ $('Merge').item.json['地址'] }}",
+            "網站": "={{ $('Merge').item.json['網站'] }}",
+            "新增日期": "={{ $('Merge').item.json['新增日期'] }}",
+            "備註": "={{ $('Merge').item.json['備註'] }}",
+            "檔案來源": "={{ $json.webViewLink }}",
+            "手機號碼": "={{ $('Merge').item.json['行動電話'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "姓名",
+              "displayName": "姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "公司",
+              "displayName": "公司",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "職位",
+              "displayName": "職位",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "手機號碼",
+              "displayName": "手機號碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "電話",
+              "displayName": "電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "信箱",
+              "displayName": "信箱",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "地址",
+              "displayName": "地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "網站",
+              "displayName": "網站",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "標籤(客戶、供應商、合作夥伴)",
+              "displayName": "標籤(客戶、供應商、合作夥伴)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "新增日期",
+              "displayName": "新增日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "備註",
+              "displayName": "備註",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "檔案來源",
+              "displayName": "檔案來源",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        732,
+        720
+      ],
+      "id": "9cf768e1-3d3f-453f-baff-49ca2b806bb3",
+      "name": "Google Sheets",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "21c44454-4a54-806f-8025-d428f2c6f9a3",
+          "mode": "list",
+          "cachedResultName": "電子名片",
+          "cachedResultUrl": "https://www.notion.so/21c444544a54806f8025d428f2c6f9a3"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "08cdeef3-01c1-4d75-bb24-e1c0dc8626fd",
+      "name": "儲存到 Notion1",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        -2100,
+        680
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "21c44454-4a54-806f-8025-d428f2c6f9a3",
+          "mode": "list",
+          "cachedResultName": "電子名片",
+          "cachedResultUrl": "https://www.notion.so/21c444544a54806f8025d428f2c6f9a3"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "來源網址|url",
+              "urlValue": "={{ $json.webViewLink }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1dc540e-9313-40d1-999f-92199492b5b1",
+      "name": "儲存到 Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [
+        -2100,
+        420
+      ],
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        300,
+        720
+      ],
+      "id": "2e699f97-9ad3-4416-a6d9-61c5dd3e728e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.events[0].message.text }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant\n可以使用各種MCP 工具\n\n可以使用以下MCP工具：\n- read_data：讀取查詢資料 \n- updata：更新資料 \n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1080,
+        340
+      ],
+      "id": "8096dbfe-a537-43b6-aad8-9809d8c1c88d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://nickleo9.zeabur.app/mcp/8e54a6cb-eb3b-4613-8fd5-98c9171d12ec/sse",
+        "include": "selected",
+        "includeTools": [
+          "read",
+          "updata"
+        ]
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        580
+      ],
+      "id": "36c969c4-3a90-4a64-af37-b4e236130bac",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "path": "8e54a6cb-eb3b-4613-8fd5-98c9171d12ec"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2160,
+        920
+      ],
+      "id": "64f2af43-be35-4ce8-84c2-6b107549d7d4",
+      "name": "MCP Server Trigger",
+      "webhookId": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "=data",
+        "name": "={{ $json['姓名'] }}{{ $json['公司'] }}{{ $json['新增日期'] }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1lYwQ2fQW0yjc9why7vLUoZtUlFd1ej3U",
+          "mode": "list",
+          "cachedResultName": "line上傳之檔案",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1lYwQ2fQW0yjc9why7vLUoZtUlFd1ej3U"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        512,
+        720
+      ],
+      "id": "c8b2697e-8708-449f-a8f0-afba8084ac44",
+      "name": "上傳檔案",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "= 回應這個訊息：{{ $('LINE Webhook').item.json.body.events[0].message.quoteToken }}\n\n這是圖片檔\n\n以繁體中文，純文字輸出，不要帶 HTML。\n\n這是一張名片，幫我把名片中的資訊擷取出來\n\n並以以下格式列出來\n\n姓名 公司 職位 電話 手機號碼  電子郵件 地址 網站 標籤 新增日期 網址(網站)\n\n\n\n\n\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -524,
+        845
+      ],
+      "id": "ffa0b29a-deaa-41f9-90a0-8ccba899c029",
+      "name": "AI AGENG"
+    },
+    {
+      "parameters": {
+        "operation": "remove",
+        "documentId": {
+          "__rl": true,
+          "value": "172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI",
+          "mode": "list",
+          "cachedResultName": "電子名片",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "名片總覽",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI/edit#gid=0"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        -1720,
+        1140
+      ],
+      "id": "0672684f-3dea-43d8-bad6-5c53c5b4d032",
+      "name": "delete",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI",
+          "mode": "list",
+          "cachedResultName": "電子名片",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "名片總覽",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        -2080,
+        1140
+      ],
+      "id": "ca6616b8-c96a-4e2d-9855-12f5a0fec375",
+      "name": "read",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{ $json['姓名'] }} 的名片已上傳完畢 請見網址：{{ $('上傳檔案').item.json.webViewLink }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        720
+      ],
+      "id": "74131399-d068-4700-beda-504cf1b86a87",
+      "name": "發送回應給 LINE1",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/broadcast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{ $json[\"output\"].toString().replace(/\\n/g, '\\\\n');}}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -660,
+        360
+      ],
+      "id": "372f4b06-cbae-4175-9ebb-da4eb7904b62",
+      "name": "發送回應給 LINE",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "81723a87-ec92-4ebd-85a3-ae41c8a9adb1",
+              "leftValue": "={{ $json.body.events[0].message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1340,
+        570
+      ],
+      "id": "a934b2a7-d835-4ce2-8419-7ec52cb0e667",
+      "name": "檢查是否為圖片"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer pNCflz/R0BcJDi5uDi1fIEFLPE7lkUDF/KhTN7njAbCykxvjnU49+jKXQTKJR8BGAnh0hf4uIpRcpI29MltTQD4IS4nmg99CgeUh/SqEkPcVJ8Sn/3Na5zTUy269ntwkBRQzdGkC9PI2+ySSCZJvOgdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.body.events[0].source.userId }}"
+            },
+            {
+              "name": "loadingSeconds",
+              "value": "40"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1340,
+        370
+      ],
+      "id": "57c50f99-6204-4cc7-8ad5-3b6556ed8c44",
+      "name": "loading/start"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "defult"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -980,
+        580
+      ],
+      "id": "6ea48d0d-831d-4287-b5df-f9cfca93fb3b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        540
+      ],
+      "id": "19ea15f5-cdd2-4bb2-b401-4673d5d02907",
+      "name": "OpenRouter Chat Model",
+      "credentials": "[REMOVED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI",
+          "mode": "list",
+          "cachedResultName": "電子名片",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "名片總覽",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/172MErtRQfwVUibqiiCff5BFJBYd81yDrlvgUfjzbWKI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "姓名": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('____using_to_match_', ``, 'string') }}",
+            "公司": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('__', ``, 'string') }}",
+            "職位": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('__', ``, 'string') }}",
+            "手機號碼": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('____', ``, 'string') }}",
+            "電話": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('__', ``, 'string') }}",
+            "信箱": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('__', ``, 'string') }}",
+            "地址": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('__', ``, 'string') }}",
+            "網站": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('__', ``, 'string') }}",
+            "標籤(客戶、供應商、合作夥伴)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('_______________', ``, 'string') }}",
+            "新增日期": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('____', ``, 'string') }}",
+            "備註": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('__', ``, 'string') }}",
+            "檔案來源": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('____', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "姓名"
+          ],
+          "schema": [
+            {
+              "id": "姓名",
+              "displayName": "姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "公司",
+              "displayName": "公司",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "職位",
+              "displayName": "職位",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "手機號碼",
+              "displayName": "手機號碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "電話",
+              "displayName": "電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "信箱",
+              "displayName": "信箱",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "地址",
+              "displayName": "地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "網站",
+              "displayName": "網站",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "標籤(客戶、供應商、合作夥伴)",
+              "displayName": "標籤(客戶、供應商、合作夥伴)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "新增日期",
+              "displayName": "新增日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "備註",
+              "displayName": "備註",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "檔案來源",
+              "displayName": "檔案來源",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        -1920,
+        1160
+      ],
+      "id": "420cfe07-4c04-468a-b963-510f69d42dd5",
+      "name": "updata",
+      "credentials": "[REMOVED]"
+    }
+  ],
+  "connections": {
+    "LINE Webhook": {
+      "main": [
+        [
+          {
+            "node": "檢查是否為圖片",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "loading/start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理分析資料": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI AGENG",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI AGENG",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "上傳檔案",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "發送回應給 LINE1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "上傳檔案": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI AGENG": {
+      "main": [
+        [
+          {
+            "node": "處理分析資料",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "read": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "發送回應給 LINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "檢查是否為圖片": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        []
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "updata": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "fc3666d7-33a4-42f4-8335-ece1aa21f2f1",
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-06-24T05:54:25.407Z",
+      "createdAt": "2025-06-24T05:54:25.407Z",
+      "role": "workflow:owner",
+      "workflowId": "D42mFxVBdQwnWejw",
+      "projectId": "4W71QCd0cKKsiKSS"
+    }
+  ],
+  "tags": []
+}
