@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Globe, ExternalLink, Workflow, Bot, Database, Mail, Zap } from 'lucide-react';
+import { ArrowRight, Globe, ExternalLink, Workflow, Bot, Zap } from 'lucide-react';
 import { profile } from '../data/profile';
 
 const Hero = () => {
@@ -46,30 +46,31 @@ const Hero = () => {
                 </div>
             </div>
 
-            {/* Abstract Visual */}
+            {/* Profile Photo + Tech Icons */}
             <div className="md:w-1/2 mt-12 md:mt-0 relative flex justify-center">
-                <div className="relative w-80 h-80 md:w-96 md:h-96">
+                <div className="relative w-80 h-80 md:w-96 md:h-96 flex items-center justify-center">
                     <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-                    <div className="relative z-10 grid grid-cols-2 gap-4 p-4">
-                        <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 backdrop-blur-sm transform translate-y-4 shadow-xl hover:border-blue-500/30 transition-colors">
-                            <Workflow className="text-blue-400 mb-3" size={32} />
-                            <p className="text-sm font-medium text-slate-200">n8n / Make</p>
-                            <p className="text-xs text-slate-500">自動化流程</p>
+                    <div className="relative z-10 flex flex-col items-center">
+                        <div className="w-52 h-52 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-blue-500/30 shadow-2xl shadow-blue-500/20 mb-6">
+                            <img
+                                src={`${import.meta.env.BASE_URL}images/profile.jpg`}
+                                alt="Nick Chang"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
-                        <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 backdrop-blur-sm shadow-xl hover:border-green-500/30 transition-colors">
-                            <Bot className="text-green-400 mb-3" size={32} />
-                            <p className="text-sm font-medium text-slate-200">AI / GPT</p>
-                            <p className="text-xs text-slate-500">智能整合</p>
-                        </div>
-                        <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 backdrop-blur-sm shadow-xl hover:border-purple-500/30 transition-colors">
-                            <Database className="text-purple-400 mb-3" size={32} />
-                            <p className="text-sm font-medium text-slate-200">數據整合</p>
-                            <p className="text-xs text-slate-500">Supabase / Firebase</p>
-                        </div>
-                        <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700 backdrop-blur-sm transform -translate-y-4 shadow-xl hover:border-yellow-500/30 transition-colors">
-                            <Zap className="text-yellow-400 mb-3" size={32} />
-                            <p className="text-sm font-medium text-slate-200">Line Bot</p>
-                            <p className="text-xs text-slate-500">客製化開發</p>
+                        <div className="flex gap-3">
+                            <div className="bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700 backdrop-blur-sm flex items-center gap-2 hover:border-blue-500/30 transition-colors">
+                                <Workflow className="text-blue-400" size={18} />
+                                <span className="text-xs text-slate-300">n8n / Make</span>
+                            </div>
+                            <div className="bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700 backdrop-blur-sm flex items-center gap-2 hover:border-green-500/30 transition-colors">
+                                <Bot className="text-green-400" size={18} />
+                                <span className="text-xs text-slate-300">AI / GPT</span>
+                            </div>
+                            <div className="bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700 backdrop-blur-sm flex items-center gap-2 hover:border-yellow-500/30 transition-colors">
+                                <Zap className="text-yellow-400" size={18} />
+                                <span className="text-xs text-slate-300">Line Bot</span>
+                            </div>
                         </div>
                     </div>
                 </div>
