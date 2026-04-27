@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { projects, categories } from '../data/projects';
+import { profile } from '../data/profile';
 
 const Portfolio = () => {
     const [activeCategory, setActiveCategory] = useState('all');
@@ -59,6 +61,15 @@ const Portfolio = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                {/* Pricing CTA Banner */}
+                <div className="mt-12 p-8 rounded-2xl bg-gradient-to-r from-emerald-600/20 via-blue-600/20 to-purple-600/20 border border-slate-700 text-center">
+                    <h3 className="text-2xl font-bold text-white mb-3">想做類似的自動化？</h3>
+                    <p className="text-slate-400 mb-6">這些案例都能客製化複製到你的場景，看看完整的服務方案與報價。</p>
+                    <a href={profile.contact.pricing} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg shadow-emerald-500/30">
+                        查看服務報價 <ArrowRight size={18} />
+                    </a>
                 </div>
             </div>
         </section>
