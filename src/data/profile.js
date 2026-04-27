@@ -15,6 +15,7 @@ export const profile = {
     card: "https://nickleo9.github.io/znstudiocard/",
     lineCommunity: "https://reurl.cc/1OZNAY"
   }
+};
 
 // 學歷
 export const education = [
