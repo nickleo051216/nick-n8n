@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { profile } from '../data/profile';
 
 const Navigation = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,12 +15,13 @@ const Navigation = () => {
 
                     {/* Desktop Menu */}
                     <div className="hidden md:block">
-                        <div className="ml-10 flex items-baseline space-x-8">
+                        <div className="ml-10 flex items-baseline space-x-6">
                             <a href="#home" className="hover:text-blue-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">首頁</a>
                             <a href="#about" className="hover:text-blue-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">關於我</a>
-                            <a href="#skills" className="hover:text-blue-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">專業技能</a>
-                            <a href="#experience" className="hover:text-blue-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">經歷與認證</a>
+                            <a href="#experience" className="hover:text-blue-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">經歷</a>
                             <a href="#portfolio" className="hover:text-blue-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">精選案例</a>
+                            <a href={profile.contact.pricing} target="_blank" rel="noreferrer" className="hover:text-emerald-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">💰 服務報價</a>
+                            <a href={profile.contact.card} target="_blank" rel="noreferrer" className="hover:text-purple-400 transition-colors px-3 py-2 rounded-md text-sm font-medium">📇 名片</a>
                             <a href="#contact" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors">聯絡諮詢</a>
                         </div>
                     </div>
@@ -41,6 +43,8 @@ const Navigation = () => {
                         <a href="#about" onClick={() => setIsMenuOpen(false)} className="block hover:bg-slate-700 px-3 py-2 rounded-md text-base font-medium">關於我</a>
                         <a href="#experience" onClick={() => setIsMenuOpen(false)} className="block hover:bg-slate-700 px-3 py-2 rounded-md text-base font-medium">經歷與認證</a>
                         <a href="#portfolio" onClick={() => setIsMenuOpen(false)} className="block hover:bg-slate-700 px-3 py-2 rounded-md text-base font-medium">精選案例</a>
+                        <a href={profile.contact.pricing} target="_blank" rel="noreferrer" onClick={() => setIsMenuOpen(false)} className="block hover:bg-slate-700 text-emerald-400 px-3 py-2 rounded-md text-base font-medium">💰 服務報價</a>
+                        <a href={profile.contact.card} target="_blank" rel="noreferrer" onClick={() => setIsMenuOpen(false)} className="block hover:bg-slate-700 text-purple-400 px-3 py-2 rounded-md text-base font-medium">📇 電子名片</a>
                         <a href="#contact" onClick={() => setIsMenuOpen(false)} className="block text-blue-400 font-bold px-3 py-2 rounded-md text-base">聯絡諮詢</a>
                     </div>
                 </div>
