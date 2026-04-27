@@ -10,10 +10,11 @@ export const profile = {
     line: "https://lin.ee/Faz0doj",
     threads: "https://www.threads.com/@nickai216",
     portaly: "https://portaly.cc/zn.studio",
-    website: "https://znstudio216.com",
+    website: "https://nickleo9.github.io/znstudiocard/",
+    pricing: "https://nickleo9.github.io/zn-pricing/",
+    card: "https://nickleo9.github.io/znstudiocard/",
     lineCommunity: "https://reurl.cc/1OZNAY"
   }
-};
 
 // 學歷
 export const education = [
