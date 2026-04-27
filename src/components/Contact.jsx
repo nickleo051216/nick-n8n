@@ -1,5 +1,5 @@
 import React from 'react';
-import { Smartphone, Mail, Globe, Users } from 'lucide-react';
+import { Smartphone, Mail, Globe, Users, DollarSign, IdCard } from 'lucide-react';
 import { profile } from '../data/profile';
 
 const Contact = () => {
@@ -44,12 +44,20 @@ const Contact = () => {
                         <p className="text-slate-500 text-sm">{profile.contact.email}</p>
                     </a>
 
-                    <a href={profile.contact.website} target="_blank" rel="noreferrer" className="flex flex-col items-center p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-purple-500/50 hover:bg-slate-800/80 transition-all group">
-                        <div className="w-12 h-12 bg-purple-500/10 text-purple-400 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <Globe size={24} />
+                    <a href={profile.contact.pricing} target="_blank" rel="noreferrer" className="flex flex-col items-center p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-emerald-500/50 hover:bg-slate-800/80 transition-all group">
+                        <div className="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <DollarSign size={24} />
                         </div>
-                        <h3 className="text-white font-medium mb-1">ZN Studio</h3>
-                        <p className="text-slate-500 text-sm">znstudio216.com</p>
+                        <h3 className="text-white font-medium mb-1">服務報價</h3>
+                        <p className="text-slate-500 text-sm">完整方案與價格</p>
+                    </a>
+
+                    <a href={profile.contact.card} target="_blank" rel="noreferrer" className="flex flex-col items-center p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-purple-500/50 hover:bg-slate-800/80 transition-all group">
+                        <div className="w-12 h-12 bg-purple-500/10 text-purple-400 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <IdCard size={24} />
+                        </div>
+                        <h3 className="text-white font-medium mb-1">電子名片</h3>
+                        <p className="text-slate-500 text-sm">完整介紹與聯絡資訊</p>
                     </a>
 
                     <a href={`tel:${profile.contact.phone}`} className="flex flex-col items-center p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-orange-500/50 hover:bg-slate-800/80 transition-all group">
