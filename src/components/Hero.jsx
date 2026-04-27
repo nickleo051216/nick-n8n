@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Globe, ExternalLink, Workflow, Bot, Zap } from 'lucide-react';
+import { ArrowRight, Globe, ExternalLink, Workflow, Bot, Zap, DollarSign, IdCard } from 'lucide-react';
 import { profile } from '../data/profile';
 
 const Hero = () => {
@@ -37,11 +37,11 @@ const Hero = () => {
                     <a href="#contact" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg shadow-blue-500/20">
                         預約諮詢 <ArrowRight size={18} />
                     </a>
-                    <a href={profile.contact.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-3 rounded-lg font-medium transition-all border border-slate-700">
-                        官方網站 <Globe size={18} />
+                    <a href={profile.contact.pricing} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg shadow-emerald-500/20">
+                        服務報價 <DollarSign size={18} />
                     </a>
-                    <a href={profile.contact.portaly} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-3 rounded-lg font-medium transition-all border border-slate-700">
-                        Portaly <ExternalLink size={18} />
+                    <a href={profile.contact.card} target="_blank" rel="noreferrer" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-6 py-3 rounded-lg font-medium transition-all border border-slate-700">
+                        電子名片 <IdCard size={18} />
                     </a>
                 </div>
             </div>
