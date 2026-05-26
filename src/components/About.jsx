@@ -21,6 +21,9 @@ const About = () => {
                                 我擅長使用 <strong>n8n, Make, Zapier</strong> 等工具，串接 Google Workspace、Line Bot 與各種 API。從業務報價系統到個人行事曆助手，我致力於解決重複性工作的痛點。
                             </p>
                             <p>
+                                近期更深度導入 <strong>Claude MAX</strong> 與 <strong>OpenAI Codex</strong> 等 AI 編程工具，以 Vibe Coding 的方式快速打造可上線的應用與系統。
+                            </p>
+                            <p>
                                 現為 AI 自動化顧問與講師，協助企業導入自動化流程，提升效率並降低人力成本。
                             </p>
                         </div>

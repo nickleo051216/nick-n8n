@@ -5,7 +5,8 @@ import {
     Smartphone,
     Code,
     Globe,
-    Wrench
+    Wrench,
+    Sparkles
 } from 'lucide-react';
 
 // 技能標籤 - 完整版
@@ -20,7 +21,13 @@ export const skills = [
         name: "AI 工具 / API",
         icon: Bot,
         level: "Expert",
-        details: "ChatGPT, Claude, Gemini, Whisper, GPT Vision, Threads API, Meta API"
+        details: "ChatGPT, Claude / Claude MAX, Gemini, Whisper, GPT Vision, Threads API, Meta API"
+    },
+    {
+        name: "AI 輔助開發 / Vibe Coding",
+        icon: Sparkles,
+        level: "Advanced",
+        details: "Claude MAX（Claude Code）, OpenAI Codex, Vibe Coding 應用實作, React 雛形快速開發"
     },
     {
         name: "Bot 開發",

@@ -24,7 +24,7 @@ const Hero = () => {
                         <div className="text-xs text-slate-500">自動化作品</div>
                     </div>
                     <div className="text-center">
-                        <div className="text-2xl font-bold text-red-400">8+</div>
+                        <div className="text-2xl font-bold text-red-400">9+</div>
                         <div className="text-xs text-slate-500">演講場次</div>
                     </div>
                     <div className="text-center">

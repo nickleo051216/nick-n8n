@@ -3,7 +3,7 @@ export const profile = {
   name: "Nick Chang (張惟荏)",
   title: "AI 自動化應用顧問 | ZN Studio",
   tagline: "解放雙手，讓 AI 與自動化流程為你工作。",
-  description: "具備多年環境監測專案管理經驗，近年自學 AI 與無程式碼工具（n8n、Make、GAS），實作多項 AI 整合系統與 Bot，自我品牌經營具累積實績。現為 AI 自動化顧問／n8n 講師，協助企業及個人導入 AI 流程，提升內部效能或是個人生活品質。",
+  description: "具備多年環境監測專案管理經驗，近年自學 AI 與無程式碼工具（n8n、Make、GAS）及 AI 編程工具（Claude MAX、Codex），實作多項 AI 整合系統與 Bot，自我品牌經營具累積實績。現為 AI 自動化顧問／n8n 講師，協助企業及個人導入 AI 流程，提升內部效能或是個人生活品質。",
   contact: {
     email: "nickleo051216@gmail.com",
     phone: "0932-684-051",
@@ -28,6 +28,12 @@ export const education = [
 
 // 專業認證
 export const certifications = [
+  {
+    title: "Anthropic Academy — Claude 官方認證",
+    issuer: "Anthropic",
+    date: "2026",
+    desc: "完成 Anthropic 官方 Claude 101 等系列課程認證，涵蓋 Claude 核心應用、Claude Code、MCP（Model Context Protocol）與 Agent Skills 等主題。"
+  },
   {
     title: "n8n Course Level 2: Advanced Workflow Automation",
     issuer: "n8n Official",

@@ -218,7 +218,7 @@ const Experience = () => {
                             <div className="text-slate-400 text-sm">影響學員</div>
                         </div>
                         <div className="bg-gradient-to-br from-yellow-600/20 to-yellow-500/5 rounded-xl p-5 border border-yellow-500/20 text-center">
-                            <div className="text-3xl font-bold text-yellow-400 mb-1">4</div>
+                            <div className="text-3xl font-bold text-yellow-400 mb-1">5</div>
                             <div className="text-slate-400 text-sm">專業認證</div>
                         </div>
                     </div>
