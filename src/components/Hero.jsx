@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Globe, ExternalLink, Workflow, Bot, Zap, DollarSign, IdCard } from 'lucide-react';
+import { ArrowRight, Globe, ExternalLink, Workflow, Bot, Zap, DollarSign, IdCard, Sparkles } from 'lucide-react';
 import { profile } from '../data/profile';
 
 const Hero = () => {
@@ -58,7 +58,7 @@ const Hero = () => {
                                 className="w-full h-full object-cover"
                             />
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex flex-wrap gap-3">
                             <div className="bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700 backdrop-blur-sm flex items-center gap-2 hover:border-blue-500/30 transition-colors">
                                 <Workflow className="text-blue-400" size={18} />
                                 <span className="text-xs text-slate-300">n8n / Make</span>
@@ -67,9 +67,13 @@ const Hero = () => {
                                 <Bot className="text-green-400" size={18} />
                                 <span className="text-xs text-slate-300">AI / GPT</span>
                             </div>
+                            <div className="bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700 backdrop-blur-sm flex items-center gap-2 hover:border-purple-500/30 transition-colors">
+                                <Sparkles className="text-purple-400" size={18} />
+                                <span className="text-xs text-slate-300">Claude MAX / Codex</span>
+                            </div>
                             <div className="bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700 backdrop-blur-sm flex items-center gap-2 hover:border-yellow-500/30 transition-colors">
                                 <Zap className="text-yellow-400" size={18} />
-                                <span className="text-xs text-slate-300">Line Bot</span>
+                                <span className="text-xs text-slate-300">Line / Telegram Bot</span>
                             </div>
                         </div>
                     </div>
