@@ -135,11 +135,13 @@ const Experience = () => {
                                 ? 'images/cert-n8n-level2.png'
                                 : cert.title.includes('Level 1')
                                     ? 'images/cert-n8n-level1.png'
-                                    : cert.title.includes('生成式 AI')
-                                        ? 'images/cert-iii-genai.png'
-                                        : cert.title.includes('嘉惠學子')
-                                            ? 'images/cert-soochow.png'
-                                            : null;
+                                    : cert.title.includes('Claude')
+                                        ? 'images/cert-claude-101.png'
+                                        : cert.title.includes('生成式 AI')
+                                            ? 'images/cert-iii-genai.png'
+                                            : cert.title.includes('嘉惠學子')
+                                                ? 'images/cert-soochow.png'
+                                                : null;
                             return (
                                 <div key={i} className="flex gap-4 relative">
                                     <div className="flex-shrink-0 mt-1">

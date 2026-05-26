@@ -29,10 +29,10 @@ export const education = [
 // 專業認證
 export const certifications = [
   {
-    title: "Anthropic Academy — Claude 官方認證",
+    title: "Claude 101｜Anthropic 官方認證",
     issuer: "Anthropic",
-    date: "2026",
-    desc: "完成 Anthropic 官方 Claude 101 等系列課程認證，涵蓋 Claude 核心應用、Claude Code、MCP（Model Context Protocol）與 Agent Skills 等主題。"
+    date: "May 2026",
+    desc: "完成 Anthropic Academy 官方 Claude 課程認證，掌握 Claude 核心功能與日常工作應用，並持續進修 Claude Code、MCP、Agent Skills 等系列課程。"
   },
   {
     title: "n8n Course Level 2: Advanced Workflow Automation",
