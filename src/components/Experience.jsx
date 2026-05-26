@@ -35,7 +35,7 @@ const Experience = () => {
                     <Mic className="text-red-500" />
                     演講與教學經歷
                 </h2>
-                <p className="text-slate-400 mb-8">累計 8 場以上的演講與教學活動，影響超過 800 位學員</p>
+                <p className="text-slate-400 mb-8">累計 9 場以上的演講與教學活動，影響超過 800 位學員</p>
 
                 <div className="space-y-4">
                     {experiences.map((exp, i) => (
@@ -210,7 +210,7 @@ const Experience = () => {
                             <div className="text-slate-400 text-sm">自動化作品</div>
                         </div>
                         <div className="bg-gradient-to-br from-red-600/20 to-red-500/5 rounded-xl p-5 border border-red-500/20 text-center">
-                            <div className="text-3xl font-bold text-red-400 mb-1">8+</div>
+                            <div className="text-3xl font-bold text-red-400 mb-1">9+</div>
                             <div className="text-slate-400 text-sm">演講場次</div>
                         </div>
                         <div className="bg-gradient-to-br from-green-600/20 to-green-500/5 rounded-xl p-5 border border-green-500/20 text-center">

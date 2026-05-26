@@ -66,6 +66,21 @@ export const trainings = [
 export const experiences = [
   {
     year: "2026",
+    date: "04/01",
+    title: "當 Claude MAX 遇到 n8n｜俱樂部首場分享會",
+    role: "分享講師",
+    location: "實體",
+    organizer: "OOPS 知樂學院 主辦（台北・茹曦酒店 15F）",
+    audience: "8 位講師 × 8 分鐘",
+    topic: "Claude × n8n 創造出 Telegram 大軍",
+    highlights: [
+      "以 Claude 搭配 n8n，打造可規模化的多機器人 Telegram 自動化架構",
+      "8 分鐘濃縮一個能立即帶走的實戰技巧",
+      "與 Claude MAX 重度使用者同台，現場 demo 交流"
+    ]
+  },
+  {
+    year: "2026",
     date: "02/07",
     title: "n8n 基礎教學陪跑實戰班",
     role: "講師 / 主辦",

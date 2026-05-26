@@ -26,6 +26,32 @@ import {
 
 // 專案作品 - 完整 33+ 項
 export const projects = [
+    // ▌最近案件（2026 新增・置頂）
+    {
+        id: 27,
+        title: "百帳號 Threads 矩陣自動化",
+        category: "social",
+        description: "單一 n8n 流程同時管理 100＋ Threads 帳號，採每帳號獨立住宅代理路由、貼文紀錄留存與分級數據更新，並以 AI 每週自動校正各帳號文風。",
+        tags: ["n8n", "Threads API", "住宅代理", "OpenAI"],
+        icon: Users
+    },
+    {
+        id: 28,
+        title: "Line OA 代購電商系統",
+        category: "business",
+        description: "Line OA 串接 Google Sheets 的代購全流程：下單收集、願望清單管理、付款對帳，並以 OCR 自動辨識匯款單完成確認回覆。",
+        tags: ["Line OA", "n8n", "Google Sheets", "OCR"],
+        icon: ShoppingCart
+    },
+    {
+        id: 29,
+        title: "Line OA 場地租借預約系統",
+        category: "business",
+        description: "整合 n8n、Google Calendar、Google 表單與 GAS，於 Line OA 完成場地查詢、線上預約與檔期同步，自動避免重複預訂。",
+        tags: ["Line OA", "n8n", "Google Calendar", "GAS"],
+        icon: Calendar
+    },
+
     // ▌智能助理與聊天機器人
     {
         id: 1,
@@ -244,32 +270,6 @@ export const projects = [
         description: "留言、照片、紀念日與時間軸同步的互動平台。",
         tags: ["React", "互動設計", "Vibe Coding"],
         icon: PartyPopper
-    },
-
-    // ▌最近案件（2026 新增）
-    {
-        id: 27,
-        title: "百帳號 Threads 矩陣自動化",
-        category: "social",
-        description: "單一 n8n 流程同時管理 100＋ Threads 帳號，採每帳號獨立住宅代理路由、貼文紀錄留存與分級數據更新，並以 AI 每週自動校正各帳號文風。",
-        tags: ["n8n", "Threads API", "住宅代理", "OpenAI"],
-        icon: Users
-    },
-    {
-        id: 28,
-        title: "Line OA 代購電商系統",
-        category: "business",
-        description: "Line OA 串接 Google Sheets 的代購全流程：下單收集、願望清單管理、付款對帳，並以 OCR 自動辨識匯款單完成確認回覆。",
-        tags: ["Line OA", "n8n", "Google Sheets", "OCR"],
-        icon: ShoppingCart
-    },
-    {
-        id: 29,
-        title: "Line OA 場地租借預約系統",
-        category: "business",
-        description: "整合 n8n、Google Calendar、Google 表單與 GAS，於 Line OA 完成場地查詢、線上預約與檔期同步，自動避免重複預訂。",
-        tags: ["Line OA", "n8n", "Google Calendar", "GAS"],
-        icon: Calendar
     }
 ];
 
